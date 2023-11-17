@@ -26,7 +26,6 @@ class OrderBookSaver(Logger):
     def __init__(
         self,
         videos_path: Path,
-        #pending_img_save_path: Path,
         specific_agent_color_dic: dict[AgentID, str] = {},
         draw_tick_num: int = 10,
         fps: int = 10,
@@ -36,7 +35,6 @@ class OrderBookSaver(Logger):
     ) -> None:
         super().__init__()
         self.videos_path: Path = videos_path
-        #self.pending_img_save_path: Path = pending_img_save_path
         if not self.videos_path.exists():
             self.videos_path.mkdir(parents=True)
         self.specific_agent_color_dic: dict[AgentID, str] = specific_agent_color_dic
@@ -511,4 +509,3 @@ class OrderBookSaver(Logger):
     def process_simulation_end_log(self, log: SimulationEndLog) -> None:
         for video_writer in self.video_writer_dic.values():
             video_writer.release()
-        #self.pending_img_save_path.unlink()
