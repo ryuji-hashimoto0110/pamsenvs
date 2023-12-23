@@ -1,6 +1,6 @@
 {
 	"simulation": {
-		"markets": ["MarketImpact"],
+		"markets": ["SlicingMarketImpact"],
 		"agents": ["FCNAgents", "WhaleAgent"],
 		"sessions": [
 			{	"sessionName": 0,
@@ -18,7 +18,7 @@
 			}
 		]
 	},
-	"MarketImpact": {
+	"SlicingMarketImpact": {
 		"class": "Market",
 		"tickSize": 1,
 		"marketPrice": 100.0
@@ -26,18 +26,18 @@
 	"WhaleAgent": {
 		"class": "WhaleAgent",
 		"numAgents": 1,
-		"markets": ["MarketImpact"],
+		"markets": ["SlicingMarketImpact"],
 		"assetVolume": 50,
 		"cashAmount": 10000,
         "isBuy": true,
-        "orderVolume": 2,
-        "submitOrdersRate": 0.02,
-        "slicingNum": 10
+        "orderVolume": 1,
+        "submitOrdersRate": 0.01,
+        "slicingNum": 20
 	},
 	"FCNAgents": {
 		"class": "FCNAgent",
 		"numAgents": 100,
-		"markets": ["MarketImpact"],
+		"markets": ["SlicingMarketImpact"],
 		"assetVolume": 50,
 		"cashAmount": 10000,
 		"fundamentalWeight": {"expon": [1.0]},

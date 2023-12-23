@@ -1,4 +1,5 @@
 from pams.agents import HighFrequencyAgent
+from pams.logs.base import ExecutionLog
 from pams.order import Cancel, Order, MARKET_ORDER
 from pams.market import Market
 from typing import Any
@@ -65,10 +66,15 @@ class WhaleAgent(HighFrequencyAgent):
                 kind=MARKET_ORDER,
                 volume=self.volume,
                 price=None,
-                ttl=1,
+                ttl=100,
             ) for market in markets
         ]
         self.slice_orders_now = orders.copy()
         self.remain_slicing_num -= 1
         print(markets[0].get_time())
         return orders
+
+    def executed_order(self, log: ExecutionLog) -> None:
+        price: float = log.price
+        volume: int = log.volume
+        print(f"execution occurred. price={int(price)}, volume={int(volume)}")
