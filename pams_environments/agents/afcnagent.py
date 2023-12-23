@@ -51,6 +51,7 @@ class aFCNAgent(Agent):
                 - orderMargin
                 and can include
                 - meanReversionTime
+                - orderVolume
             accessible_market_ids (list[MarketID]): _description_
         """
         super().setup(
@@ -77,6 +78,12 @@ class aFCNAgent(Agent):
             )
         else:
             self.mean_reversion_time: int = self.time_window_size
+        if "orderVolume" in settings:
+            self.order_volume: int = int(
+                json_random.random(json_value=settings["orderVolume"])
+            )
+        else:
+            self.order_volume: int = 1
 
     def submit_orders(
         self, markets: list[Market]
@@ -89,16 +96,108 @@ class aFCNAgent(Agent):
         return orders
 
     def submit_orders_by_market(self, market: Market) -> list[Order | Cancel]:
-        pass
+        if not self.is_market_accessible(market_id=market.market_id):
+            return []
+        time: int = market.get_time()
+        time_window_size: int = min(time, self.time_window_size)
+        weights: list[float] = self._calc_weights(market, time_window_size)
+        fundamental_weight: float = weights[0]
+        chart_weight: float = weights[1]
+        noise_weight: float = weights[2]
+        expected_future_price: float = self._calc_expected_future_price(
+            market, fundamental_weight, chart_weight, noise_weight, time_window_size
+        )
+        assert self.is_finite(expected_future_price)
+        orders: list[Order | Cancel] = self._create_order(market, expected_future_price)
+        return orders
 
-    def _calc_weights(self, market: Market):
-        pass
+    def _calc_weights(
+        self,
+        market: Market,
+        time_window_size: int
+    ) -> list[float]:
+        time: int = market.get_time()
+        market_price: float = market.get_market_price()
+        chart_scale: float = 1.0 / max(time_window_size, 1)
+        chart_log_return: float = chart_scale * math.log(
+            market_price / market.get_market_price(time - time_window_size)
+        )
+        chart_weight: float = self.w_c \
+            + self.a_feedback / max(1e-06, 1 + chart_log_return)
+        chart_weight = max(0, chart_weight)
+        noise_weight: float = self.w_n \
+            + self.a_noise / max(1e-06, 1 + chart_log_return)
+        noise_weight = max(0, noise_weight)
+        weights: list[float] = [self.w_f, chart_weight, noise_weight]
+        return weights
 
     def _calc_expected_future_price(
         self,
         market: Market,
         fundamental_weight: float,
         chart_weight: float,
-        noise_weight: float
+        noise_weight: float,
+        time_window_size: int
     ) -> float:
-        pass
+        time: int = market.get_time()
+        market_price: float = market.get_market_price()
+        fundamental_price: float = market.get_fundamental_price()
+        fundamental_scale: float = 1.0 / max(self.mean_reversion_time, 1)
+        fundamental_log_return: float = fundamental_scale * math.log(
+            fundamental_price / market_price
+        )
+        assert self.is_finite(fundamental_log_return)
+        chart_scale: float = 1.0 / max(time_window_size, 1)
+        chart_log_return: float = chart_scale * math.log(
+            market_price / market.get_market_price(time - time_window_size)
+        )
+        assert self.is_finite(chart_log_return)
+        noise_log_return: float = self.noise_scale * self.prng.gauss(mu=0.0, sigma=1.0)
+        assert self.is_finite(noise_log_return)
+        expected_log_return: float = (
+            1.0 / (fundamental_weight + chart_weight + noise_weight)
+        ) * (
+            fundamental_weight * fundamental_log_return
+            + chart_weight * chart_log_return
+            + noise_weight * noise_log_return
+        )
+        assert self.is_finite(expected_log_return)
+        expected_future_price: float = market_price * math.exp(
+            expected_log_return * self.time_window_size
+        )
+        return expected_future_price
+
+    def _create_order(
+        self,
+        market: Market,
+        expected_fugure_price: float
+    ) -> list[Order | Cancel]:
+        orders: list[Order | Cancel] = []
+        market_price: float = market.get_market_price()
+        if market_price < expected_fugure_price:
+            order_price: float = expected_fugure_price * (1 - self.order_margin)
+            orders.append(
+                Order(
+                    agent_id=self.agent_id,
+                    market_id=market.market_id,
+                    is_buy=True,
+                    kind=LIMIT_ORDER,
+                    volume=self.order_volume,
+                    price=order_price,
+                    ttl=self.time_window_size
+                )
+            )
+        elif expected_fugure_price < market_price:
+            order_price: float = expected_fugure_price * (1 + self.order_margin)
+            orders.append(
+                Order(
+                    agent_id=self.agent_id,
+                    market_id=market.market_id,
+                    is_buy=False,
+                    kind=LIMIT_ORDER,
+                    volume=self.order_volume,
+                    price=order_price,
+                    ttl=self.time_window_size
+                )
+            )
+        return orders
