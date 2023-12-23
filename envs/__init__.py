@@ -1,2 +1,2 @@
-from pams_environments import agents
-from pams_environments.environment import PamsEnv
+from envs import agents
+from envs import PamsEnv
