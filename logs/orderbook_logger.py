@@ -50,6 +50,7 @@ class OrderBookSaver(Logger):
         self.sell_price_volume_dic: dict[MarketID, dict[Optional[float], int]] = {}
         self.market_price_dic: dict[str | MarketID, list[int | float]] = {}
         self.ticksize_dic: dict[MarketID, float] = {}
+        plt.rcParams["font.size"] = 120/draw_tick_num
 
     def _convert_orderbook2df(
         self,
@@ -285,7 +286,6 @@ class OrderBookSaver(Logger):
         orderbook_df: Optional[DataFrame],
         tick_size: float
     ) -> Optional[ndarray]:
-        ax.grid()
         if orderbook_df is None:
             return
         prices_w_str: ndarray = orderbook_df.index.values
@@ -426,12 +426,17 @@ class OrderBookSaver(Logger):
         fig, orderbook_ax, _, prices = self._draw_base_fig(market_id, orderbook_df, t, tick_size)
         execution_price: float = log.price
         execution_price = self._round_to_significant_digit(execution_price, tick_size)
+        execution_idx: Optional[int] = None
         if execution_price in prices:
             execution_idx: int = np.where(prices == execution_price)[0][0]
         elif execution_price < np.min(prices):
             execution_idx: int = len(prices) - 1
         elif np.max(prices) < execution_price:
             execution_idx: int = 0
+        if execution_idx is None:
+            plt.clf()
+            plt.close()
+            return
         labels = orderbook_ax.get_yticklabels()
         labels[execution_idx].set_color("tab:red")
         self._save_fig(fig, market_id)
