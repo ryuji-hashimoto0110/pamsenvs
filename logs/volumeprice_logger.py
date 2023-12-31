@@ -26,10 +26,6 @@ class VolumePriceSaver(Logger):
     def __init__(self) -> None:
         super().__init__()
         self.logs_dic: dict[MarketID, dict[str, list]] = {}
-        self.times: list[int] = []
-        self.market_prices: list[float] = []
-        self.fundamental_prices: list[float] = []
-        self.execution_volumes: list[int] = []
 
     def process_market_step_end_log(self, log: MarketStepEndLog) -> None:
         """stack the market log."""
@@ -49,6 +45,8 @@ class VolumePriceSaver(Logger):
         market_id: MarketID,
         log: MarketStepEndLog
     ) -> None:
+        """add market log to logs_dic["market_id"].
+        """
         market: Market = log.market
         self.logs_dic[market_id]["times"].append(market.get_time())
         self.logs_dic[market_id]["market_prices"].append(market.get_market_price())
@@ -61,6 +59,10 @@ class VolumePriceSaver(Logger):
         market_id: MarketID,
         time_interval: Optional[list[int]] = None
     ) -> None:
+        """plot prices and volumes.
+
+        set time_interval to draw specific time interval. Ex: time_interval=[100,2000]
+        """
         logs_dic: dict[str, list] = self.logs_dic[market_id]
         indices: list[int] = self._get_time_indices(logs_dic["times"], time_interval)
         times: list[int] = logs_dic["times"][indices[0]:indices[1]]
@@ -81,9 +83,13 @@ class VolumePriceSaver(Logger):
         times: list[int],
         time_interval: Optional[list[int]] = None,
     ) -> list[int]:
+        """get time indices from given time interval.
+        """
         if time_interval is None:
             return [0, len(times)]
         assert len(time_interval) == 2
+        assert time_interval[0] in times
+        assert time_interval[1] in times
         indices: list[int] = [
             times.index(time_interval[0]),
             times.index(time_interval[1])
@@ -96,34 +102,94 @@ class VolumePriceSaver(Logger):
         start_index: int,
         index_interval: int,
         save_path: Path
-    ):
+    ) -> None:
+        """save OLHCV csv data.
+
+        Args:
+            market_id (MarketID): market id.
+            start_index (int): first index to tally the data.
+            index_interval (int): fixed time interval to tally OLHCV.
+            save_path (Path): csv save path.
+        """
         logs_dic: dict[str, list] = self.logs_dic[market_id]
-        times_arr: ndarray = np.array(logs_dic["times"], dtype=np.uint8)[start_index::index_interval]
-        prices_arr: ndarray = np.array(logs_dic["market_prices"], dtype=np.float32)[start_index:]
-        volumes_arr: ndarray = np.array(logs_dic["execution_volumes"], dtype=np.uint8)[start_index:]
+        times_arr: ndarray = np.array(
+            logs_dic["times"], dtype=np.uint8
+        )[start_index::index_interval]
+        prices_arr: ndarray = np.array(
+            logs_dic["market_prices"], dtype=np.float32
+        )[start_index:]
+        volumes_arr: ndarray = np.array(
+            logs_dic["execution_volumes"], dtype=np.uint8
+        )[start_index:]
         prices_arr = self._reshape2matrix(prices_arr, index_interval)
-        volumes_arr = self._reshape2matrix(volumes_arr, index_interval)
+        volumes_arr = self._reshape2matrix(volumes_arr, index_interval, 0)
+        olhcv_df: DataFrame = pd.DataFrame(
+            {
+                "open": prices_arr[:,0],
+                "low": np.min(prices_arr, axis=1),
+                "high": np.min(prices_arr, axis=1),
+                "close": prices_arr[:,-1],
+                "volume": np.sum(volumes_arr, axis=1)
+            },
+            index=times_arr
+        )
+        if save_path.suffix != "csv":
+            save_path.with_suffix(".csv")
+        olhcv_df.to_csv(str(save_path))
 
     def _back_pad(
         self,
         arr: ndarray,
-        len_padded_arr: int
+        len_padded_arr: int,
+        padding_num: Optional[float] = None
     ) -> ndarray:
+        """apply back padding to arr
+
+        back pad arr to length len_padded_arr. pad with the number padding_num.
+        """
+        assert len(arr.shape) == 1
         assert len(arr) < len_padded_arr
         if len(arr) == len_padded_arr:
             return arr
         padded_arr: ndarray = np.empty(len_padded_arr, dtype=type(arr))
         padded_arr[:len(arr)] = arr
-        padded_arr[len(arr):] = arr[-1]
+        if padding_num is None:
+            padded_arr[len(arr):] = arr[-1]
+        else:
+            padded_arr[len(arr):] = padding_num
         return padded_arr
 
     def _reshape2matrix(
         self,
         arr: ndarray,
-        index_interval: int
-    ):
-        row_num: int = int(np.ceil(len(arr) / index_interval) * index_interval)
-        padded_arr: ndarray = self._back_pad(arr, row_num)
-        reshaped_arr: ndarray = padded_arr.reshape(row_num, index_interval)
+        index_interval: int,
+        padding_num: Optional[float] = None
+    ) -> ndarray:
+        """reshape 1 dim numpy vector to matrix whose number of columns is index_interval.
+
+        Ex) arr = [1,2,3,4,5,6], index_interval = 3
+            -> [[1,2,3],
+                [4,5,6]]
+
+        If arr cannot reshape to matrix, back padding is applied.
+
+        Ex) arr = [1,2,3,4,5], index_interval = 3, padding_num = 0
+            -> [[1,2,3],
+                [4,5,0]]
+
+        Args:
+            arr (ndarray): 1 dim numpy vector.
+            index_interval (int): fixed time interval
+            padding_num (Optional[float]): number used to pad. default to None.
+
+        Returns:
+            reshaped_arr: reshaped matrix.
+        """
+        assert len(arr.shape) == 1
+        row_num: int = int(np.ceil(len(arr) / index_interval))
+        len_padded_arr: int = row_num * index_interval
+        if len(arr) < len_padded_arr:
+            arr: ndarray = self._back_pad(arr, len_padded_arr, padding_num)
+        reshaped_arr: ndarray = arr.reshape(row_num, index_interval)
         return reshaped_arr
 
