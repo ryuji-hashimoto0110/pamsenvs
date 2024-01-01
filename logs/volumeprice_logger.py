@@ -113,13 +113,13 @@ class VolumePriceSaver(Logger):
         """
         logs_dic: dict[str, list] = self.logs_dic[market_id]
         times_arr: ndarray = np.array(
-            logs_dic["times"], dtype=np.uint8
+            logs_dic["times"]
         )[start_index::index_interval]
         prices_arr: ndarray = np.array(
-            logs_dic["market_prices"], dtype=np.float32
+            logs_dic["market_prices"]
         )[start_index:]
         volumes_arr: ndarray = np.array(
-            logs_dic["execution_volumes"], dtype=np.uint8
+            logs_dic["execution_volumes"]
         )[start_index:]
         prices_arr = self._reshape2matrix(prices_arr, index_interval)
         volumes_arr = self._reshape2matrix(volumes_arr, index_interval, 0)
@@ -127,7 +127,7 @@ class VolumePriceSaver(Logger):
             {
                 "open": prices_arr[:,0],
                 "low": np.min(prices_arr, axis=1),
-                "high": np.min(prices_arr, axis=1),
+                "high": np.max(prices_arr, axis=1),
                 "close": prices_arr[:,-1],
                 "volume": np.sum(volumes_arr, axis=1)
             },
