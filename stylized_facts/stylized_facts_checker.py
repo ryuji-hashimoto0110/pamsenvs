@@ -55,7 +55,7 @@ class StylizedFactsChecker:
         """
         dfs: list[DataFrame] = []
         for csv_path in sorted(csvs_path.iterdir()):
-            if csv_path.suffix == "csv":
+            if csv_path.suffix == ".csv":
                 if index_col is not None:
                     dfs.append(pd.read_csv(csv_path, index_col=index_col))
                 else:
@@ -107,8 +107,36 @@ class StylizedFactsChecker:
         assert stacked_arr.shape == (len(col_arrs), len(col_arrs[0]))
         return stacked_arr
 
+    def _calc_return_arr_from_df(
+        self,
+        olhcv_df: DataFrame,
+        colname: str
+    ) -> ndarray:
+        """convert price time series to return time series from 1 dataframe.
+        """
+        price_arr: ndarray = olhcv_df[colname].dropna().values
+        assert np.sum((price_arr <= 0)) == 0
+        return_arr: ndarray = np.log(
+            price_arr[1:] / price_arr[:-1] + 1e-10
+        )[np.newaxis,:]
+        return return_arr
+
+    def _calc_return_arr_from_dfs(
+        self,
+        olhcv_dfs: list[DataFrame],
+        colname: str
+    ) -> ndarray:
+        """convert price time series to return time series from dataframes list.
+        """
+        price_arr: ndarray = self._stack_dfs(olhcv_dfs, colname)
+        assert np.sum((price_arr <= 0)) == 0
+        return_arr: ndarray = np.log(
+            price_arr[:,1:] / price_arr[:,:-1] + 1e-10
+        )
+        return return_arr
+
     def check_kurtosis(self) -> tuple[ndarray, ndarray]:
-        """check the kurtosis of given price series.
+        """check the kurtosis of given price time series.
 
         Kurtosis of stock returns is generally said to be greater than 3
         (0 if calculated according to the terms with fisher).
@@ -122,18 +150,17 @@ class StylizedFactsChecker:
             Journal of Business, 38 (1), 34-105. https://www.jstor.org/stable/2350752
 
         Returns:
-            kurtosis_arr (ndarray): list of kurtosises.
-            pvalues_arr (ndarray): list of p-values.
+            kurtosis_arr (ndarray): kurtosises. (number of data,1)
+            pvalues_arr (ndarray): p-values. (number of data,1)
         """
-        if self._is_stacking_possible(self.olhcv_dfs):
-            if self.returns_arr is not None:
-                kurtosis_arr, pvalue_arr = self._calc_kurtosis(self.returns_arr)
+        if self._is_stacking_possible(self.olhcv_dfs, "close"):
+            if self.return_arr is not None:
+                kurtosis_arr, pvalue_arr = self._calc_kurtosis(self.return_arr)
             else:
-                prices_arr: ndarray = self._stack_dfs(self.olhcv_dfs, "close")
-                self.returns_arr: ndarray = np.log(
-                    prices_arr[:,1:] / prices_arr[:,:-1] + 1e-10
+                self.return_arr: ndarray = self._calc_return_arr_from_dfs(
+                    self.olhcv_dfs, "close"
                 )
-                kurtosis_arr, pvalue_arr = self._calc_kurtosis(self.returns_arr)
+                kurtosis_arr, pvalue_arr = self._calc_kurtosis(self.return_arr)
         else:
             warnings.warn(
                 "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
@@ -141,50 +168,162 @@ class StylizedFactsChecker:
             kurtosises: list[float] = []
             pvalues: list[float] = []
             for olhcv_df in self.olhcv_dfs:
-                prices_arr: ndarray = olhcv_df["close"].dropna().values
-                returns_arr: ndarray = np.log(
-                    prices_arr[1:] / prices_arr[:-1] + 1e-10
-                )[np.newaxis,:]
-                kurtosis, pvalue = self._calc_kurtosis(returns_arr)
+                return_arr: ndarray = self._calc_return_arr_from_df(olhcv_df, "close")
+                kurtosis, pvalue = self._calc_kurtosis(return_arr)
                 kurtosises.append(kurtosis.item())
                 pvalues.append(pvalue.item())
-            kurtosis_arr: ndarray = np.array(kurtosis)[np.newaxis,:]
-            pvalues_arr: ndarray = np.array(pvalue)[np.newaxis,:]
-        return kurtosis_arr, pvalues_arr
+            kurtosis_arr: ndarray = np.array(kurtosis)[:,np.newaxis]
+            pvalue_arr: ndarray = np.array(pvalue)[:,np.newaxis]
+        return kurtosis_arr, pvalue_arr
 
     def _calc_kurtosis(
         self,
-        returns_arr: ndarray,
+        return_arr: ndarray,
         is_fisher: bool = True
     ) -> tuple[ndarray, ndarray]:
         """calculate kurtosis of each time series array.
 
         Args:
-            returns_arr (ndarray): return array whose shape is
+            return_arr (ndarray): return array whose shape is
                 (number of data, length of time series).
             is_fisher (bool): Defaults to True.
 
         Returns:
-            ndarray: _description_
+            kurtosis_arr (ndarray): kurtosises. (number of data, 1)
+            pvalues_arr (ndarray): p-values. (number of data, 1)
         """
-        if len(returns_arr.shape) != 2:
+        if len(return_arr.shape) != 2:
             raise ValueError(
-                "The shape of returns_arr must be (number of data, length of time series)."
+                "The shape of return_arr must be (number of data, length of time series)."
             )
         kurtosis_arr: ndarray = kurtosis(
-            returns_arr, axis=1, fisher=is_fisher, keepdims=True
+            return_arr, axis=1, fisher=is_fisher, keepdims=True
         )
         pvalue_arr: ndarray = kurtosistest(
-            returns_arr, axis=1, alternative="greater"
-        )[1][np.newaxis,:]
+            return_arr, axis=1, alternative="greater"
+        )[1][:,np.newaxis]
         return kurtosis_arr, pvalue_arr
 
-    
+    def check_hill_index(
+        self,
+        cut_off_th: float = 0.05
+    ) -> tuple[ndarray, ndarray]:
+        """check Hill-tail index of given price time series.
 
+        The stock return distribution is generally said to be fat-tail.
+        According to some empirical researches, the tail index is normally around or below 3
+        in real markets.
+        Also, the skewness of the returns is negative. In other words,
+        tail due to negative returns is fatter than that due to positive returns.
 
+        Note: Hill Index assumes non-negative values in tail area. Therefore, to calculate
+        both left and right tail indexes, the mean of return distribution must be in near 0.
 
+        References:
+            - Hill, B. M. (1975). A simple general approach to inference about the tail of a distribution,
+            Annals of Statistics 3 (5), 1163-1173. https://doi.org/10.1214/aos/1176343247
+            - Lux, T. (2001). The limiting extremal behaviour of speculative returns:
+            an analysis of intra-daily data from the Frankfurt Stock Exchange,
+            Applied Financial Economics, 11, 299-315. https://doi.org/10.1080/096031001300138708
+            - Gabaix, X., Gopikrishnan, P., Plerou, V., Stanley, H. E. (2003).
+            A theory of power-low distributions in financial market fluctuations,
+            Nature 423, 267-270. http://dx.doi.org/10.1038/nature01624
 
+        Args:
+            cut_off_th (float): threshold to cut-off samples inside tail of the distributions.
+                Default to 0.05.
 
+        Returns:
+            left_tail_arr (ndarray): tail indexes of left side of samples.
+            right_tail_arr (ndarray): tail indexes of right side of samples.
+        """
+        assert 0 < cut_off_th and cut_off_th < 1
+        if self._is_stacking_possible(self.olhcv_dfs, "close"):
+            if self.return_arr is None:
+                self.return_arr: ndarray = self._calc_return_arr_from_dfs(
+                    self.olhcv_dfs, "close"
+                )
+            left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indexes(
+                self.return_arr, cut_off_th
+            )
+        else:
+            warnings.warn(
+                "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
+            )
+            left_tails: list[float] = []
+            right_tails: list[float] = []
+            for olhcv_df in self.olhcv_dfs:
+                return_arr: ndarray = self._calc_return_arr_from_df(olhcv_df, "close")
+                left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indexes(
+                    return_arr, cut_off_th
+                )
+                left_tails.append(left_tail_arr.item())
+                right_tails.append(right_tail_arr.item())
+            left_tail_arr: ndarray = np.array(left_tails)[np.newaxis,:]
+            right_tail_arr: ndarray = np.array(right_tails)[np.newaxis,:]
+        return left_tail_arr, right_tail_arr
 
+    def _calc_hill_indexes(
+        self,
+        sorted_return_arr: ndarray,
+        cut_off_th: float = 0.05
+    ) -> ndarray:
+        """calculate right side Hill tail indexes of ascendinglly sorted return array.
 
+        Args:
+            sorted_return_arr (ndarray): return array whose shape is
+                (number of data, length of time series).
+                This array must be ascendinglly sorted.
+            cut_off_th (float): threshold to cut-off samples inside tail of the distributions.
+                Default to 0.05.
 
+        Returns:
+            tail_arr (ndarray): tail indexes. (number of data, 1)
+        """
+        assert len(sorted_return_arr.shape) == 2
+        if np.sum(sorted_return_arr != np.sort(sorted_return_arr, axis=1)) != 0:
+            raise ValueError(
+                "sorted_return_arr must be ascendinglly sorted"
+            )
+        sorted_return_arr: ndarray = sorted_return_arr[
+            :,int(np.floor(sorted_return_arr.shape[1] * (1-cut_off_th))):
+        ]
+        if np.sum(sorted_return_arr <= 0) != 0:
+            raise ValueError(
+                "Non positive elements found in tail area of sorted_return_arr. Maybe you should reduce cut_off_th."
+            )
+        k: int = sorted_return_arr.shape[1]
+        tail_arr: ndarray = 1 / k * np.sum(
+            np.log(sorted_return_arr[:,1:] / sorted_return_arr[:,0][:,np.newaxis]),
+            axis=1
+        )[:,np.newaxis]
+        return tail_arr
+
+    def _calc_both_sides_hill_indexes(
+        self,
+        return_arr: ndarray,
+        cut_off_th: float = 0.05
+    ) -> tuple[ndarray, ndarray]:
+        """_summary_
+
+        Args:
+            return_arr (ndarray): _description_
+            cut_off_th (float, optional): _description_. Defaults to 0.05.
+
+        Returns:
+            left_tail_arr (ndarray): _description_
+            right_tail_arr (ndarray): _description_
+        """
+        sorted_return_arr: ndarray = np.sort(self.return_arr, axis=1)
+        right_tail_arr: ndarray = self._calc_hill_indexes(
+            sorted_return_arr, cut_off_th
+        )
+        minus_return_arr: ndarray = - 1 * return_arr
+        sorted_minus_return_arr: ndarray = np.sort(minus_return_arr, axis=1)
+        left_tail_arr: ndarray = self._calc_hill_indexes(
+            sorted_minus_return_arr, cut_off_th
+        )
+        return left_tail_arr, right_tail_arr
+
+    def check_ccdf(self) -> None:
+        pass
