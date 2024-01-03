@@ -1,0 +1,43 @@
+{
+	"simulation": {
+		"markets": ["Market"],
+		"agents": ["aFCNAgents"],
+		"sessions": [
+			{	"sessionName": 0,
+				"iterationSteps": 100,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0
+			},
+			{	"sessionName": 1,
+				"iterationSteps": 20000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true
+			}
+		]
+	},
+	"Market": {
+		"class": "Market",
+		"tickSize": 0.0005,
+		"marketPrice": 300.0,
+		"fundamentalDrift": 0,
+		"fundamentalVolatility": 0.001
+	},
+	"aFCNAgents": {
+		"class": "aFCNAgent",
+		"numAgents": 5000,
+		"markets": ["Market"],
+		"assetVolume": {"uniform": [0,50]},
+		"cashAmount": {"uniform": [0,15000]},
+		"fundamentalWeight": {"expon": [10.0]},
+		"chartWeight": {"expon": [2.2]},
+		"noiseWeight": {"expon": [1.0]},
+        "feedbackAsymmetry": {"expon": [0.0]},
+        "noiseAsymmetry": {"expon": [0.0]},
+		"noiseScale": 0.0001,
+		"timeWindowSize": 200,
+		"riskAversionTerm": 0.1
+	}
+}
