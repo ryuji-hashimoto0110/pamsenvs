@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import Axes, Figure
 import numpy as np
 from numpy import ndarray
 import pandas as pd
@@ -12,7 +14,8 @@ class StylizedFactsChecker:
         self,
         olhcv_dfs_path: Optional[Path] = None,
         orderbook_dfs_path: Optional[Path] = None,
-        tick_num: Optional[int] = None
+        tick_num: Optional[int] = None,
+        figs_save_path: Optional[Path] = None
     ) -> None:
         """initialization.
 
@@ -45,6 +48,7 @@ class StylizedFactsChecker:
                     [f"buy-{t}" for t in range(tick_num+1)]
                 )
         self.return_arr: Optional[ndarray] = None
+        self.figs_save_path: Optional[Path] = figs_save_path
 
     def _read_csvs(
         self,
@@ -325,5 +329,72 @@ class StylizedFactsChecker:
         )
         return left_tail_arr, right_tail_arr
 
-    def check_ccdf(self) -> None:
-        pass
+    def check_ccdf(
+        self,
+        ax: Optional[Axes] = None,
+        label: str = "CCDF",
+        color: str = "black",
+        save_name: Optional[str] = None,
+        draw_idx: Optional[int] = None
+    ) -> tuple[ndarray, ndarray]:
+        """draw CCDF of return distribution by log-log scale.
+
+        Complementary, cumulative distribution function (CCDF) is defined as P[x<X], namely
+        defined as the probability that stochastic variable X is greater than a certain
+        threshold x.
+        CCDF is used to see the tail of samples that seems to be fitted by power law. Here,
+        we can check visually that return distribution is fat-tailed using CCDF.
+
+        Args:
+            ax (Optional[Axes]): ax to draw figure. default to None.
+            label: label
+            color: color
+            save_name (Optional[str]): file name to save figure. Default to None.
+            draw_idx (Optional[int]): If draw_idx is specified, price data of
+                self.olhcv_dfs[draw_idx] is only chosen to draw figure. Otherwise, all data
+                are concatted and used to draw. Defaults to None.
+        """
+        if draw_idx is None:
+            if self._is_stacking_possible(self.olhcv_dfs, "close"):
+                if self.return_arr is None:
+                    self.return_arr: ndarray = self._calc_return_arr_from_dfs(
+                        self.olhcv_dfs, "close"
+                    )
+                return_arr: ndarray = self.return_arr.flatten()
+            else:
+                warnings.warn(
+                    "Could not stack dataframe. Maybe the lengths of dataframes differ." + \
+                    "Following procedure may takes time..."
+                )
+                return_arrs: list[ndarray] = []
+                for olhcv_df in self.olhcv_dfs:
+                    return_arrs.append(
+                        self._calc_return_arr_from_df(olhcv_df, "close").flatten()
+                    )
+                return_arr: ndarray = np.concatenate(return_arrs)
+        else:
+            return_arr: ndarray = self._calc_return_arr_from_df(
+                self.olhcv_dfs[draw_idx], "close"
+            ).flatten()
+        assert len(return_arr.shape) == 1
+        sorted_abs_return_arr: ndarray = np.sort(np.abs(return_arr))
+        ccdf: ndarray = 1 - (
+            1 + np.arange(len(sorted_abs_return_arr))
+        ) / len(sorted_abs_return_arr)
+        if ax is None:
+            fig = plt.figure(figsize=(10,6))
+            ax: Axes = fig.add_subplot(1,1,1)
+        ax.plot(sorted_abs_return_arr, ccdf, color=color, label=label)
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlabel("return")
+        ax.set_ylabel("CCDF")
+        ax.set_title("Complementary Cumulative Distribution Function (CCDF) of price returns")
+        if save_name is not None:
+            if self.figs_save_path is None:
+                raise ValueError(
+                    "specify directory: self.figs_save_path"
+                )
+            save_path: Path = self.figs_save_path / save_name
+            plt.savefig(str(save_path))
+        return sorted_abs_return_arr, ccdf
