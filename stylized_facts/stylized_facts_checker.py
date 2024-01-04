@@ -221,7 +221,7 @@ class StylizedFactsChecker:
         tail due to negative returns is fatter than that due to positive returns.
 
         Note: Hill Index assumes non-negative values in tail area. Therefore, to calculate
-        both left and right tail indexes, the mean of return distribution must be in near 0.
+        both left and right tail indices, the mean of return distribution must be in near 0.
 
         References:
             - Hill, B. M. (1975). A simple general approach to inference about the tail of a distribution,
@@ -238,8 +238,8 @@ class StylizedFactsChecker:
                 Default to 0.05.
 
         Returns:
-            left_tail_arr (ndarray): tail indexes of left side of samples.
-            right_tail_arr (ndarray): tail indexes of right side of samples.
+            left_tail_arr (ndarray): tail indices of left side of samples.
+            right_tail_arr (ndarray): tail indices of right side of samples.
         """
         assert 0 < cut_off_th and cut_off_th < 1
         if self._is_stacking_possible(self.olhcv_dfs, "close"):
@@ -247,7 +247,7 @@ class StylizedFactsChecker:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
                     self.olhcv_dfs, "close"
                 )
-            left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indexes(
+            left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indices(
                 self.return_arr, cut_off_th
             )
         else:
@@ -258,7 +258,7 @@ class StylizedFactsChecker:
             right_tails: list[float] = []
             for olhcv_df in self.olhcv_dfs:
                 return_arr: ndarray = self._calc_return_arr_from_df(olhcv_df, "close")
-                left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indexes(
+                left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indices(
                     return_arr, cut_off_th
                 )
                 left_tails.append(left_tail_arr.item())
@@ -267,12 +267,12 @@ class StylizedFactsChecker:
             right_tail_arr: ndarray = np.array(right_tails)[np.newaxis,:]
         return left_tail_arr, right_tail_arr
 
-    def _calc_hill_indexes(
+    def _calc_hill_indices(
         self,
         sorted_return_arr: ndarray,
         cut_off_th: float = 0.05
     ) -> ndarray:
-        """calculate right side Hill tail indexes of ascendinglly sorted return array.
+        """calculate right side Hill tail indices of ascendinglly sorted return array.
 
         Args:
             sorted_return_arr (ndarray): return array whose shape is
@@ -282,7 +282,7 @@ class StylizedFactsChecker:
                 Default to 0.05.
 
         Returns:
-            tail_arr (ndarray): tail indexes. (number of data, 1)
+            tail_arr (ndarray): tail indices. (number of data, 1)
         """
         assert len(sorted_return_arr.shape) == 2
         if np.sum(sorted_return_arr != np.sort(sorted_return_arr, axis=1)) != 0:
@@ -303,7 +303,7 @@ class StylizedFactsChecker:
         )[:,np.newaxis]
         return tail_arr
 
-    def _calc_both_sides_hill_indexes(
+    def _calc_both_sides_hill_indices(
         self,
         return_arr: ndarray,
         cut_off_th: float = 0.05
@@ -319,12 +319,12 @@ class StylizedFactsChecker:
             right_tail_arr (ndarray): _description_
         """
         sorted_return_arr: ndarray = np.sort(self.return_arr, axis=1)
-        right_tail_arr: ndarray = self._calc_hill_indexes(
+        right_tail_arr: ndarray = self._calc_hill_indices(
             sorted_return_arr, cut_off_th
         )
         minus_return_arr: ndarray = - 1 * return_arr
         sorted_minus_return_arr: ndarray = np.sort(minus_return_arr, axis=1)
-        left_tail_arr: ndarray = self._calc_hill_indexes(
+        left_tail_arr: ndarray = self._calc_hill_indices(
             sorted_minus_return_arr, cut_off_th
         )
         return left_tail_arr, right_tail_arr
