@@ -1,4 +1,5 @@
 config_name="fcn_config.json"
+datas_name="fcn"
 market_id=0
 start_index=100
 index_interval=100

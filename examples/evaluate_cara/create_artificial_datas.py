@@ -12,7 +12,7 @@ from typing import Optional
 from typing import TypeVar
 
 MarketID = TypeVar("MarketID")
-datas_path: Path = root_path / "datas"
+parent_datas_path: Path = root_path / "datas" / "artificial_datas"
 
 def create_artificial_olhcvs(
     config_path: Path,
@@ -43,6 +43,8 @@ def get_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_name", type=str,
                         help="name of config file.")
+    parser.add_argument("--datas_name", type=str,
+                        help_name="folder name to store datas.")
     parser.add_argument("--market_id", type=int, default=0,
                         help="target market id to store data. If there is only 1 market setting, it is not needed to specify.")
     parser.add_argument("--start_index", type=int, default=100,
@@ -58,6 +60,8 @@ def main(args):
     all_args = parser.parse_known_args(args)[0]
     config_name: str = all_args.config_name
     config_path: Path = curr_path / config_name
+    datas_name: str = all_args.datas_name
+    datas_path: Path = parent_datas_path / datas_name
     market_id: MarketID = all_args.market_id
     start_index: int = all_args.start_index
     index_interval: int = all_args.index_interval
