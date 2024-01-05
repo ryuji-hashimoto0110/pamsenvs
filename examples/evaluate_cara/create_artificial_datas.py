@@ -44,7 +44,7 @@ def get_config():
     parser.add_argument("--config_name", type=str,
                         help="name of config file.")
     parser.add_argument("--datas_name", type=str,
-                        help_name="folder name to store datas.")
+                        help="folder name to store datas.")
     parser.add_argument("--market_id", type=int, default=0,
                         help="target market id to store data. If there is only 1 market setting, it is not needed to specify.")
     parser.add_argument("--start_index", type=int, default=100,
