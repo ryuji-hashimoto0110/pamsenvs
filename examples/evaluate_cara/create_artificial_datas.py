@@ -5,6 +5,7 @@ curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
 root_path: Path = curr_path.parents[1]
 import sys
 sys.path.append(str(root_path))
+from envs.agents import aFCNAgent
 from logs import VolumePriceSaver
 from pams.runners.sequential import SequentialRunner
 import random
@@ -33,6 +34,7 @@ def create_artificial_olhcvs(
             prng=random.Random(seed),
             logger=saver,
         )
+        runner.class_register(aFCNAgent)
         runner.main()
         save_path: Path = datas_path / f"{seed}.csv"
         saver.save_olhcv(
