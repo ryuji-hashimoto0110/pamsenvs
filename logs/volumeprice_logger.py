@@ -78,6 +78,55 @@ class VolumePriceSaver(Logger):
         lines_, labels_ = ax_.get_legend_handles_labels()
         ax.legend(lines+lines_, labels+labels_)
 
+    def plot_return_time_series(
+        self,
+        ax: Axes,
+        market_id: MarketID,
+        calc_return_interval: int = 1,
+        time_interval: Optional[list[int]] = None
+    ) -> None:
+        times, log_returns = self._calc_log_returns(
+            market_id, calc_return_interval, time_interval
+        )
+        ax.plot(
+            times, log_returns, color="black"
+        )
+        ax.set_xlabel("time")
+        ax.set_ylabel("log return")
+
+    def plot_return_histgram(
+        self,
+        ax: Axes,
+        bin_num: int,
+        market_id: MarketID,
+        calc_return_interval: int = 1,
+        time_interval: Optional[list[int]] = None
+    ) -> None:
+        _, log_returns = self._calc_log_returns(
+            market_id, calc_return_interval, time_interval
+        )
+        ax.hist(
+            log_returns, bins=bin_num
+        )
+
+    def _calc_log_returns(
+        self,
+        market_id: MarketID,
+        calc_return_interval: int = 1,
+        time_interval: Optional[list[int]] = None
+    ) -> tuple[ndarray, ndarray]:
+        logs_dic: dict[str, list] = self.logs_dic[market_id]
+        indices: list[int] = self._get_time_indices(logs_dic["times"], time_interval)
+        times: list[int] = logs_dic["times"][
+            indices[0]:indices[1]:calc_return_interval
+        ]
+        market_prices: list[float] = logs_dic["market_prices"][
+            indices[0]:indices[1]:calc_return_interval
+        ]
+        log_returns: ndarray = \
+            np.log(market_prices[1:]) - np.log(market_prices[:len(market_prices)-1])
+        return times[1:], log_returns
+
     def _get_time_indices(
         self,
         times: list[int],
@@ -171,7 +220,7 @@ class VolumePriceSaver(Logger):
             -> [[1,2,3],
                 [4,5,6]]
 
-        If arr cannot reshape to matrix, back padding is applied.
+        If arr cannot reshape to matrix, back padding is applied as following example.
 
         Ex) arr = [1,2,3,4,5], index_interval = 3, padding_num = 0
             -> [[1,2,3],
