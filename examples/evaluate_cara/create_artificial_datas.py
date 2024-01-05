@@ -27,6 +27,8 @@ def create_artificial_olhcvs(
     if seeds is None:
         seeds: list[int] = [i+1 for i in range(data_num)]
     assert len(seeds) == data_num
+    if not datas_path.exists():
+        datas_path.mkdir(parents=True)
     for seed in seeds:
         saver = VolumePriceSaver()
         runner = SequentialRunner(
