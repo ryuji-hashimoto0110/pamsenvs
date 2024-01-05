@@ -34,7 +34,7 @@
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [1.2]},
 		"noiseWeight": {"expon": [1.0]},
-		"noiseScale": 0.001,
+		"noiseScale": 0.0005,
 		"timeWindowSize": [100, 200],
 		"orderMargin": [0.0, 0.1]
 	}
