@@ -336,14 +336,14 @@ class StylizedFactsChecker:
         color: str = "black",
         save_name: Optional[str] = None,
         draw_idx: Optional[int] = None
-    ) -> tuple[ndarray, ndarray]:
+    ) -> None:
         """draw CCDF of return distribution by log-log scale.
 
-        Complementary, cumulative distribution function (CCDF) is defined as P[x<X], namely
+        Complementary cumulative distribution function (CCDF) is defined as P[x<X], namely
         defined as the probability that stochastic variable X is greater than a certain
         threshold x.
         CCDF is used to see the tail of samples that seems to be fitted by power law. Here,
-        we can check visually that return distribution is fat-tailed using CCDF.
+        using CCDF, one can check visually that return distribution is fat-tailed.
 
         Args:
             ax (Optional[Axes]): ax to draw figure. default to None.
@@ -397,4 +397,3 @@ class StylizedFactsChecker:
                 )
             save_path: Path = self.figs_save_path / save_name
             plt.savefig(str(save_path))
-        return sorted_abs_return_arr, ccdf
