@@ -31,17 +31,20 @@ def create_artificial_olhcvs(
         datas_path.mkdir(parents=True)
     for seed in seeds:
         saver = VolumePriceSaver()
-        runner = SequentialRunner(
-            settings=config_path,
-            prng=random.Random(seed),
-            logger=saver,
-        )
-        runner.class_register(aFCNAgent)
-        runner.main()
-        save_path: Path = datas_path / f"{seed}.csv"
-        saver.save_olhcv(
-            market_id, start_index, index_interval, save_path
-        )
+        try:
+            runner = SequentialRunner(
+                settings=config_path,
+                prng=random.Random(seed),
+                logger=saver,
+            )
+            runner.class_register(aFCNAgent)
+            runner.main()
+            save_path: Path = datas_path / f"{seed}.csv"
+            saver.save_olhcv(
+                market_id, start_index, index_interval, save_path
+            )
+        except Exception as e:
+            print(f"seed{seed}: {e}")
 
 def get_config():
     parser = argparse.ArgumentParser()
