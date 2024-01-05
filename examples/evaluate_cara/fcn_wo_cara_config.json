@@ -11,7 +11,7 @@
 				"maxHighFrequencyOrders": 0
 			},
 			{	"sessionName": 1,
-				"iterationSteps": 200000,
+				"iterationSteps": 20000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true
