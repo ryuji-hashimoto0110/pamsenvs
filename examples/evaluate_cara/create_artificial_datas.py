@@ -6,45 +6,12 @@ root_path: Path = curr_path.parents[1]
 import sys
 sys.path.append(str(root_path))
 from envs.agents import aFCNAgent
-from logs import VolumePriceSaver
-from pams.runners.sequential import SequentialRunner
-import random
-from typing import Optional
+from logs import DataMaker
+from pams.runners.base import Runner
 from typing import TypeVar
 
 MarketID = TypeVar("MarketID")
 parent_datas_path: Path = root_path / "datas" / "artificial_datas"
-
-def create_artificial_olhcvs(
-    config_path: Path,
-    datas_path: Path,
-    market_id: MarketID,
-    start_index: int,
-    index_interval: int,
-    data_num: int,
-    seeds: Optional[list[int]] = None
-) -> None:
-    if seeds is None:
-        seeds: list[int] = [i+1 for i in range(data_num)]
-    assert len(seeds) == data_num
-    if not datas_path.exists():
-        datas_path.mkdir(parents=True)
-    for seed in seeds:
-        saver = VolumePriceSaver()
-        try:
-            runner = SequentialRunner(
-                settings=config_path,
-                prng=random.Random(seed),
-                logger=saver,
-            )
-            runner.class_register(aFCNAgent)
-            runner.main()
-            save_path: Path = datas_path / f"{seed}.csv"
-            saver.save_olhcv(
-                market_id, start_index, index_interval, save_path
-            )
-        except Exception as e:
-            print(f"seed{seed}: {e}")
 
 def get_config():
     parser = argparse.ArgumentParser()
@@ -62,6 +29,10 @@ def get_config():
                         help="number of data.")
     return parser
 
+class FCNwCARADataMaker(DataMaker):
+    def class_register(self, runner: Runner):
+        runner.class_register(aFCNAgent)
+
 def main(args):
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
@@ -73,7 +44,8 @@ def main(args):
     start_index: int = all_args.start_index
     index_interval: int = all_args.index_interval
     data_num: int = all_args.data_num
-    create_artificial_olhcvs(
+    data_maker = FCNwCARADataMaker()
+    data_maker.create_artificial_olhcvs(
         config_path, datas_path, market_id, start_index, index_interval, data_num
     )
 
