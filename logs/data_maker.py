@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
 sys.path.append(curr_path)
-from logs import VolumePriceSaver
+from logs.volumeprice_logger import VolumePriceSaver
 from pams.runners.base import Runner
 from pams.runners.sequential import SequentialRunner
 import random
