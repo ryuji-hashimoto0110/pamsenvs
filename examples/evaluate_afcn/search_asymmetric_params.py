@@ -29,17 +29,17 @@ class aFCNDataMaker(DataMaker):
             for a_noise in a_noises:
                 config["aFCNAgents"]["feedbackAsymmetry"]["expon"] = [a_feedback]
                 config["aFCNAgents"]["noiseAsymmetry"]["expon"] = [a_noise]
-                datas_path: Path = parent_datas_path / f"af{a_feedback}_an{a_noise}"
-                if not datas_path.exists():
-                    datas_path.mkdir(parents=True)
+                price_datas_path: Path = parent_datas_path / f"prices_af{a_feedback}_an{a_noise}"
+                if not price_datas_path.exists():
+                    price_datas_path.mkdir(parents=True)
                 self.create_artificial_olhcvs(
-                    config, datas_path, 0, 1000, 72, 10
+                    config, price_datas_path, 0, 1000, 72, 10
                 )
 
 if __name__ == "__main__":
     config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
-    a_feedbacks: list[float] = [0, 10, 20, 30, 40, 50]
-    a_noises: list[float] = [0, 10, 20, 30, 40, 50]
+    a_feedbacks: list[float] = [0, 2, 4, 6, 8, 10]
+    a_noises: list[float] = [0, 2, 4, 6, 8, 10]
     data_maker = aFCNDataMaker()
     data_maker.create_artificial_olhcvs_w_various_asymmetry_params(
         a_feedbacks, a_noises, config
