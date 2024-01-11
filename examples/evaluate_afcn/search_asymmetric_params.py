@@ -8,12 +8,8 @@ sys.path.append(str(root_path))
 from envs.agents import aFCNAgent
 import json
 from logs import DataMaker
-from logs import VolumePriceSaver
 from pams.runners.base import Runner
-from pams.runners.sequential import SequentialRunner
-import random
 from typing import Any
-from typing import Optional
 from typing import TypeVar
 
 MarketID = TypeVar("MarketID")
@@ -37,7 +33,7 @@ class aFCNDataMaker(DataMaker):
                 if not datas_path.exists():
                     datas_path.mkdir(parents=True)
                 self.create_artificial_olhcvs(
-                    config, datas_path, 0, 100, 10, 10
+                    config, datas_path, 0, 1000, 72, 10
                 )
 
 if __name__ == "__main__":
