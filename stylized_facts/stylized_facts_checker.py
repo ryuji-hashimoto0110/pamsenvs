@@ -318,7 +318,7 @@ class StylizedFactsChecker:
             left_tail_arr (ndarray): _description_
             right_tail_arr (ndarray): _description_
         """
-        sorted_return_arr: ndarray = np.sort(self.return_arr, axis=1)
+        sorted_return_arr: ndarray = np.sort(return_arr, axis=1)
         right_tail_arr: ndarray = self._calc_hill_indices(
             sorted_return_arr, cut_off_th
         )
@@ -385,11 +385,12 @@ class StylizedFactsChecker:
             fig = plt.figure(figsize=(10,6))
             ax: Axes = fig.add_subplot(1,1,1)
         ax.plot(sorted_abs_return_arr, ccdf, color=color, label=label)
+        ax.legend()
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("return")
         ax.set_ylabel("CCDF")
-        ax.set_title("Complementary Cumulative Distribution Function (CCDF) of price returns")
+        ax.set_title("Complementary Cumulative Distribution Function (CCDF) of absolute price returns")
         if save_name is not None:
             if self.figs_save_path is None:
                 raise ValueError(
@@ -397,3 +398,147 @@ class StylizedFactsChecker:
                 )
             save_path: Path = self.figs_save_path / save_name
             plt.savefig(str(save_path))
+
+    def check_autocorrelation(self, lags: list[int]) -> dict[int, ndarray]:
+        """_summary_
+
+        Args:
+            lags (list[int]): _description_
+
+        Returns:
+        """
+        if self._is_stacking_possible(self.olhcv_dfs, "close"):
+            if self.return_arr is None:
+                self.return_arr: ndarray = self._calc_return_arr_from_dfs(
+                    self.olhcv_dfs, "close"
+                )
+            acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
+                np.abs(self.return_arr), lags
+            )
+        else:
+            warnings.warn(
+                "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
+            )
+            acorr_l_dic: dict[int, list[float]] = {lag: [] for lag in lags}
+            for olhcv_df in self.olhcv_dfs:
+                return_arr: ndarray = self._calc_return_arr_from_df(olhcv_df, "close")
+                acorr_dic_: dict[int, float] = self._calc_autocorrelation(
+                    np.abs(return_arr), lags
+                )
+                for lag in lags:
+                    acorr_l_dic[lag].append(acorr_dic_[lag].item())
+            acorr_dic: dict[int, ndarray] = {}
+            for lag, acorrs in acorr_l_dic.items():
+                acorr_dic[lag] = np.array(acorrs)[:,np.newaxis]
+        return acorr_dic
+
+    def _calc_autocorrelation(
+        self,
+        abs_return_arr: ndarray,
+        lags: list[int]
+    ) -> dict[int, ndarray]:
+        """_summary_
+
+        Args:
+            return_arr (ndarray): _description_
+            lags (list[int]): _description_
+
+        Returns:
+            dict[int, ndarray]: _description_
+        """
+        acorr_dic: list[int, ndarray] = {}
+        for lag in lags:
+            abs_mean: ndarray = np.mean(abs_return_arr, axis=1, keepdims=True)
+            acov: ndarray = np.mean(
+                (abs_return_arr[:,lag:]-abs_mean)*(abs_return_arr[:,:-lag]-abs_mean),
+                axis=1, keepdims=True
+            )
+            var: ndarray = np.var(abs_return_arr, axis=1, keepdims=True)
+            acorr_dic[lag] = acov / (var + 1e-10)
+        return acorr_dic
+
+    def check_volume_volatility_correlation(self) -> ndarray:
+        if self._is_stacking_possible(self.olhcv_dfs, "close"):
+            volume_arr: ndarray = self._stack_dfs(
+                self.olhcv_dfs, "volume"
+            )
+            volume_arr = volume_arr[:,1:]
+            if self.return_arr is None:
+                self.return_arr: ndarray = self._calc_return_arr_from_dfs(
+                    self.olhcv_dfs, "close"
+                )
+            corr_arr: ndarray = self._calc_volume_volatility_correlation(
+                np.abs(self.return_arr), volume_arr
+            )
+        else:
+            warnings.warn(
+                "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
+            )
+            corrs: list[float] = []
+            for olhcv_df in self.olhcv_dfs:
+                return_arr: ndarray = self._calc_return_arr_from_df(olhcv_df, "close")
+                volume_arr: ndarray = olhcv_df["volume"].values[np.newaxis,:]
+                corrs.append(
+                    self._calc_volume_volatility_correlation(
+                        np.abs(return_arr), volume_arr
+                    ).item()
+                )
+            corr_arr: ndarray = np.array(corrs)[np.newaxis,:]
+        return corr_arr
+
+    def _calc_volume_volatility_correlation(
+        self,
+        abs_return_arr: ndarray,
+        volume_arr: ndarray
+    ) -> ndarray:
+        """_summary_
+
+        Args:
+            abs_return_arr (ndarray): _description_ (number of data, length of time series).
+            volume_arr (ndarray): _description_ (number of data, length of time series).
+
+        Returns:
+            ndarray: _description_ (number of data, 1).
+        """
+        abs_return_mean: ndarray = np.mean(
+            abs_return_arr, axis=1, keepdims=True
+        )
+        volume_mean: ndarray = np.mean(
+            volume_arr, axis=1, keepdims=True
+        )
+        abs_retrurn_std: ndarray = np.std(
+            abs_return_arr, axis=1, keepdims=True
+        )
+        volume_std: ndarray = np.std(
+            volume_arr, axis=1, keepdims=True
+        )
+        volume_volatility_correlation: ndarray = np.mean(
+            (abs_return_arr - abs_return_mean) * (volume_arr - volume_mean),
+            axis=1, keepdims=True
+        ) / (
+            abs_retrurn_std * volume_std + 1e-10
+        )
+        return volume_volatility_correlation
+
+    def check_stylized_facts(
+        self,
+        save_path: Path
+    ) -> None:
+        if 0 < len(self.olhcv_dfs):
+            kurtosis_arr, p_values = self.check_kurtosis()
+            left_tail_arr, right_tail_arr = self.check_hill_index()
+            volume_volatility_correlation = self.check_volume_volatility_correlation()
+            acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
+                [lag for lag in range(1,31)]
+            )
+            data_dic: dict[str, ndarray]= {
+                "kurtosis": kurtosis_arr.flatten(),
+                "kurtosis_p": p_values.flatten(),
+                "tail (left)": left_tail_arr.flatten(),
+                "tail (right)": right_tail_arr.flatten(),
+                "vv_corr": volume_volatility_correlation.flatten()
+            }
+            for lag, acorr in acorr_dic.items():
+                data_dic[f"acorr lag{lag}"] = acorr.flatten()
+            stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
+            stylized_facts_df.to_csv(str(save_path))
