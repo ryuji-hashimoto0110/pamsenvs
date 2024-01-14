@@ -39,7 +39,7 @@ class aFCNDataMaker(DataMaker):
                 if not intraday_datas_path.exists():
                     intraday_datas_path.mkdir(parents=True)
                 self.create_artificial_olhcvs(
-                    config, daily_datas_path, intraday_datas_path, 0, 1000, 720, 10, 100
+                    config, daily_datas_path, intraday_datas_path, 0, 1000, 360, 5, 100
                 )
 
 if __name__ == "__main__":
