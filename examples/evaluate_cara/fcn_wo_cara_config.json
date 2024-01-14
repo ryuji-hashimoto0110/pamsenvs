@@ -35,7 +35,7 @@
 		"chartWeight": {"expon": [1.6]},
 		"noiseWeight": {"expon": [1.0]},
 		"noiseScale": 0.0001,
-		"timeWindowSize": [300, 400],
+		"timeWindowSize": [400, 500],
 		"orderMargin": [0.0, 0.01]
 	}
 }

@@ -37,7 +37,7 @@
         "feedbackAsymmetry": {"expon": [0.0]},
         "noiseAsymmetry": {"expon": [0.0]},
 		"noiseScale": 0.0001,
-		"timeWindowSize": 220,
+		"timeWindowSize": 180,
 		"riskAversionTerm": 0.1
 	}
 }
