@@ -155,13 +155,6 @@ class aFCNAgent(Agent):
         orders.extend(self._cancel_orders())
         time: int = market.get_time()
         time_window_size: int = min(time, self.time_window_size)
-        time_window_size: int = self._calc_temporal_time_window_size(
-            time_window_size, time, self.w_f, self.w_c
-        )
-        risk_aversion_term: float = self._calc_temporal_risk_aversion_term(
-            self.w_f, self.w_c
-        )
-        assert 0 < risk_aversion_term
         weights: list[float] = self._calc_weights(market, time_window_size)
         fundamental_weight: float = weights[0]
         chart_weight: float = weights[1]
@@ -170,6 +163,9 @@ class aFCNAgent(Agent):
         assert 0 <= chart_weight
         assert 0 <= noise_weight
         assert 0 <= time_window_size
+        time_window_size: int = self._calc_temporal_time_window_size(
+            time_window_size, time, self.w_f, self.w_c
+        )
         expected_future_price: float = self._calc_expected_future_price(
             market, fundamental_weight, chart_weight, noise_weight, time_window_size
         )
@@ -178,6 +174,10 @@ class aFCNAgent(Agent):
             market, time_window_size
         )
         assert self.is_finite(expected_volatility)
+        risk_aversion_term: float = self._calc_temporal_risk_aversion_term(
+            self.w_f, self.w_c
+        )
+        assert 0 < risk_aversion_term
         orders.extend(
             self._create_order(
                 market, expected_future_price, expected_volatility, risk_aversion_term
