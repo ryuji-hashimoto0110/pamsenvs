@@ -6,6 +6,7 @@ sys.path.append(curr_path)
 from logs.volumeprice_logger import VolumePriceSaver
 from pams.runners.base import Runner
 from pams.runners.sequential import SequentialRunner
+from pams.utils.json_random import JsonRandom
 import random
 from typing import Any
 from typing import Optional
@@ -43,6 +44,7 @@ class DataMaker:
                     prng=random.Random(seed),
                     logger=saver,
                 )
+                self.sample_market_configs(runner)
                 self.class_register(runner)
                 runner.main()
                 daily_save_path: Path = daily_datas_path / f"{seed}.csv"
@@ -61,4 +63,16 @@ class DataMaker:
 
     def class_register(self, runner: Runner):
         pass
+
+    def sample_market_configs(self, runner: Runner):
+        json_random: JsonRandom = JsonRandom(prng=runner._prng)
+        for key1 in runner.settings.keys():
+            for key2 in runner.settings[key1].keys():
+                if key2 == "fundamentalDrift" or key2 == "fundamentalVolatility":
+                    runner.settings[key1][key2] = \
+                        json_random.random(
+                            json_value=runner.settings[key1][key2]
+                        )
+
+
 

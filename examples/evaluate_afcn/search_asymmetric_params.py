@@ -31,11 +31,11 @@ class aFCNDataMaker(DataMaker):
                 config["aFCNAgents"]["feedbackAsymmetry"]["expon"] = [a_feedback]
                 config["aFCNAgents"]["noiseAsymmetry"]["expon"] = [a_noise]
                 daily_datas_path: Path = parent_daily_datas_path / \
-                    f"prices_af{str(a_feedback).replace('.','')}_an{str(a_noise).replace('.','')}"
+                    f"af{str(a_feedback).replace('.','')}_an{str(a_noise).replace('.','')}"
                 if not daily_datas_path.exists():
                     daily_datas_path.mkdir(parents=True)
                 intraday_datas_path: Path = parent_intraday_datas_path / \
-                    f"prices_af{str(a_feedback).replace('.','')}_an{str(a_noise).replace('.','')}"
+                    f"af{str(a_feedback).replace('.','')}_an{str(a_noise).replace('.','')}"
                 if not intraday_datas_path.exists():
                     intraday_datas_path.mkdir(parents=True)
                 self.create_artificial_olhcvs(

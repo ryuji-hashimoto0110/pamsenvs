@@ -22,8 +22,8 @@
 		"class": "Market",
 		"tickSize": 0.0005,
 		"marketPrice": 300.0,
-		"fundamentalDrift": 0,
-		"fundamentalVolatility": 0.001
+		"fundamentalDrift": {"uniform": [-0.00001,0.00001]},
+        "fundamentalVolatility": {"uniform": [0.0, 0.0002]}
 	},
 	"aFCNAgents": {
 		"class": "aFCNAgent",
@@ -37,7 +37,7 @@
         "feedbackAsymmetry": {"expon": [0.0]},
         "noiseAsymmetry": {"expon": [0.0]},
 		"noiseScale": 0.0001,
-		"timeWindowSize": 200,
+		"timeWindowSize": 220,
 		"riskAversionTerm": 0.1
 	}
 }
