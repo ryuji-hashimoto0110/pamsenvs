@@ -33,13 +33,13 @@ class aFCNDataMaker(DataMaker):
                 if not price_datas_path.exists():
                     price_datas_path.mkdir(parents=True)
                 self.create_artificial_olhcvs(
-                    config, price_datas_path, 0, 1000, 72, 10
+                    config, price_datas_path, 0, 1000, 72, 100
                 )
 
 if __name__ == "__main__":
     config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
-    a_feedbacks: list[float] = [0, 2, 4, 6, 8, 10]
-    a_noises: list[float] = [0, 2, 4, 6, 8, 10]
+    a_feedbacks: list[float] = [10]
+    a_noises: list[float] = [10]
     data_maker = aFCNDataMaker()
     data_maker.create_artificial_olhcvs_w_various_asymmetry_params(
         a_feedbacks, a_noises, config
