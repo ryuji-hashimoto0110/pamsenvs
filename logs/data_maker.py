@@ -27,7 +27,7 @@ class DataMaker:
         seeds: Optional[list[int]] = None
     ) -> None:
         if seeds is None:
-            seeds: list[int] = [i+1 for i in range(data_num)]
+            seeds: list[int] = [i for i in range(data_num)]
         assert len(seeds) == data_num
         if not daily_datas_path.exists():
             daily_datas_path.mkdir(parents=True)

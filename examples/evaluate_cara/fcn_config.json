@@ -11,7 +11,7 @@
 				"maxHighFrequencyOrders": 0
 			},
 			{	"sessionName": 1,
-				"iterationSteps": 541000,
+				"iterationSteps": 109000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true
@@ -37,7 +37,7 @@
         "feedbackAsymmetry": {"expon": [0.0]},
         "noiseAsymmetry": {"expon": [0.0]},
 		"noiseScale": 0.0001,
-		"timeWindowSize": 220,
+		"timeWindowSize": 200,
 		"riskAversionTerm": 0.1
 	}
 }
