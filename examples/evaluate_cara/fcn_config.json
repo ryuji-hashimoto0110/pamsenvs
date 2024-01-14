@@ -23,7 +23,7 @@
 		"tickSize": 0.0005,
 		"marketPrice": 300.0,
 		"fundamentalDrift": {"uniform": [-0.00001,0.00001]},
-        "fundamentalVolatility": {"uniform": [0.0, 0.005]}
+        "fundamentalVolatility": {"uniform": [0.0, 0.001]}
 	},
 	"aFCNAgents": {
 		"class": "aFCNAgent",
