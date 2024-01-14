@@ -11,7 +11,9 @@ from pams.runners.base import Runner
 from typing import TypeVar
 
 MarketID = TypeVar("MarketID")
-parent_datas_path: Path = root_path / "datas" / "artificial_datas"
+parent_daily_datas_path: Path = root_path / "datas" / "artificial_datas" / "daily"
+parent_intraday_datas_path: Path = root_path / "datas" / "artificial_datas" / "intraday"
+
 
 def get_config():
     parser = argparse.ArgumentParser()
@@ -23,8 +25,10 @@ def get_config():
                         help="target market id to store data. If there is only 1 market setting, it is not needed to specify.")
     parser.add_argument("--start_index", type=int, default=100,
                         help="start index to store data. Usually, specify the time steps that first session starts that order execution is allowed.")
-    parser.add_argument("--index_interval", type=int, default=100,
-                        help="fixed time interval to tally OLHCV.")
+    parser.add_argument("--daily_index_interval", type=int, default=100,
+                        help="fixed time interval to tally daily OLHCV.")
+    parser.add_argument("--intraday_index_interval", type=int, default=100,
+                        help="fixed time interval to tally intraday OLHCV.")
     parser.add_argument("--data_num", type=int, default=100,
                         help="number of data.")
     return parser
@@ -39,14 +43,20 @@ def main(args):
     config_name: str = all_args.config_name
     config_path: Path = curr_path / config_name
     datas_name: str = all_args.datas_name
-    datas_path: Path = parent_datas_path / datas_name
+    daily_datas_path: Path = parent_daily_datas_path / datas_name
+    intraday_datas_path: Path = parent_intraday_datas_path / datas_name
     market_id: MarketID = all_args.market_id
     start_index: int = all_args.start_index
-    index_interval: int = all_args.index_interval
+    daily_index_interval: int = all_args.daily_index_interval
+    intraday_index_interval: int = all_args.intraday_index_interval
     data_num: int = all_args.data_num
     data_maker = FCNwCARADataMaker()
     data_maker.create_artificial_olhcvs(
-        config_path, datas_path, market_id, start_index, index_interval, data_num
+        config_path,
+        daily_datas_path, intraday_datas_path,
+        market_id, start_index,
+        daily_index_interval, intraday_index_interval,
+        data_num
     )
 
 if __name__ == "__main__":
