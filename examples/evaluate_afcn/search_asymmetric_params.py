@@ -39,13 +39,13 @@ class aFCNDataMaker(DataMaker):
                 if not intraday_datas_path.exists():
                     intraday_datas_path.mkdir(parents=True)
                 self.create_artificial_olhcvs(
-                    config, daily_datas_path, intraday_datas_path, 0, 1000, 72, 1, 100
+                    config, daily_datas_path, intraday_datas_path, 0, 1000, 10, 1, 10
                 )
 
 if __name__ == "__main__":
     config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
-    a_feedbacks: list[float] = [3]
-    a_noises: list[float] = [0]
+    a_feedbacks: list[float] = [0.1, 0.2]
+    a_noises: list[float] = [0, 0.05]
     data_maker = aFCNDataMaker()
     data_maker.create_artificial_olhcvs_w_various_asymmetry_params(
         a_feedbacks, a_noises, config
