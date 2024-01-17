@@ -155,13 +155,6 @@ class aFCNAgent(Agent):
         orders.extend(self._cancel_orders())
         time: int = market.get_time()
         time_window_size: int = min(time, self.time_window_size)
-        time_window_size: int = self._calc_temporal_time_window_size(
-            time_window_size, time, self.w_f, self.w_c
-        )
-        risk_aversion_term: float = self._calc_temporal_risk_aversion_term(
-            self.w_f, self.w_c
-        )
-        assert 0 < risk_aversion_term
         weights: list[float] = self._calc_weights(market, time_window_size)
         fundamental_weight: float = weights[0]
         chart_weight: float = weights[1]
@@ -169,7 +162,14 @@ class aFCNAgent(Agent):
         assert 0 <= fundamental_weight
         assert 0 <= chart_weight
         assert 0 <= noise_weight
+        time_window_size: int = self._calc_temporal_time_window_size(
+            time_window_size, time, fundamental_weight, chart_weight
+        )
+        risk_aversion_term: float = self._calc_temporal_risk_aversion_term(
+            fundamental_weight, chart_weight
+        )
         assert 0 <= time_window_size
+        assert 0 < risk_aversion_term
         expected_future_price: float = self._calc_expected_future_price(
             market, fundamental_weight, chart_weight, noise_weight, time_window_size
         )
@@ -212,10 +212,10 @@ class aFCNAgent(Agent):
             market_price / market.get_market_price(time - time_window_size)
         )
         chart_weight: float = max(
-            0, self.w_c - self.a_feedback * chart_log_return
+            0, self.w_c - min(0, self.a_feedback * chart_log_return)
         )
         noise_weight: float = max(
-            0, self.w_n - self.a_noise * chart_log_return
+            0, self.w_n - min(0, self.a_noise * chart_log_return)
         )
         weights: list[float] = [self.w_f, chart_weight, noise_weight]
         return weights
