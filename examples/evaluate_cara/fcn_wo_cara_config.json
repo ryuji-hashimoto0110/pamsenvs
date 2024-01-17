@@ -22,7 +22,7 @@
 		"class": "Market",
 		"tickSize": 0.0005,
 		"marketPrice": 300.0,
-		"fundamentalDrift": {"uniform": [-0.000005,0.000005]},
+		"fundamentalDrift": {"uniform": [-0.000001,0.0000001]},
         "fundamentalVolatility": {"uniform": [0.0, 0.001]}
 	},
 	"FCNAgents": {
@@ -32,7 +32,7 @@
 		"assetVolume": {"uniform": [0,50]},
 		"cashAmount": {"uniform": [0,15000]},
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [2.0]},
+		"chartWeight": {"expon": [1.2]},
 		"noiseWeight": {"expon": [1.0]},
 		"noiseScale": 0.0001,
 		"timeWindowSize": [100, 200],
