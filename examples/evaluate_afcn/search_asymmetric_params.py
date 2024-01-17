@@ -28,8 +28,8 @@ class aFCNDataMaker(DataMaker):
     ) -> None:
         for a_feedback in a_feedbacks:
             for a_noise in a_noises:
-                config["aFCNAgents"]["feedbackAsymmetry"]["expon"] = [a_feedback]
-                config["aFCNAgents"]["noiseAsymmetry"]["expon"] = [a_noise]
+                config["aFCNAgents"]["feedbackAsymmetry"]["uniform"] = [0, a_feedback]
+                config["aFCNAgents"]["noiseAsymmetry"]["uniform"] = [0, a_noise]
                 daily_datas_path: Path = parent_daily_datas_path / \
                     f"af{str(a_feedback).replace('.','')}_an{str(a_noise).replace('.','')}"
                 if not daily_datas_path.exists():
