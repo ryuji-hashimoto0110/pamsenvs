@@ -211,11 +211,11 @@ class aFCNAgent(Agent):
         chart_log_return: float = chart_scale * 100 * math.log(
             market_price / market.get_market_price(time - time_window_size)
         )
-        chart_weight: float = self.w_c - min(
-            self.a_feedback * chart_log_return, 0
+        chart_weight: float = max(
+            0, self.w_c - self.a_feedback * chart_log_return
         )
-        noise_weight: float = self.w_n - min(
-            self.a_noise * chart_log_return, 0
+        noise_weight: float = max(
+            0, self.w_n - self.a_noise * chart_log_return
         )
         weights: list[float] = [self.w_f, chart_weight, noise_weight]
         return weights
@@ -531,4 +531,3 @@ class aFCNAgent(Agent):
         if len(cancels) == 0:
             self.unexecuted_orders = []
         return cancels
-
