@@ -44,8 +44,8 @@ class aFCNDataMaker(DataMaker):
 
 if __name__ == "__main__":
     config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
-    a_feedbacks: list[float] = [0.1, 1, 5, 10]
-    a_noises: list[float] = [0.1, 1, 5, 10]
+    a_feedbacks: list[float] = [0.2, 0.4, 0.6, 0.8, 1.0]
+    a_noises: list[float] = [0.2, 0.4, 0.6, 0.8, 1.0]
     data_maker = aFCNDataMaker()
     data_maker.create_artificial_olhcvs_w_various_asymmetry_params(
         a_feedbacks, a_noises, config
