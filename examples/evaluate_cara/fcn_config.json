@@ -11,7 +11,7 @@
 				"maxHighFrequencyOrders": 0
 			},
 			{	"sessionName": 1,
-				"iterationSteps": 20000,
+				"iterationSteps": 16000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true
@@ -32,13 +32,13 @@
 		"assetVolume": {"uniform": [0,50]},
 		"cashAmount": {"uniform": [0,15000]},
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.2]},
+        "chartWeight": {"expon": [2.0]},
 		"noiseWeight": {"expon": [1.0]},
         "feedbackAsymmetry": {"uniform": [0.0, 0.0]},
         "noiseAsymmetry": {"uniform": [0.0, 0.0]},
 		"noiseScale": 0.0001,
-		"timeWindowSize": 30,
-		"meanReversionTime": 150,
+		"timeWindowSize": 200,
+		"meanReversionTime": 300,
 		"riskAversionTerm": 0.1
 	}
 }
