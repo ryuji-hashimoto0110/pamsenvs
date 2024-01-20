@@ -1,4 +1,6 @@
 import bisect
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import Axes
 import numpy as np
 from numpy import ndarray
 import pandas as pd
@@ -10,11 +12,13 @@ from torch import Tensor
 from torch.utils.data import Dataset
 from typing import Optional
 import warnings
+from scipy import stats
 
 class RVDataset(Dataset):
     def __init__(
         self,
         olhcv_path: Path,
+        csv_names: Optional[list[str]],
         obs_num: int,
         input_time_length: int,
         imgs_path: Optional[Path] = None
@@ -25,17 +29,22 @@ class RVDataset(Dataset):
         initialization method create dataset by following procedure.
             1. read all csv files from olhcv_path folder.
             2. fold the time series to calculate realized volatility.
-                Assume that length of a csv being time_series_length, then folded array is
-                (time_series_length/obs_num, obs_num). Note that time_series_length should be
-                divisible by obs_num.
+                Assume that length of a csv being time_series_length,
+                then folded array is (time_series_length/obs_num, obs_num).
+                Note that time_series_length should be divisible by obs_num.
             3. calculate return, volume, realized volatility.
-                shape of return_arrs, volume_arrs and rv_arrs is (data_num, time_series_length/obs_num)
+                shape of return_arrs, volume_arrs and rv_arrs is
+                (data_num, time_series_length/obs_num)
+                Each of the features are normalized.
 
         Args:
-            olhcv_path (Path): _description_
-            obs_num (int): _description_
+            olhcv_path (Path): folder path where the OLHCV files to be trained are stored
+            obs_num (int): number of data used to calculate a single return, volume,
+                and realized volatility.
+                If the time interval for high-frequency datas in olhcv_path is 5 minutes
+                and obs_num is set to 12, the time interval in RVDataset is 60 minutes.
         """
-        olhcv_dfs = self._read_csvs(olhcv_path)
+        olhcv_dfs = self._read_csvs(olhcv_path, csv_names)
         self.obs_num: int = obs_num
         self.input_time_length: int = input_time_length
         price_arrs: ndarray | list[ndarray] = self._fold_dfs(olhcv_dfs, "close")
@@ -50,45 +59,59 @@ class RVDataset(Dataset):
         if isinstance(self.rv_arrs, ndarray):
             self.rv_arrs = self._normalize(self.rv_arrs)
         self.num_data_arr: ndarray = self._count_cumsum_datas()
-        if imgs_path is not None:
-            feature_img_path: Path = imgs_path / "feature.pdf"
-            self.plot_features(feature_img_path)
+        self.imgs_path: Path = imgs_path
 
     def _read_csvs(
         self,
         csvs_path: Path,
+        csv_names: Optional[list[str]]
     ) -> list[DataFrame]:
         """read all csv files in given folder path.
+
+        Args:
+            csvs_path (Path): folder path where the cav files are stored.
         """
         dfs: list[DataFrame] = []
         for csv_path in sorted(csvs_path.iterdir()):
+            csv_name: str = csv_path.name
+            if csv_names is not None:
+                if not csv_name in csv_names:
+                    continue
             if csv_path.suffix == ".csv":
-                dfs.append(pd.read_csv(csv_path, index_col=0))
+                df: DataFrame = pd.read_csv(csv_path, index_col=0)
+                assert len(df.columns) == 5
+                df.columns = ["open", "low", "high", "close", "volume"]
+                dfs.append(df)
         return dfs
 
-    def _fold_dfs(self, dfs: DataFrame, colname: str) -> ndarray | list[ndarray]:
+    def _fold_dfs(self, dfs: list[DataFrame], colname: str) -> ndarray | list[ndarray]:
         """fold specific columns of dfs.
 
         Assume that N=len(dfs), m=obs_num, m*n=len(df), then
             folded_columns.shape = (N, n, m)
 
         Args:
-            dfs (DataFrame): _description_
-            colname (str): _description_
+            dfs (list[DataFrame]): list of OLHCV dataframes. It is recommended that
+                lengths of all dataframes are the same.
+            colname (str): name of the column to create features.
 
         Returns:
-            ndarray | list[ndarray]: _description_
+            folded_columns (ndarray | list[ndarray])
         """
         folded_columns: list[ndarray] = []
         for df in dfs:
+            assert colname in df.columns
             column_arr: ndarray = df[colname].values[:,np.newaxis]
             assert len(column_arr.shape) == 2
             if len(column_arr) % self.obs_num != 0:
+                new_data_num: int = int(
+                    np.floor(len(column_arr) / self.obs_num) * self.obs_num
+                )
                 warnings.warn(
                     f"number of obs {len(column_arr)} cannot be devised by {self.obs_num}. " +
-                    f"data will be pruned to {np.floor(len(column_arr) / self.obs_num)}."
+                    f"data will be pruned to {new_data_num}."
                 )
-                column_arr = column_arr[np.floor(len(column_arr) / self.obs_num)]
+                column_arr = column_arr[:new_data_num]
             folded_columns.append(column_arr.reshape(-1, self.obs_num))
         num_obses: list[int] = [folded_column.shape[0] for folded_column in folded_columns]
         if num_obses.count(num_obses[0]) == len(num_obses):
@@ -217,8 +240,45 @@ class RVDataset(Dataset):
             raise NotImplementedError
         return feature_arrs
 
-    def plot_features(self, fig_save_path: Path) -> None:
-        pass
+    def plot_features(self, img_name: str) -> None:
+        fig = plt.figure(figsize=(30,20), dpi=50, facecolor="w")
+        ax1: Axes = fig.add_subplot(3,1,1)
+        self._hist_features(
+            ax1, self.return_arrs, 30, xlabel="return", title=""
+        )
+        ax2: Axes = fig.add_subplot(3,1,2)
+        self._hist_features(
+            ax2, self.volume_arrs, 30, xlabel="volume", title=""
+        )
+        ax3: Axes = fig.add_subplot(3,1,3)
+        self._hist_features(
+            ax3, self.rv_arrs, 30, xlabel="realized volatility", title=""
+        )
+        fig_save_path: Path = self.imgs_path / img_name
+        plt.savefig(str(fig_save_path), bbox_inches="tight", pad_inches=0.1)
+        plt.close(fig)
+
+    def _hist_features(
+        self,
+        ax: Axes,
+        feature_arrs: ndarray,
+        num_bins: int,
+        xlabel: str,
+        title: str
+    ) -> None:
+        mean_arr: float = np.mean(feature_arrs)
+        std_arr: float = np.std(feature_arrs)
+        min_arr: float = np.min(feature_arrs)
+        max_arr: float = np.max(feature_arrs)
+        ax.hist(
+            feature_arrs.flatten(), num_bins,
+            label=f"mean={mean_arr:.2f} std={std_arr:.2f} " +
+            f"min={min_arr:.2f} max={max_arr:.2f}"
+        )
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel("frequency")
+        ax.set_title(title)
+        ax.legend()
 
     def __len__(self):
         return int(self.num_data_arr[-1]) + 1
@@ -255,8 +315,20 @@ class RVDataset(Dataset):
         )
         return input_tensor, target_tensor
 
-curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
-root_path: Path = curr_path.parents[1]
-olhcv_path = root_path / "datas" / "artificial_datas" / "intraday" / "afcn" / "random"
-rv_dataset = RVDataset(olhcv_path, 10, 10)
-print(rv_dataset.__getitem__(1499))
+curr_path: pathlib.Path = pathlib.Path(__file__).resolve()
+root_path: pathlib.Path = curr_path.parents[2]
+imgs_path = root_path / "imgs"
+datas_path = root_path / "datas"
+artificial_datas_path = datas_path / "artificial_datas" / "intraday" / "afcn" / "random"
+aapl_datas_path = datas_path / "real_datas" / "intraday" / "aapl"
+sp_datas_path = datas_path / "real_datas" / "intraday" / "sp500"
+rv_dataset = RVDataset(
+    artificial_datas_path, None, 30, 10, imgs_path
+)
+rv_dataset.plot_features("features_afcn_random.pdf")
+"""
+rv_dataset = RVDataset(
+    aapl_datas_path, ["AAPL2018.csv"], 10, 10, imgs_path
+)
+rv_dataset.plot_features("features_aapl_2018.pdf")
+"""
