@@ -85,6 +85,7 @@ class aFCNAgent(Agent):
                 and can include
                 - meanReversionTime: time scale over which
                     the fundamentalist component for the mean reversion of the price to the fundamental.
+                - chartFollowRate: probability that the agent is chart-follower.
             accessible_market_ids (list[MarketID]): _description_
 
         If feedbackAsymmetry and noiseAsymmetry are both 0, aFCNAgent is equivalent to FCNAgent.
@@ -119,6 +120,17 @@ class aFCNAgent(Agent):
             )
         else:
             self.mean_reversion_time: int = self.time_window_size
+        if "chartFollowRate" in settings:
+            p: float = settings["chartFollowRate"]
+            if p < 0 or 1 < p:
+                raise ValueError(
+                    f"chartFollowRate must be in between [0,1]."
+                )
+            self.is_chart_following: bool = self.prng.choices(
+                [True, False], weights=[p, 1-p]
+            )[0]
+        else:
+            self.is_chart_following: bool = True
         self.unexecuted_orders: list[Order] = []
 
     def submit_orders(
@@ -299,6 +311,7 @@ class aFCNAgent(Agent):
         ) * (
             fundamental_weight * fundamental_log_return
             + chart_weight * chart_log_return
+            * (1 if self.is_chart_following else -1)
             + noise_weight * noise_log_return
         )
         assert self.is_finite(expected_log_return)
