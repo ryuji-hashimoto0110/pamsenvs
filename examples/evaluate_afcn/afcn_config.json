@@ -32,13 +32,14 @@
 		"assetVolume": {"uniform": [0,50]},
 		"cashAmount": {"uniform": [0,15000]},
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [2.0]},
+		"chartWeight": {"expon": [2.4]},
 		"noiseWeight": {"expon": [1.0]},
         "feedbackAsymmetry": {"uniform": [0.0, 0.0]},
         "noiseAsymmetry": {"uniform": [0.0, 0.0]},
 		"noiseScale": 0.0001,
 		"timeWindowSize": 200,
 		"meanReversionTime": 300,
+		"chartFollowRate": 0.5,
 		"riskAversionTerm": 0.1
 	}
 }

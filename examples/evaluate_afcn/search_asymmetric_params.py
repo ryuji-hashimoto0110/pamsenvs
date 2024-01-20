@@ -66,7 +66,7 @@ class aFCNDataMaker(DataMaker):
             self.create_artificial_olhcvs(
                 config, daily_datas_path, intraday_datas_path, 0, 1000, 30, 1, 1, [i]
             )
-            print(f"[{i}] a_f{a_feedback:.1f} a_n{a_noise}")
+            print(f"[{i}] a_f{a_feedback:.1f} a_n{a_noise:.1f}")
 
 if __name__ == "__main__":
     config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
