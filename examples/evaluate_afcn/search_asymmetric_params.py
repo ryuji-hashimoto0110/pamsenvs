@@ -64,7 +64,7 @@ class aFCNDataMaker(DataMaker):
             if not intraday_datas_path.exists():
                 intraday_datas_path.mkdir(parents=True)
             self.create_artificial_olhcvs(
-                config, daily_datas_path, intraday_datas_path, 0, 1000, 10, 1, 1, [i]
+                config, daily_datas_path, intraday_datas_path, 0, 1000, 30, 1, 1, [i]
             )
             print(f"[{i}] a_f{a_feedback:.1f} a_n{a_noise}")
 
@@ -77,5 +77,5 @@ if __name__ == "__main__":
     #    a_feedbacks, a_noises, config
     #)
     data_maker.create_artificial_olhcvs_w_random_asymmetry_params(
-        10, 10, 100, config
+        3, 3, 100, config
     )
