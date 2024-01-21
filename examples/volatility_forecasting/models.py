@@ -80,7 +80,8 @@ class RVPredictor(nn.Module):
         self.ffn1: Module = FFN(input_dim, hidden_dim, hidden_dim)
         if encoder_type == "LSTM":
             self.encoder: Module = nn.LSTM(
-                input_size=hidden_dim, hidden_size=hidden_dim, batch_first=True
+                input_size=hidden_dim, hidden_size=hidden_dim,
+                num_layers=2, dropout=0.1, batch_first=True
             )
         elif encoder_type == "Transformer":
             assert nhead is not None
