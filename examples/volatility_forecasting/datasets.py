@@ -1,4 +1,5 @@
 import bisect
+import json
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes
 import numpy as np
@@ -21,6 +22,8 @@ class RVDataset(Dataset):
         csv_names: Optional[list[str]],
         obs_num: int,
         input_time_length: int,
+        mean_std_dic: Optional[dict[str, dict[str, float]]] = None,
+        mean_std_dic_save_path: Optional[Path] = None,
         imgs_path: Optional[Path] = None
     ) -> None:
         """initialization.
@@ -50,16 +53,50 @@ class RVDataset(Dataset):
         price_arrs: ndarray | list[ndarray] = self._fold_dfs(olhcv_dfs, "close")
         volume_arrs: ndarray | list[ndarray] = self._fold_dfs(olhcv_dfs, "volume")
         self.return_arrs: ndarray | list[ndarray] = self._calc_return(price_arrs)
+        if mean_std_dic is None:
+            self.mean_std_dic: dict[str, dict[str, Optional[float]]] = \
+                self._initialize_mean_std_dic()
+        else:
+            self.mean_std_dic: dict[str, dict[str, Optional[float]]] = mean_std_dic
         if isinstance(self.return_arrs, ndarray):
-            self.return_arrs = self._normalize(self.return_arrs)
+            self.return_arrs, mean, std = self._normalize(
+                self.return_arrs,
+                self.mean_std_dic["return"]["mean"],
+                self.mean_std_dic["return"]["std"]
+            )
+            self.mean_std_dic["return"]["mean"] = mean
+            self.mean_std_dic["return"]["std"] = std
         self.volume_arrs: ndarray | list[ndarray] = self._calc_volume(volume_arrs)
         if isinstance(self.volume_arrs, ndarray):
-            self.volume_arrs = self._normalize(self.volume_arrs)
+            self.volume_arrs, mean, std = self._normalize(
+                self.volume_arrs,
+                self.mean_std_dic["volume"]["mean"],
+                self.mean_std_dic["volume"]["std"]
+            )
+            self.mean_std_dic["volume"]["mean"] = mean
+            self.mean_std_dic["volume"]["std"] = std
         self.rv_arrs: ndarray | list[ndarray] = self._calc_rv(price_arrs)
         if isinstance(self.rv_arrs, ndarray):
-            self.rv_arrs = self._normalize(self.rv_arrs)
+            self.rv_arrs, mean, std = self._normalize(
+                self.rv_arrs,
+                self.mean_std_dic["rv"]["mean"],
+                self.mean_std_dic["rv"]["std"]
+            )
+            self.mean_std_dic["rv"]["mean"] = mean
+            self.mean_std_dic["rv"]["std"] = std
+        if mean_std_dic_save_path is not None:
+            with open(mean_std_dic_save_path, "w") as f:
+                json.dump(self.mean_std_dic, f, indent=4, ensure_ascii=False)
         self.num_data_arr: ndarray = self._count_cumsum_datas()
         self.imgs_path: Path = imgs_path
+
+    def _initialize_mean_std_dic(self) -> dict[str, dict[str, float]]:
+        mean_std_dic: dict[str, dict[str, float]] = {
+            "return": {"mean": None, "std": None},
+            "volume": {"mean": None, "std": None},
+            "rv": {"mean": None, "std": None}
+        }
+        return mean_std_dic
 
     def _read_csvs(
         self,
@@ -223,7 +260,12 @@ class RVDataset(Dataset):
             raise NotImplementedError
         return num_data_arr
 
-    def _normalize(self, feature_arrs: ndarray) -> ndarray | list[ndarray]:
+    def _normalize(
+        self,
+        feature_arrs: ndarray,
+        mean: Optional[float] = None,
+        std: Optional[float] = None
+    ) -> tuple[ndarray, float]:
         """normalize features.
 
         Args:
@@ -233,26 +275,31 @@ class RVDataset(Dataset):
             ndarray | list[ndarray]: _description_
         """
         if isinstance(feature_arrs, ndarray):
-            feature_arrs = (
-                feature_arrs - feature_arrs.mean()
-            ) / (feature_arrs.std() + 1e-10)
+            if mean is None:
+                mean: float = feature_arrs.mean()
+            if std is None:
+                std: float = feature_arrs.std()
+            feature_arrs = (feature_arrs - mean) / (std + 1e-10)
         else:
             raise NotImplementedError
-        return feature_arrs
+        return feature_arrs, mean, std
 
     def plot_features(self, img_name: str) -> None:
         fig = plt.figure(figsize=(30,20), dpi=50, facecolor="w")
         ax1: Axes = fig.add_subplot(3,1,1)
+        ax1.set_xlim([-6,6])
         self._hist_features(
-            ax1, self.return_arrs, 30, xlabel="return", title=""
+            ax1, self.return_arrs, 50, xlabel="return", title=""
         )
         ax2: Axes = fig.add_subplot(3,1,2)
+        ax2.set_xlim([-2,8])
         self._hist_features(
-            ax2, self.volume_arrs, 30, xlabel="volume", title=""
+            ax2, self.volume_arrs, 50, xlabel="volume", title=""
         )
         ax3: Axes = fig.add_subplot(3,1,3)
+        ax3.set_xlim([-4,4])
         self._hist_features(
-            ax3, self.rv_arrs, 30, xlabel="realized volatility", title=""
+            ax3, self.rv_arrs, 50, xlabel="realized volatility", title=""
         )
         fig_save_path: Path = self.imgs_path / img_name
         plt.savefig(str(fig_save_path), bbox_inches="tight", pad_inches=0.1)
@@ -283,7 +330,15 @@ class RVDataset(Dataset):
     def __len__(self):
         return int(self.num_data_arr[-1]) + 1
 
-    def __getitem__(self, index) -> tuple[Tensor]:
+    def __getitem__(self, index: int) -> tuple[Tensor]:
+        """get item.
+
+        Args:
+            index (_type_): _description_
+
+        Returns:
+            tuple[Tensor]: _description_
+        """
         idx1: int = bisect.bisect_left(self.num_data_arr, index)
         if idx1 == 0:
             idx2: int = index
@@ -293,42 +348,24 @@ class RVDataset(Dataset):
             return_tensor: Tensor = torch.from_numpy(
                 self.return_arrs[
                     idx1, idx2:idx2+self.input_time_length
-                ].astype(np.float32)
-            ).view(1,-1)
+                ]
+            ).view(-1,1)
         if isinstance(self.volume_arrs, ndarray):
             volume_tensor: Tensor = torch.from_numpy(
                 self.volume_arrs[
                     idx1, idx2:idx2+self.input_time_length
-                ].astype(np.float32)
-            ).view(1,-1)
+                ]
+            ).view(-1,1)
         if isinstance(self.rv_arrs, ndarray):
             rv_tensor: Tensor = torch.from_numpy(
                 self.rv_arrs[
                     idx1, idx2:idx2+self.input_time_length
                 ]
-            ).view(1,-1)
+            ).view(-1,1)
             target_tensor: Tensor = torch.Tensor(
                 [self.rv_arrs[idx1, idx2+self.input_time_length+1]]
-            )
+            ).to(torch.float)
         input_tensor = torch.cat(
-            [return_tensor, volume_tensor, rv_tensor]
-        )
+            [return_tensor, volume_tensor, rv_tensor], dim=1
+        ).to(torch.float)
         return input_tensor, target_tensor
-
-curr_path: pathlib.Path = pathlib.Path(__file__).resolve()
-root_path: pathlib.Path = curr_path.parents[2]
-imgs_path = root_path / "imgs"
-datas_path = root_path / "datas"
-artificial_datas_path = datas_path / "artificial_datas" / "intraday" / "afcn" / "random"
-aapl_datas_path = datas_path / "real_datas" / "intraday" / "aapl"
-sp_datas_path = datas_path / "real_datas" / "intraday" / "sp500"
-rv_dataset = RVDataset(
-    artificial_datas_path, None, 30, 10, imgs_path
-)
-rv_dataset.plot_features("features_afcn_random.pdf")
-"""
-rv_dataset = RVDataset(
-    aapl_datas_path, ["AAPL2018.csv"], 10, 10, imgs_path
-)
-rv_dataset.plot_features("features_aapl_2018.pdf")
-"""
