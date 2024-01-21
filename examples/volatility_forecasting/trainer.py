@@ -32,11 +32,14 @@ class RVTrainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.train_dataset = train_dataset
-        self.train_n: int = len(train_dataset)
+        if train_dataset is not None:
+            self.train_n: int = len(train_dataset)
         self.valid_dataset = valid_dataset
-        self.valid_n: int = len(valid_dataset)
+        if valid_dataset is not None:
+            self.valid_n: int = len(valid_dataset)
         self.test_dataset = test_dataset
-        self.test_n: int = len(test_dataset)
+        if test_dataset is not None:
+            self.test_n: int = len(test_dataset)
         self.num_epochs: int = num_epochs
         self.load_path: Optional[Path] = load_path
         self.best_save_path: Optional[Path] = best_save_path
@@ -52,6 +55,7 @@ class RVTrainer:
         torch.use_deterministic_algorithms = True
 
     def fit(self) -> None:
+        print(f"start training. train_n{self.train_n} valid_n{self.valid_n}")
         self._setup()
         assert self.train_dataset is not None
         assert self.valid_dataset is not None
@@ -162,6 +166,7 @@ class RVTrainer:
 
     def test(self):
         assert self.test_dataset is not None
+        print(f"start testing. test_n={self.test_n}")
         if self.best_save_path is not None:
             checkpoint = torch.load(
                 self.best_save_path, map_location=torch.device(self.device)
