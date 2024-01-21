@@ -164,7 +164,7 @@ class RVTrainer:
         assert self.test_dataset is not None
         if self.best_save_path is not None:
             checkpoint = torch.load(
-                self.load_path, map_location=torch.device(self.device)
+                self.best_save_path, map_location=torch.device(self.device)
             )
             self.model.load_state_dict(checkpoint["model_state_dict"], strict=True)
         self._create_dataloaders()
