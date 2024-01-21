@@ -29,49 +29,53 @@ def get_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("--encoder_type", type=str, required=True,
                         help="type of encoder. 'Transformer' or 'LSTM' is allowed.")
-    parser.add_argument("--train_data_type", type=str, default=None,
+    parser.add_argument("--train_data_type", type=str, default=None, required=False,
                         help="type of train data type. 'artificial' or 'real' is allowed")
-    parser.add_argument("--valid_data_type", type=str, default=None,
+    parser.add_argument("--valid_data_type", type=str, default=None, required=False,
                         help="type of valid data type. 'artificial' or 'real' is allowed")
-    parser.add_argument("--test_data_type", type=str, default=None,
+    parser.add_argument("--test_data_type", type=str, default=None, required=False,
                         help="type of test data type. 'artificial' or 'real' is allowed")
-    parser.add_argument("--train_olhcv_name", type=str, default=None,
+    parser.add_argument("--train_olhcv_name", type=str, default=None, required=False,
                         help="name of train olhcv folders.")
-    parser.add_argument("--valid_olhcv_name", type=str, default=None,
+    parser.add_argument("--valid_olhcv_name", type=str, default=None, required=False,
                         help="name of valid olhcv folders.")
-    parser.add_argument("--test_olhcv_name", type=str, default=None,
+    parser.add_argument("--test_olhcv_name", type=str, default=None, required=False,
                         help="name of test olhcv folders.")
-    parser.add_argument("--train_csv_names", nargs="*", type=str, default=None,
+    parser.add_argument("--train_csv_names",
+                        nargs="*", type=str, default=None, required=False,
                         help="names of csv files in train olhcv folder.")
-    parser.add_argument("--valid_csv_names", nargs="*", type=str, default=None,
+    parser.add_argument("--valid_csv_names",
+                        nargs="*", type=str, default=None, required=False,
                         help="names of csv files in valid olhcv folder.")
-    parser.add_argument("--test_csv_names", nargs="*", type=str, default=None,
+    parser.add_argument("--test_csv_names",
+                        nargs="*", type=str, default=None, required=False,
                         help="names of csv files in test olhcv folder.")
-    parser.add_argument("--train_obs_num", type=int, default=None,
+    parser.add_argument("--train_obs_num", type=int, default=None, required=False,
                         help="observation number in 1 record of train dataset.")
-    parser.add_argument("--valid_obs_num", type=int, default=None,
+    parser.add_argument("--valid_obs_num", type=int, default=None, required=False,
                         help="observation number in 1 record of valid dataset.")
-    parser.add_argument("--test_obs_num", type=int, default=None,
+    parser.add_argument("--test_obs_num", type=int, default=None, required=False,
                         help="observation number in 1 record of test dataset.")
-    parser.add_argument("--train_mean_std_dic_name", type=str,
+    parser.add_argument("--train_mean_std_dic_name", type=str, required=False,
                         help="file name to load and save mean_std_dic training.")
-    parser.add_argument("--test_mean_std_dic_name", type=str,
+    parser.add_argument("--test_mean_std_dic_name", type=str, required=False,
                         help="file name to load and save mean_std_dic for testing.")
-    parser.add_argument("--criterion_type", type=str, default="MSE",
+    parser.add_argument("--criterion_type", type=str, default="MSE", required=False,
                         help="type of loss function. default to 'MSE'.")
-    parser.add_argument("--optimizer_type", type=str, default="AdamW",
+    parser.add_argument("--optimizer_type", type=str, default="AdamW", required=False,
                         help="type of optimizer. default to 'AdamW'.")
-    parser.add_argument("--learning_rate", type=float, default=3e-04,
+    parser.add_argument("--learning_rate", type=float, default=3e-04, required=False,
                         help="learning rate. default to 0.0003")
-    parser.add_argument("--num_epochs", type=int, default=100,
+    parser.add_argument("--num_epochs", type=int, default=100, required=False,
                         help="number of train epochs.")
-    parser.add_argument("--load_name", type=str, default=None,
+    parser.add_argument("--load_name", type=str, default=None, required=False,
                         help="name of checkpoint file to be loaded.")
-    parser.add_argument("--best_save_name", type=str, default=None,
+    parser.add_argument("--best_save_name", type=str, default=None, required=False,
                         help="name of best checkpoint file to be saved.")
-    parser.add_argument("--last_save_name", type=str, default=None,
+    parser.add_argument("--last_save_name", type=str, default=None, required=False,
                         help="name of last checkpoint file to be saved.")
-    parser.add_argument("--seed", type=int, default=42, help="seed value. default to 42.")
+    parser.add_argument("--seed", type=int, default=42,  required=False,
+                        help="seed value. default to 42.")
     return parser
 
 def create_dataset(
