@@ -59,7 +59,7 @@ class RVDataset(Dataset):
         else:
             self.mean_std_dic: dict[str, dict[str, Optional[float]]] = mean_std_dic
         if isinstance(self.return_arrs, ndarray):
-            self.return_arrs, mean, std = self._normalize(
+            self.return_arrs, mean, std = self._categorize(
                 self.return_arrs,
                 self.mean_std_dic["return"]["mean"],
                 self.mean_std_dic["return"]["std"]
@@ -260,6 +260,27 @@ class RVDataset(Dataset):
             raise NotImplementedError
         return num_data_arr
 
+    def _categorize(
+        self,
+        feature_arrs: ndarray,
+        mean: Optional[float] = None,
+        std: Optional[float] = None
+    ) -> tuple[ndarray, float]:
+        if isinstance(feature_arrs, ndarray):
+            if mean is None:
+                mean: float = feature_arrs.mean()
+            if std is None:
+                std: float = feature_arrs.std()
+            cat_feature_arrs = np.zeros_like(feature_arrs)
+            cat_feature_arrs += (0 < feature_arrs)
+            cat_feature_arrs += (std < feature_arrs)
+            cat_feature_arrs -= (feature_arrs < -std)
+            cat_feature_arrs -= (feature_arrs < 0)
+            print(np.unique(cat_feature_arrs, return_counts=True))
+        else:
+            raise NotImplementedError
+        return cat_feature_arrs, mean, std
+
     def _normalize(
         self,
         feature_arrs: ndarray,
@@ -287,9 +308,8 @@ class RVDataset(Dataset):
     def plot_features(self, img_name: str) -> None:
         fig = plt.figure(figsize=(30,20), dpi=50, facecolor="w")
         ax1: Axes = fig.add_subplot(3,1,1)
-        ax1.set_xlim([-6,6])
         self._hist_features(
-            ax1, self.return_arrs, 50, xlabel="return", title=""
+            ax1, self.return_arrs, 5, xlabel="return", title=""
         )
         ax2: Axes = fig.add_subplot(3,1,2)
         ax2.set_xlim([-2,8])
@@ -318,7 +338,7 @@ class RVDataset(Dataset):
         min_arr: float = np.min(feature_arrs)
         max_arr: float = np.max(feature_arrs)
         ax.hist(
-            feature_arrs.flatten(), num_bins,
+            feature_arrs.flatten(), bins=num_bins,
             label=f"mean={mean_arr:.2f} std={std_arr:.2f} " +
             f"min={min_arr:.2f} max={max_arr:.2f}"
         )
