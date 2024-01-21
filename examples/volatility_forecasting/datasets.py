@@ -276,7 +276,6 @@ class RVDataset(Dataset):
             cat_feature_arrs += (std < feature_arrs)
             cat_feature_arrs -= (feature_arrs < -std)
             cat_feature_arrs -= (feature_arrs < 0)
-            print(np.unique(cat_feature_arrs, return_counts=True))
         else:
             raise NotImplementedError
         return cat_feature_arrs, mean, std
@@ -383,7 +382,7 @@ class RVDataset(Dataset):
                 ]
             ).view(-1,1)
             target_tensor: Tensor = torch.Tensor(
-                [self.rv_arrs[idx1, idx2+self.input_time_length+1]]
+                [self.rv_arrs[idx1, idx2+self.input_time_length]]
             ).to(torch.float)
         input_tensor = torch.cat(
             [return_tensor, volume_tensor, rv_tensor], dim=1
