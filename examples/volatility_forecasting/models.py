@@ -105,7 +105,3 @@ class RVPredictor(nn.Module):
             x = x[:,-1,:]
         x: Tensor = self.ffn2(x)
         return x
-
-x = torch.ones((64,10,3))
-model = RVPredictor("LSTM", 3, 512)
-y = model(x)

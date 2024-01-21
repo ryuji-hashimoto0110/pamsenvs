@@ -68,6 +68,10 @@ def get_config():
                         help="learning rate. default to 0.0003")
     parser.add_argument("--num_epochs", type=int, default=100,
                         help="number of train epochs.")
+    parser.add_argument("--batch_size", type=int, default=256,
+                        help="batch_size.")
+    parser.add_argument("--num_workers", type=int, default=2,
+                        help="number of workers.")
     parser.add_argument("--load_name", type=str, default=None,
                         help="name of checkpoint file to be loaded.")
     parser.add_argument("--best_save_name", type=str, default=None,
@@ -177,6 +181,8 @@ def main(args):
     else:
         raise NotImplementedError
     num_epochs: int = all_args.num_epochs
+    batch_size: int = all_args.batch_size
+    num_workers: int = all_args.num_workers
     load_name: str = all_args.load_name
     best_save_name: str = all_args.best_save_name
     last_save_name: str = all_args.last_save_name
@@ -197,6 +203,7 @@ def main(args):
         model=model, criterion=criterion, optimizer=optimizer,
         train_dataset=train_dataset, valid_dataset=valid_dataset,
         test_dataset=test_dataset, num_epochs=num_epochs,
+        batch_size=batch_size, num_workers=num_workers,
         load_path=load_path,
         best_save_path=best_save_path, last_save_path=last_save_path,
         seed=seed

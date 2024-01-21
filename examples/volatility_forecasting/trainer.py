@@ -20,6 +20,8 @@ class RVTrainer:
         valid_dataset: Optional[Dataset],
         test_dataset: Optional[Dataset],
         num_epochs: int,
+        batch_size: int,
+        num_workers: int,
         load_path: Optional[Path] = None,
         best_save_path: Optional[Path] = None,
         last_save_path: Optional[Path] = None,
@@ -41,6 +43,8 @@ class RVTrainer:
         if test_dataset is not None:
             self.test_n: int = len(test_dataset)
         self.num_epochs: int = num_epochs
+        self.batch_size: int = batch_size
+        self.num_workers: int = num_workers
         self.load_path: Optional[Path] = load_path
         self.best_save_path: Optional[Path] = best_save_path
         self.last_save_path: Optional[Path] = last_save_path
@@ -59,7 +63,7 @@ class RVTrainer:
         self._setup()
         assert self.train_dataset is not None
         assert self.valid_dataset is not None
-        self._create_dataloaders()
+        self._create_dataloaders(self.batch_size, self.num_workers)
         for epoch in range(self.start_epoch, self.end_epoch):
             self.train_loss: float = 0.0
             for batch in self.train_dataloader:
