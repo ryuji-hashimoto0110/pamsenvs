@@ -64,6 +64,7 @@ class RVDataset(Dataset):
                 self.mean_std_dic["return"]["mean"],
                 self.mean_std_dic["return"]["std"]
             )
+            print(f"return: [mean]{mean:.3f} [std]{std:.4f}")
             self.mean_std_dic["return"]["mean"] = mean
             self.mean_std_dic["return"]["std"] = std
         self.volume_arrs: ndarray | list[ndarray] = self._calc_volume(volume_arrs)
@@ -73,6 +74,7 @@ class RVDataset(Dataset):
                 self.mean_std_dic["volume"]["mean"],
                 self.mean_std_dic["volume"]["std"]
             )
+            print(f"volume: [mean]{mean:.3f} [std]{std:.4f}")
             self.mean_std_dic["volume"]["mean"] = mean
             self.mean_std_dic["volume"]["std"] = std
         self.rv_arrs: ndarray | list[ndarray] = self._calc_rv(price_arrs)
@@ -82,6 +84,7 @@ class RVDataset(Dataset):
                 self.mean_std_dic["rv"]["mean"],
                 self.mean_std_dic["rv"]["std"]
             )
+            print(f"realized volatility: [mean]{mean:.3f} [std]{std:.4f}")
             self.mean_std_dic["rv"]["mean"] = mean
             self.mean_std_dic["rv"]["std"] = std
         if mean_std_dic_save_path is not None:
