@@ -168,13 +168,12 @@ def main(args):
             test_mean_std_dic: dict[str, dict[str, float]] = json.load(
                 fp=open(str(test_mean_std_dic_path), mode="r")
             )
-            print(test_mean_std_dic)
     if test_data_type is not None:
         assert test_mean_std_dic is not None
         test_dataset: Dataset = create_dataset(
             data_type=test_data_type, olhcv_name=test_olhcv_name,
             csv_names=test_csv_names, obs_num=test_obs_num,
-            mean_std_dic=mean_std_dic, mean_std_dic_save_path=test_mean_std_dic_path
+            mean_std_dic=test_mean_std_dic, mean_std_dic_save_path=test_mean_std_dic_path
         )
     criterion_type: str = all_args.criterion_type
     if criterion_type == "MSE":
