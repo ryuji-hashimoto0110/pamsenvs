@@ -125,6 +125,11 @@ def main(args):
     valid_obs_num: Optional[int] = all_args.valid_obs_num
     test_obs_num: Optional[int] = all_args.test_obs_num
     train_mean_std_dic_name: Optional[str] = all_args.train_mean_std_dic_name
+    print(f"model type: {encoder_type}")
+    print(f"data type: [tra]{train_data_type} [val]{valid_data_type} [test]{test_data_type}")
+    print(f"olhcv folder name: [tra]{train_olhcv_name} [val]{valid_olhcv_name} [test]{test_data_type}")
+    print(f"use csv names: [tra]{train_csv_names} [val]{valid_csv_names} [test]{test_csv_names}")
+    print(f"obs num per 1 record: [tra]{train_obs_num} [val]{valid_obs_num} [test]{test_obs_num}")
     mean_std_dic: Optional[dict[str, dict[str, float]]] = None
     if train_mean_std_dic_name is not None:
         train_mean_std_dic_path: Path = mean_std_dics_path / train_mean_std_dic_name
@@ -155,6 +160,7 @@ def main(args):
                 train_dataset, [train_n, all_n-train_n]
             )
     test_mean_std_dic_name: Optional[str] = all_args.test_mean_std_dic_name
+    print(f"mean_std_dic: [tra]{train_mean_std_dic_name} [test]{test_mean_std_dic_name}")
     test_mean_std_dic: Optional[dict[str, dict[str, float]]] = None
     if test_mean_std_dic_name is not None:
         test_mean_std_dic_path: Path = mean_std_dics_path / test_mean_std_dic_name
@@ -180,12 +186,15 @@ def main(args):
         optimizer = optim.AdamW(model.parameters(), lr)
     else:
         raise NotImplementedError
+    print(f"criterion: {criterion_type} optimizer: {optimizer_type}")
     num_epochs: int = all_args.num_epochs
     batch_size: int = all_args.batch_size
     num_workers: int = all_args.num_workers
     load_name: str = all_args.load_name
     best_save_name: str = all_args.best_save_name
     last_save_name: str = all_args.last_save_name
+    print(f"num epochs: {num_epochs} batch size: {batch_size} num_workers: {num_workers}")
+    print(f"load name: {load_name} save name: [best]{best_save_name} [last]{last_save_name}")
     if load_name is not None:
         load_path: Path = checkpoints_path / load_name
     else:
