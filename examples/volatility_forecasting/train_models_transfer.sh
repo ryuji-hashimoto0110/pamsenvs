@@ -57,7 +57,7 @@ python train_models.py \
 --num_epochs ${num_epochs} \
 --batch_size ${batch_size} \
 --num_workers ${num_workers} \
---load_name ${load_name} ¥
+--load_name ${load_name} \
 --best_save_name ${best_save_name} \
 --last_save_name ${last_save_name} \
 --seed ${seed}
