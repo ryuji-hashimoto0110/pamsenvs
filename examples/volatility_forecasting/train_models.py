@@ -166,7 +166,7 @@ def main(args):
         test_mean_std_dic_path: Path = mean_std_dics_path / test_mean_std_dic_name
         if test_mean_std_dic_path.exists():
             test_mean_std_dic: dict[str, dict[str, float]] = json.load(
-                fp=open(str(train_mean_std_dic_path), mode="r")
+                fp=open(str(test_mean_std_dic_path), mode="r")
             )
     if test_data_type is not None:
         assert test_mean_std_dic is not None
