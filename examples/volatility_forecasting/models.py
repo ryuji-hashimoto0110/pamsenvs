@@ -7,7 +7,6 @@ import torch.nn.functional as F
 from typing import Optional
 
 class PositionalEncoding(Module):
-
     def __init__(
         self,
         hidden_dim: int,
@@ -40,6 +39,7 @@ class PositionalEncoding(Module):
         Args:
             x: Tensor, shape ``[batch_size, seq_len, hidden_dim]``
         """
+        self.pe.device = x.device
         x = x + self.pe[:,:x.shape[1],:]
         return self.dropout(x)
 
