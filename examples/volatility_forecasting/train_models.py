@@ -168,6 +168,7 @@ def main(args):
             test_mean_std_dic: dict[str, dict[str, float]] = json.load(
                 fp=open(str(test_mean_std_dic_path), mode="r")
             )
+            print(test_mean_std_dic)
     if test_data_type is not None:
         assert test_mean_std_dic is not None
         test_dataset: Dataset = create_dataset(
