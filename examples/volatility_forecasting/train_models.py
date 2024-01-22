@@ -11,6 +11,7 @@ from torch.nn import Module
 from torch.nn import MSELoss
 import torch.optim as optim
 from torch.utils.data import Dataset
+from torch.utils.data import random_split
 from torch.utils.data.dataset import Subset
 from typing import Optional
 from volatility_forecasting import RVDataset
@@ -150,10 +151,9 @@ def main(args):
         if train_dataset is not None:
             all_n: int = len(train_dataset)
             train_n: int = int(all_n * 0.7)
-            valid_indices: list[int] = list(range(train_n, all_n))
-            train_indices: list[int] = list(range(0, train_n))
-            valid_dataset: Dataset = Subset(train_dataset, valid_indices)
-            train_dataset: Dataset = Subset(train_dataset, train_indices)
+            train_dataset, valid_dataset = random_split(
+                train_dataset, [train_n, all_n-train_n]
+            )
     test_mean_std_dic_name: Optional[str] = all_args.test_mean_std_dic_name
     test_mean_std_dic: Optional[dict[str, dict[str, float]]] = None
     if test_mean_std_dic_name is not None:
