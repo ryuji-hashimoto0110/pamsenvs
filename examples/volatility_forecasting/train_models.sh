@@ -1,4 +1,4 @@
-encoder_type="LSTM"
+encoder_type="Transformer"
 
 train_data_type="real"
 valid_data_type="real"
@@ -25,8 +25,8 @@ learning_rate=0.0003
 num_epochs=100
 batch_size=512
 num_workers=2
-best_save_name="lstm_aapl2017_best.pth"
-last_save_name="lstm_aapl2017_last.pth"
+best_save_name="transformer_aapl2017_best.pth"
+last_save_name="transformer_aapl2017_last.pth"
 seed=42
 python train_models.py \
 --encoder_type ${encoder_type} \

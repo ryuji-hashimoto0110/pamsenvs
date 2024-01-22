@@ -127,7 +127,7 @@ def main(args):
     train_mean_std_dic_name: Optional[str] = all_args.train_mean_std_dic_name
     print(f"model type: {encoder_type}")
     print(f"data type: [tra]{train_data_type} [val]{valid_data_type} [test]{test_data_type}")
-    print(f"olhcv folder name: [tra]{train_olhcv_name} [val]{valid_olhcv_name} [test]{test_data_type}")
+    print(f"olhcv folder name: [tra]{train_olhcv_name} [val]{valid_olhcv_name} [test]{test_olhcv_name}")
     print(f"use csv names: [tra]{train_csv_names} [val]{valid_csv_names} [test]{test_csv_names}")
     print(f"obs num per 1 record: [tra]{train_obs_num} [val]{valid_obs_num} [test]{test_obs_num}")
     mean_std_dic: Optional[dict[str, dict[str, float]]] = None
