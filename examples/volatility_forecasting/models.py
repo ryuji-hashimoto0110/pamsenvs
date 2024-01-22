@@ -81,7 +81,7 @@ class RVPredictor(nn.Module):
         if encoder_type == "LSTM":
             self.encoder: Module = nn.LSTM(
                 input_size=hidden_dim, hidden_size=hidden_dim,
-                num_layers=2, dropout=0.1, batch_first=True
+                num_layers=64, dropout=0.1, batch_first=True
             )
         elif encoder_type == "Transformer":
             assert nhead is not None
@@ -90,7 +90,7 @@ class RVPredictor(nn.Module):
                 d_model=hidden_dim, nhead=nhead, batch_first=True
             )
             transformer_encoder: Module = nn.TransformerEncoder(
-                encoder_layer, num_layers=1
+                encoder_layer, num_layers=6
             )
             self.encoder: Module = nn.Sequential(pos, transformer_encoder)
         else:
