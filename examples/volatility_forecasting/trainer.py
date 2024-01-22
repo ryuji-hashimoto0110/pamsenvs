@@ -180,5 +180,5 @@ class RVTrainer:
         self.test_loss: float = 0.0
         for batch in self.test_dataloader:
             self.test_loss = self._validate_step(batch, self.test_loss)
-        self.test_loss = np.sqrt(self.test_loss / self.valid_n)
+        self.test_loss = np.sqrt(self.test_loss / self.test_n)
         print(f"loss[test]{self.test_loss:.4f}")
