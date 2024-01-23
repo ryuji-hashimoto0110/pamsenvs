@@ -6,6 +6,7 @@ from torch import Tensor
 from torch.nn import Module
 import torch.optim as optim
 from torch.optim import Optimizer
+from torch.optim import lr_scheduler
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from typing import Optional
@@ -33,6 +34,9 @@ class RVTrainer:
         self.model = model.to(self.device)
         self.criterion = criterion
         self.optimizer = optimizer
+        self.scheduler = lr_scheduler.ReduceLROnPlateau(
+            self.optimizer, patience=5, verbose=True
+        )
         self.train_dataset = train_dataset
         if train_dataset is not None:
             self.train_n: int = len(train_dataset)
@@ -71,6 +75,7 @@ class RVTrainer:
             self.valid_loss: float = 0.0
             for batch in self.valid_dataloader:
                 self.valid_loss = self._validate_step(batch, self.valid_loss)
+            self.scheduler.step(self.valid_loss)
             self.train_loss = np.sqrt(self.train_loss / self.train_n)
             self.valid_loss = np.sqrt(self.valid_loss / self.valid_n)
             self._record_losses(epoch)
