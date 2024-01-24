@@ -150,7 +150,7 @@ def main(args):
         valid_dataset: Dataset = create_dataset(
             data_type=valid_data_type, olhcv_name=valid_olhcv_name,
             csv_names=valid_csv_names, obs_num=valid_obs_num,
-            mean_std_dic=mean_std_dic, mean_std_dic_save_path=train_mean_std_dic_path
+            mean_std_dic=mean_std_dic
         )
     else:
         if train_dataset is not None:
@@ -173,7 +173,7 @@ def main(args):
         test_dataset: Dataset = create_dataset(
             data_type=test_data_type, olhcv_name=test_olhcv_name,
             csv_names=test_csv_names, obs_num=test_obs_num,
-            mean_std_dic=test_mean_std_dic, mean_std_dic_save_path=test_mean_std_dic_path
+            mean_std_dic=test_mean_std_dic
         )
     criterion_type: str = all_args.criterion_type
     if criterion_type == "MSE":
