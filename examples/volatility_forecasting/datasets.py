@@ -14,6 +14,7 @@ from torch.utils.data import Dataset
 from typing import Optional
 import warnings
 from scipy import stats
+plt.rcParams["font.size"] = 12
 
 class RVDataset(Dataset):
     def __init__(
@@ -59,10 +60,11 @@ class RVDataset(Dataset):
         else:
             self.mean_std_dic: dict[str, dict[str, Optional[float]]] = mean_std_dic
         if isinstance(self.return_arrs, ndarray):
-            self.return_arrs, mean, std = self._categorize(
+            self.return_arrs, mean, std = self._normalize(
                 self.return_arrs,
                 self.mean_std_dic["return"]["mean"],
-                self.mean_std_dic["return"]["std"]
+                self.mean_std_dic["return"]["std"],
+                [-7, 7]
             )
             print(f"return: [mean]{mean:.3f} [std]{std:.4f}")
             self.mean_std_dic["return"]["mean"] = mean
@@ -287,7 +289,8 @@ class RVDataset(Dataset):
         self,
         feature_arrs: ndarray,
         mean: Optional[float] = None,
-        std: Optional[float] = None
+        std: Optional[float] = None,
+        clip_ranges: Optional[list[float]] = None
     ) -> tuple[ndarray, float]:
         """normalize features.
 
@@ -303,26 +306,41 @@ class RVDataset(Dataset):
             if std is None:
                 std: float = feature_arrs.std()
             feature_arrs = (feature_arrs - mean) / (std + 1e-10)
+            if clip_ranges is not None:
+                assert isinstance(clip_ranges, list)
+                assert len(clip_ranges) == 2
+                feature_arrs = np.clip(feature_arrs, clip_ranges[0], clip_ranges[1])
         else:
             raise NotImplementedError
         return feature_arrs, mean, std
 
-    def plot_features(self, img_name: str) -> None:
-        fig = plt.figure(figsize=(30,20), dpi=50, facecolor="w")
+    def plot_features(
+        self,
+        img_name: str,
+        title: Optional[str] = None
+    ) -> None:
+        fig = plt.figure(figsize=(15,17), dpi=50, facecolor="w")
         ax1: Axes = fig.add_subplot(3,1,1)
+        ax1.set_xlim([-4,4])
         self._hist_features(
-            ax1, self.return_arrs, 5, xlabel="return", title=""
+            ax1, self.return_arrs, 50, xlabel="return", title=""
         )
+        ax1.set_title("histgram of normalized return")
         ax2: Axes = fig.add_subplot(3,1,2)
-        ax2.set_xlim([-2,8])
+        ax2.set_xlim([-2.5,10])
         self._hist_features(
             ax2, self.volume_arrs, 50, xlabel="volume", title=""
         )
+        ax2.set_title("histgram of normalized volume")
         ax3: Axes = fig.add_subplot(3,1,3)
-        ax3.set_xlim([-4,4])
+        ax3.set_xlim([-6, 6])
         self._hist_features(
             ax3, self.rv_arrs, 50, xlabel="realized volatility", title=""
         )
+        ax3.set_title("histgram of normalized realized volatility")
+        if title is not None:
+            fig.tight_layout(rect=[0,0,1,0.96])
+            fig.suptitle(title)
         fig_save_path: Path = self.imgs_path / img_name
         plt.savefig(str(fig_save_path), bbox_inches="tight", pad_inches=0.1)
         plt.close(fig)
