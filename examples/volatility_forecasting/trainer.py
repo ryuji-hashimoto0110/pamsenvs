@@ -35,7 +35,7 @@ class RVTrainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.scheduler = lr_scheduler.ReduceLROnPlateau(
-            self.optimizer, patience=2, verbose=True
+            self.optimizer, factor=0.5, patience=2, verbose=True,
         )
         self.train_dataset = train_dataset
         if train_dataset is not None:
