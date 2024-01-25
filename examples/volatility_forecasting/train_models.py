@@ -155,7 +155,7 @@ def main(args):
     else:
         if train_dataset is not None:
             all_n: int = len(train_dataset)
-            train_n: int = int(all_n * 0.99)
+            train_n: int = int(all_n * 0.7)
             train_dataset, valid_dataset = random_split(
                 train_dataset, [train_n, all_n-train_n]
             )
