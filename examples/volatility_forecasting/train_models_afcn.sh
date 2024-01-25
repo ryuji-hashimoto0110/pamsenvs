@@ -11,7 +11,7 @@ test_csv_names="AAPL2019.csv"
 train_obs_num=30
 test_obs_num=13
 
-train_mean_std_dic_name="aapl2017.json"
+train_mean_std_dic_name="afcn_random.json"
 test_mean_std_dic_name="aapl2017.json"
 
 criterion_type="MSE"
