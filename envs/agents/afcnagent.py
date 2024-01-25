@@ -83,8 +83,6 @@ class aFCNAgent(Agent):
                     The precise relative risk aversion coefficient is calculated
                     by using fundamental/chart weights.
                 and can include
-                - meanReversionTime: time scale over which
-                    the fundamentalist component for the mean reversion of the price to the fundamental.
                 - chartFollowRate: probability that the agent is chart-follower.
             accessible_market_ids (list[MarketID]): _description_
 
@@ -114,12 +112,6 @@ class aFCNAgent(Agent):
         self.risk_aversion_term: float = json_random.random(
             json_value=settings["riskAversionTerm"]
         )
-        if "meanReversionTime" in settings:
-            self.mean_reversion_time: int = int(
-                json_random.random(json_value=settings["meanReversionTime"])
-            )
-        else:
-            self.mean_reversion_time: int = self.time_window_size
         if "chartFollowRate" in settings:
             p: float = settings["chartFollowRate"]
             if p < 0 or 1 < p:
@@ -294,7 +286,7 @@ class aFCNAgent(Agent):
         time: int = market.get_time()
         market_price: float = market.get_market_price()
         fundamental_price: float = market.get_fundamental_price()
-        fundamental_scale: float = 1.0 / max(self.mean_reversion_time, 1)
+        fundamental_scale: float = 1.0 / max(time_window_size, 1)
         fundamental_log_return: float = fundamental_scale * math.log(
             fundamental_price / market_price
         )
