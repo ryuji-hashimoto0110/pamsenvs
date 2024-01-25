@@ -11,13 +11,13 @@ test_csv_names="AAPL2019.csv"
 train_obs_num=30
 test_obs_num=13
 
-train_mean_std_dic_name="afcn_random.json"
+train_mean_std_dic_name="aapl2017.json"
 test_mean_std_dic_name="aapl2017.json"
 
 criterion_type="MSE"
 optimizer_type="AdamW"
-learning_rate=0.0003
-num_epochs=100
+learning_rate=0.00001
+num_epochs=50
 batch_size=512
 num_workers=2
 best_save_name="transformer_afcn_random_best.pth"
