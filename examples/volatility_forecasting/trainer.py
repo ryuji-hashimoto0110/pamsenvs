@@ -138,7 +138,7 @@ class RVTrainer:
             self.end_epoch: int = self.start_epoch + self.num_epochs
             self.train_losses: list[float] = checkpoint["train_losses"]
             self.valid_losses: list[float] = checkpoint["valid_losses"]
-            self.best_loss: list[float] = checkpoint["best_loss"]
+            self.best_loss: list[float] = 1e+10
         else:
             self.start_epoch: int = 0
             self.end_epoch: int = self.num_epochs
