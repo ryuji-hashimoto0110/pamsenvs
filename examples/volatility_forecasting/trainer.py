@@ -4,7 +4,6 @@ import random
 import torch
 from torch import Tensor
 from torch.nn import Module
-import torch.optim as optim
 from torch.optim import Optimizer
 from torch.optim import lr_scheduler
 from torch.utils.data import Dataset
@@ -59,6 +58,7 @@ class RVTrainer:
         np.random.seed(seed)
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
         torch.use_deterministic_algorithms = True
 
