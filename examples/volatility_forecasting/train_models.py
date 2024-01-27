@@ -208,6 +208,7 @@ def main(args):
     else:
         best_save_path = None
     seed: int = all_args.seed
+    print(f"seed={seed}")
     trainer = RVTrainer(
         model=model, criterion=criterion, optimizer=optimizer,
         train_dataset=train_dataset, valid_dataset=valid_dataset,
