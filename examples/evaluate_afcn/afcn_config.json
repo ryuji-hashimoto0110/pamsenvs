@@ -11,7 +11,7 @@
 				"maxHighFrequencyOrders": 0
 			},
 			{	"sessionName": 1,
-				"iterationSteps": 45901,
+				"iterationSteps": 45900,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true
@@ -23,7 +23,7 @@
 		"tickSize": 0.1,
 		"marketPrice": 300.0,
 		"fundamentalDrift": {"uniform": [-0.000001,0.0000001]},
-    	"fundamentalVolatility": {"uniform": [0.0, 0.003]}
+		"fundamentalVolatility": {"uniform": [0.0, 0.003]}
 	},
 	"aFCNAgents": {
 		"class": "aFCNAgent",
@@ -32,12 +32,13 @@
 		"assetVolume": {"uniform": [0,50]},
 		"cashAmount": {"uniform": [0,15000]},
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.5]},
-		"noiseWeight": 1.0,
+		"chartWeight": {"expon": [3.0]},
+		"noiseWeight": {"expon": [1.0]},
         "feedbackAsymmetry": {"uniform": [0.0, 0.0]},
         "noiseAsymmetry": {"uniform": [0.0, 0.0]},
-		"noiseScale": 0.0001,
+		"noiseScale": 0.00005,
 		"timeWindowSize": 200,
+		"meanReversionTime": 300,
 		"chartFollowRate": 0.5,
 		"riskAversionTerm": 0.1
 	}
