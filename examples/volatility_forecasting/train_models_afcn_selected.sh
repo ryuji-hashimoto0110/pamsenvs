@@ -16,7 +16,7 @@ test_csv_names="AAPL2019.csv"
 train_obs_num=30
 test_obs_num=13
 
-train_mean_std_dic_name="afcn_random.json"
+train_mean_std_dic_name="afcn_random_selected.json"
 test_mean_std_dic_name="aapl2017.json"
 
 criterion_type="MSE"
@@ -25,8 +25,8 @@ learning_rate=0.0001
 num_epochs=60
 batch_size=512
 num_workers=2
-best_save_name="transformer_afcn_random_best.pth"
-last_save_name="transformer_afcn_random_last.pth"
+best_save_name="transformer_afcn_random_selected_best.pth"
+last_save_name="transformer_afcn_random_selectef_last.pth"
 seed=42
 python train_models.py \
 --encoder_type ${encoder_type} \
