@@ -52,7 +52,7 @@ class RVTrainer:
         self.load_path: Optional[Path] = load_path
         self.best_save_path: Optional[Path] = best_save_path
         self.last_save_path: Optional[Path] = last_save_path
-        self.set_seed(seed)
+        self.seed: int = seed
 
     def set_seed(self, seed: int) -> None:
         random.seed(seed)
@@ -64,6 +64,7 @@ class RVTrainer:
 
     def fit(self) -> None:
         print(f"start training. train_n{self.train_n} valid_n{self.valid_n}")
+        self.set_seed(self.seed)
         self._setup()
         assert self.train_dataset is not None
         assert self.valid_dataset is not None
@@ -174,6 +175,7 @@ class RVTrainer:
             f"loss[tra]{self.train_loss:.4f} [val]{self.valid_loss:.4f}")
 
     def test(self):
+        self.set_seed(self.seed)
         assert self.test_dataset is not None
         print(f"start testing. test_n={self.test_n}")
         if self.best_save_path is not None:
