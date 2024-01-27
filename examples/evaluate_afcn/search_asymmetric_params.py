@@ -57,10 +57,10 @@ class aFCNDataMaker(DataMaker):
             a_noise = prng.uniform(0, max_a_noise)
             config["aFCNAgents"]["feedbackAsymmetry"]["uniform"] = [0, a_feedback]
             config["aFCNAgents"]["noiseAsymmetry"]["uniform"] = [0, a_noise]
-            daily_datas_path: Path = parent_daily_datas_path / "random"
+            daily_datas_path: Path = parent_daily_datas_path / "random_m"
             if not daily_datas_path.exists():
                 daily_datas_path.mkdir(parents=True)
-            intraday_datas_path: Path = parent_intraday_datas_path / "random"
+            intraday_datas_path: Path = parent_intraday_datas_path / "random_m"
             if not intraday_datas_path.exists():
                 intraday_datas_path.mkdir(parents=True)
             self.create_artificial_olhcvs(
