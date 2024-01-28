@@ -81,6 +81,8 @@ class RVTrainer:
             self.valid_loss = np.sqrt(self.valid_loss / self.valid_n)
             self._record_losses(epoch)
             self._save_checkpoint(epoch)
+            if self.test_dataset is not None:
+                self.test()
 
     def _train_step(
         self,
