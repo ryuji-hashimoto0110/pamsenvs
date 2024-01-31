@@ -1,7 +1,7 @@
 {
 	"simulation": {
 		"markets": ["Market"],
-		"agents": ["aFCNAgents"],
+		"agents": ["aFCNAgents", "laFCNAgents"],
 		"sessions": [
 			{	"sessionName": 0,
 				"iterationSteps": 100,
@@ -20,7 +20,7 @@
 	},
 	"Market": {
 		"class": "Market",
-		"tickSize": 0.1,
+		"tickSize": 0.0005,
 		"marketPrice": 300.0,
 		"fundamentalDrift": {"uniform": [-0.000001,0.0000001]},
 		"fundamentalVolatility": {"uniform": [0.0, 0.003]}
@@ -31,6 +31,23 @@
 		"markets": ["Market"],
 		"assetVolume": {"uniform": [0,50]},
 		"cashAmount": {"uniform": [0,15000]},
+		"fundamentalWeight": {"expon": [10.0]},
+		"chartWeight": {"expon": [3.0]},
+		"noiseWeight": {"expon": [1.0]},
+        "feedbackAsymmetry": {"uniform": [0.0, 0.0]},
+        "noiseAsymmetry": {"uniform": [0.0, 0.0]},
+		"noiseScale": 0.00005,
+		"timeWindowSize": 200,
+		"meanReversionTime": 300,
+		"chartFollowRate": 0.5,
+		"riskAversionTerm": 0.1
+	},
+	"laFCNAgents": {
+		"class": "aFCNAgent",
+		"numAgents": 5,
+		"markets": ["Market"],
+		"assetVolume": {"uniform": [50,5000]},
+		"cashAmount": {"uniform": [15000,1500000]},
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [3.0]},
 		"noiseWeight": {"expon": [1.0]},
