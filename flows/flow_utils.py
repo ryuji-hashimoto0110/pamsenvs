@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from flows import FlowTransformLayer
 import numpy as np
 from numpy import ndarray
 import torch
@@ -83,7 +84,7 @@ class FlowLayerStacker(Module):
             )
         return latent_variables, log_det_jacobian
 
-class FlowBatchNorm(Module):
+class FlowBatchNorm(FlowTransformLayer):
     """Batch Normalization module for Flow layer."""
     def __init__(
         self,
@@ -110,8 +111,7 @@ class FlowBatchNorm(Module):
             is_affine_learnable (bool, optional): if set to True, this module has
                 learnable affine parameters. Defaults to True.
         """
-        super(FlowBatchNorm, self).__init__()
-        self.input_shape: ndarray = input_shape # [1, 28, 28]
+        super(FlowBatchNorm, self).__init__(input_shape)
         self.momentum: float = momentum
         self.input_shape_dim: list[int] = [1] + [1 for _ in input_shape]
         self.input_shape_dim[1] = input_shape[0] # [1, 1, 1, 1] w/ batch
