@@ -5,7 +5,7 @@ def get_config():
     parser.add_argument("--flow_type", type=str,
                         choices=["planar"])
     parser.add_argument("--data_type", type=str,
-                        choices=["mnist"])
+                        choices=["mnist", "cifar10"])
     parser.add_argument("--config_json_name", type=str)
     parser.add_argument("--batch_size", type=int)
     parser.add_argument("--num_workers", type=int)

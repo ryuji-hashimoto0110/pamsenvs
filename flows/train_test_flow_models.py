@@ -18,6 +18,7 @@ from torch.utils.data import Dataset
 from torch.utils.data import random_split
 from torchvision import datasets
 import torchvision.transforms as transforms
+from typing import Literal
 from typing import Optional
 
 def parse_args(args, parser):
@@ -45,10 +46,10 @@ def parse_args(args, parser):
         "--last_save_name", type=str, default=None
     )
     parser.add_argument(
-        "--mnist_train_folder_name", type=str, default=None
+        "--train_folder_name", type=str, default=None
     )
     parser.add_argument(
-        "--mnist_test_folder_name", type=str, default=None
+        "--test_folder_name", type=str, default=None
     )
     parser.add_argument("--seed_range", type=int, nargs="+",
                     default=[42, 43])
@@ -74,36 +75,62 @@ def create_model(
     model: FlowModel = PlanarFlow(config_dic)
     return model
 
-def create_mnist_dataset(
-    train_path: Path, test_path: Path
+def create_image_dataset(
+    train_path: Path,
+    test_path: Path,
+    data_name: Literal["mnist", "cifar10"]
 ) -> tuple[Dataset]:
     print("[red]==create MNIST datasets==[/red]")
-    trainval_dataset: Dataset = datasets.MNIST(
-        train_path, train=True, download=True,
-        transform=transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    [0.5],[0.55]
-                )
-            ]
+    if data_name == "mnist":
+        trainval_dataset: Dataset = datasets.MNIST(
+            train_path, train=True, download=True,
+            transform=transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        [0.5],[0.55]
+                    )
+                ]
+            )
         )
-    )
+        test_dataset: Dataset = datasets.MNIST(
+            test_path, train=False, download=True,
+            transform=transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        [0.5],[0.55]
+                    )
+                ]
+            )
+        )
+    elif data_name == "cifar10":
+        trainval_dataset: Dataset = datasets.CIFAR10(
+            train_path, train=True, download=True,
+            transform=transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        [0.5],[0.55]
+                    )
+                ]
+            )
+        )
+        test_dataset: Dataset = datasets.CIFAR10(
+            test_path, train=False, download=True,
+            transform=transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        [0.5],[0.55]
+                    )
+                ]
+            )
+        )
     all_n: int = len(trainval_dataset)
     train_n: int = int(all_n * 0.7)
     train_dataset, valid_dataset = random_split(
         trainval_dataset, [train_n, all_n-train_n]
-    )
-    test_dataset: Dataset = datasets.MNIST(
-        test_path, train=False, download=True,
-        transform=transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    [0.5],[0.55]
-                )
-            ]
-        )
     )
     tree = Tree(str(train_path.parent.resolve()))
     tree.add(train_path.name)
@@ -128,13 +155,13 @@ def main(args):
         )
     model: FlowModel = create_model(flow_type, config_dic)
     data_type: str = all_args.data_type
-    if data_type == "mnist":
-        mnist_train_folder_name: str = all_args.mnist_train_folder_name
-        mnist_test_folder_name: str = all_args.mnist_test_folder_name
-        mnist_train_path: Path = root_path / mnist_train_folder_name
-        mnist_test_path: Path = root_path / mnist_test_folder_name
-        train_dataset, valid_dataset, test_dataset = create_mnist_dataset(
-            mnist_train_path, mnist_test_path
+    if data_type == "mnist" or data_type == "cifar10":
+        train_folder_name: str = all_args.train_folder_name
+        test_folder_name: str = all_args.mnist_test_folder_name
+        train_path: Path = root_path / train_folder_name
+        test_path: Path = root_path / test_folder_name
+        train_dataset, valid_dataset, test_dataset = create_image_dataset(
+            train_path, test_path, data_type
         )
     else:
         raise NotImplementedError
