@@ -7,6 +7,7 @@ from torch import nn
 from torch import Tensor
 from torch.nn import Module
 from torch.nn import ModuleList
+from torch.nn.utils.parametrizations import weight_norm
 from typing import Optional
 
 def deriv_tanh(x: float) -> float:
@@ -209,6 +210,33 @@ class FlowBatchNorm(FlowTransformLayer):
             self.log_gamma - 0.5 * torch.log(var)
         ) * num_pixels
         return z_k, log_det_jacobian
+
+class LinearResBlock(Module):
+    def __init__(
+        self,
+        input_dim: int,
+        output_dim: int,
+    ) -> None:
+        super(LinearResBlock, self).__init__()
+        self.net: Module = nn.Sequential(
+            nn.BatchNorm1d(input_dim),
+            nn.ReLU(inplace=True),
+            weight_norm(nn.Linear(input_dim, output_dim)),
+            nn.BatchNorm1d(output_dim),
+            nn.ReLU(inplace=True),
+            weight_norm(nn.Linear(output_dim, output_dim))
+        )
+        if input_dim != output_dim:
+            self.bridge: Module = weight_norm(
+                nn.Linear(input_dim, output_dim)
+            )
+        else:
+            self.bridge: Module = nn.Sequential()
+
+    def forward(self, input_tensor: Tensor):
+        output_tensor: Tensor = self.net(input_tensor)
+        output_tensor += self.bridge(input_tensor)
+        return output_tensor
 
 
 
