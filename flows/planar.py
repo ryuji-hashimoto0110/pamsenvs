@@ -178,15 +178,3 @@ class PlanarFlow(FlowModel):
             layers.append(PlanarTransformLayer(self.input_shape))
         net: Module = FlowLayerStacker(layers)
         return net
-
-    def forward(
-        self,
-        latent_variables: Tensor
-    ) -> tuple[Tensor, Tensor]:
-        return self.net(latent_variables)
-
-    def backward(
-        self,
-        observed_variables: Tensor
-    ) -> tuple[Tensor, Tensor]:
-        return self.net.backward(observed_variables)

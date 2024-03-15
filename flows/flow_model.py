@@ -122,7 +122,6 @@ class FlowModel(Module):
         """
         pass
 
-    @abstractmethod
     def forward(
         self,
         latent_variables: Tensor
@@ -140,9 +139,8 @@ class FlowModel(Module):
             log_det_jacobian (Tensor): log determinant of
                 jacobian sum(log|df_k/dz_{k-1}|). ```[batch_size, 1]```.
         """
-        pass
+        return self.net(latent_variables)
 
-    @abstractmethod
     def backward(
         self,
         observed_variables: Tensor
@@ -160,7 +158,7 @@ class FlowModel(Module):
             log_det_jacobian (Tensor): log determinant of
                 jacobian -sum(log|df_k_ /dz_k|). ```[batch_size, 1]```.
         """
-        pass
+        return self.net.backward(observed_variables)
 
     def calc_log_likelihood(
         self,
