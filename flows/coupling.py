@@ -1,7 +1,11 @@
 from abc import abstractmethod
 from flows import FlowTransformLayer
+from flows import ConvResBlock
+from flows import LinearResBlock
 from numpy import ndarray
 import torch
+from torch import nn
+from torch.nn import Module
 from torch import Tensor
 from typing import Literal
 
@@ -216,13 +220,14 @@ class BijectiveCouplingLayer(FlowTransformLayer):
 
     @abstractmethod
     def _transform(
+        self,
         z_k1_: Tensor,
         z_k2_: Tensor,
         log_det_jacobian: Tensor
     ) -> tuple[Tensor]:
         """transform method.
 
-        BC layer f_k transform input blocks z_k1_ and z_k2_ into z_k1, z_k2.
+        BC layer f_k transforms input blocks z_k1_ and z_k2_ into z_k1 and z_k2.
             z_k = f_k(z_k_)
             z_k1_, z_k2_ = split(z_k_)
             z_k1 = z_k1_
@@ -243,13 +248,14 @@ class BijectiveCouplingLayer(FlowTransformLayer):
 
     @abstractmethod
     def _inverse_transform(
+        self,
         z_k1: Tensor,
         z_k2: Tensor,
         log_det_jacobian: Tensor
     ) -> tuple[Tensor]:
         """inverse transform method.
 
-        BC layer f_k^{-1} transform input blocks z_k1 and z_k2 into z_k1_, z_k2_.
+        BC layer f_k^{-1} transforms input blocks z_k1 and z_k2 into z_k1_ and z_k2_.
             z_k_ = f_k^{-1}(z_k)
             z_k1, z_k2 = split(z_k)
             z_k1_ = z_k1
@@ -272,9 +278,102 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
     def __init__(
         self,
         input_shape: ndarray,
-        split_pattern: Literal['checkerboard', 'channelwise'] = "checkerboard",
+        split_pattern: Literal["checkerboard", "channelwise"] = "checkerboard",
         is_odd: bool = False
     ) -> None:
         super(AffineCouplingLayer, self).__init__(
             input_shape, split_pattern, is_odd
         )
+        self.input_shape = input_shape
+        self.split_pattern = split_pattern
+        self.register_parameter(
+            "s_log_scale", nn.Parameter(torch.randn(1) * 0.01)
+        )
+        self.register_parameter(
+            "s_bias", nn.Parameter(torch.randn(1) * 0.01)
+        )
+        if len(input_shape) == 1:
+            input_dim: int = input_shape[0] // 2 if not is_odd else (input_shape[0] + 1) // 2
+            output_dim: int = input_shape[0] - input_dim
+            self.net: Module = LinearResBlock(
+                input_dim=input_dim, output_dim=output_dim
+            )
+            self.out_channels: int = output_dim
+        elif len(input_shape) == 3:
+            if split_pattern == "checkerboard":
+                in_channels: int = input_shape[0]
+                self.out_channels: int = in_channels
+                reduce_size: bool = True if not is_odd else False
+            elif split_pattern == "channelwise":
+                in_channels: int = input_shape[0] // 2 if not is_odd else (input_shape[0] + 1) // 2
+                self.out_channels: int = input_shape[0] - in_channels
+                reduce_size: bool = False
+            self.net: Module = ConvResBlock(
+                in_channels=in_channels, out_channels=self.out_channels,
+                reduce_size=reduce_size
+            )
+        else:
+            raise NotImplementedError
+
+    def _transform(
+        self,
+        z_k1_: Tensor,
+        z_k2_: Tensor,
+        log_det_jacobian: Tensor
+    ) -> tuple[Tensor]:
+        """_transform method.
+
+        Affine Coupling transforms input blocks z_k1_ and z_k2_ into z_k1 and z_k2 by the
+        following calculation with s, t, which stand for scale and translation.
+            z_k1 = z_k1_
+            z_k2 = z_k2_ * exp(s(z_k1_)) + t(z_k1_)
+
+        det Jacobian |df_k/dz_{k-1}| in AffineCoupling can be calculated by:
+            |df_k/dz_{k-1}| = sum exp(s(z_k1_))
+
+        Args:
+            z_k1_ (Tensor): _description_
+            z_k2_ (Tensor): _description_
+            log_det_jacobian (Tensor): _description_
+
+        Returns:
+            z_k1 (Tensor)
+            z_k2 (Tensor)
+            log_det_jacobian
+        """
+        t_z_k1_: Tensor = self.net(z_k1_)
+        s_z_k1_: Tensor = torch.tanh(t_z_k1_) * self.s_log_scale + self.s_bias
+        z_k1: Tensor = z_k1_
+        z_k2: Tensor = z_k2_ * torch.exp(s_z_k1_) + t_z_k1_
+        log_det_jacobian += torch.sum(s_z_k1_.view(s_z_k1_.shape[0], -1), dim=1)
+        return z_k1, z_k2, log_det_jacobian
+
+    def _inverse_transform(
+        self,
+        z_k1: Tensor,
+        z_k2: Tensor,
+        log_det_jacobian: Tensor
+    ) -> tuple[Tensor]:
+        """_inverse_transform method.
+
+        inverse transformation of Affine Coupling transforms blocks z_k1 and z_k2
+        into z_k1_ and z_k2_.
+            z_k1_ = z_k1
+            z_k2_ = (z_k2 - t(z_k1)) * exp(-s(z_k1))
+
+        Args:
+            z_k1 (Tensor): _description_
+            z_k2 (Tensor): _description_
+            log_det_jacobian (Tensor): _description_
+
+        Returns:
+            z_k1_ (Tensor)
+            z_k2_ (Tensor)
+            log_det_jacobian
+        """
+        t_z_k1: Tensor = self.net(z_k1)
+        s_z_k1: Tensor = torch.tanh(t_z_k1) * self.log_scale + self.s_bias
+        z_k1_: Tensor = z_k1
+        z_k2_: Tensor = (z_k2 - t_z_k1) * torch.exp(-s_z_k1)
+        log_det_jacobian += torch.sum(s_z_k1.view(s_z_k1.shape[0], -1), dim=1)
+        return z_k1_, z_k2_, log_det_jacobian
