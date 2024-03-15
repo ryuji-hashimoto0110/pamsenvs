@@ -1,7 +1,7 @@
 from abc import abstractmethod
-from flows import FlowTransformLayer
-from flows import ConvResBlock
-from flows import LinearResBlock
+from .flow_model import FlowTransformLayer
+from .flow_utils import ConvResBlock
+from .flow_utils import LinearResBlock
 from numpy import ndarray
 import torch
 from torch import nn

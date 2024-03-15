@@ -1,4 +1,4 @@
-from flows import FlowModel
+from .flow_model import FlowModel
 import numpy as np
 from pathlib import Path
 import random

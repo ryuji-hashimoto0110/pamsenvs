@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from flows import FlowTransformLayer
+from .flow_model import FlowTransformLayer
 import numpy as np
 from numpy import ndarray
 import torch

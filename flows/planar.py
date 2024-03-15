@@ -1,7 +1,7 @@
-from flows import deriv_tanh
-from flows import FlowModel
-from flows import FlowLayerStacker
-from flows import FlowTransformLayer
+from .flow_model import FlowModel
+from .flow_model import FlowTransformLayer
+from .flow_utils import deriv_tanh
+from .flow_utils import FlowLayerStacker
 import numpy as np
 import numpy as ndarray
 import torch

@@ -1,8 +1,8 @@
-from flows import AffineCouplingLayer
-from flows import FlowBatchNorm
-from flows import FlowModel
-from flows import FlowLayerStacker
-from flows import FlowTransformLayer
+from .coupling import AffineCouplingLayer
+from .flow_model import FlowModel
+from .flow_model import FlowTransformLayer
+from .flow_utils import FlowBatchNorm
+from .flow_utils import FlowLayerStacker
 from torch.nn import Module
 
 class RealNVP(FlowModel):

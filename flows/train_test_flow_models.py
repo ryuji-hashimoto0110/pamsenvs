@@ -6,11 +6,12 @@ import sys
 curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
 root_path: Path = curr_path.parents[0]
 sys.path.append(str(root_path))
-from flows import CircleDataset2d
-from flows import get_config
-from flows import FlowModel
-from flows import FlowTrainer
-from flows import PlanarFlow
+from .datasets import CircleDataset2d
+from .config import get_config
+from .flow_model import FlowModel
+from .trainer import FlowTrainer
+from .planar import PlanarFlow
+from .realnvp import RealNVP
 import json
 from rich import print
 from rich.tree import Tree
@@ -71,7 +72,8 @@ def parse_args(args, parser):
     return all_args
 
 model_dic: dict[str, FlowModel] = {
-    "planar": PlanarFlow
+    "planar": PlanarFlow,
+    "realnvp": RealNVP
 }
 
 def create_model(
