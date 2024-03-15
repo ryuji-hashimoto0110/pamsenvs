@@ -79,7 +79,7 @@ class FlowLayerStacker(Module):
                 observed_variables.shape[0]
             ).type_as(observed_variables).to(observed_variables.device)
         latent_variables: Tensor = observed_variables
-        for layer in self.layers:
+        for layer in reversed(self.layers):
             latent_variables, log_det_jacobian = layer.backward(
                 latent_variables, log_det_jacobian
             )
