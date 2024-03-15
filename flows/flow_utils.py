@@ -242,7 +242,8 @@ class ConvResBlock(Module):
     def __init__(
         self,
         in_channels: int,
-        out_channels: int
+        out_channels: int,
+        reduce_size: bool
     ) -> None:
         super(ConvResBlock, self).__init__()
         self.net: Module = nn.Sequential(
@@ -251,7 +252,7 @@ class ConvResBlock(Module):
             weight_norm(
                 nn.Conv2d(
                     in_channels=in_channels, out_channels=out_channels,
-                    kernel_size=3, stride=1, padding=1
+                    kernel_size=3+int(reduce_size), stride=1, padding=1
                 )
             ),
             nn.BatchNorm2d(out_channels),
