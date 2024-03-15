@@ -1,10 +1,12 @@
 import argparse
+from numpy import ndarray
 import pathlib
 from pathlib import Path
 import sys
 curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
 root_path: Path = curr_path.parents[0]
 sys.path.append(str(root_path))
+from flows import CircleDataset2d
 from flows import get_config
 from flows import FlowModel
 from flows import FlowTrainer
@@ -51,6 +53,18 @@ def parse_args(args, parser):
     parser.add_argument(
         "--test_folder_name", type=str, default=None
     )
+    parser.add_argument(
+        "--radius", type=float, default=1.0
+    )
+    parser.add_argument(
+        "--center", type=int, nargs="+"
+    )
+    parser.add_argument(
+        "--randn_std", type=float, default=0.1
+    )
+    parser.add_argument(
+        "--num_samples", type=int, nargs="+"
+    )
     parser.add_argument("--seed_range", type=int, nargs="+",
                     default=[42, 43])
     all_args = parser.parse_known_args(args)[0]
@@ -74,6 +88,29 @@ def create_model(
     print()
     model: FlowModel = PlanarFlow(config_dic)
     return model
+
+def create_circle2d_dataset(
+    radius: float,
+    center: list[float] | ndarray,
+    randn_std: float,
+    num_samples: list[int] = [10000, 1000, 1000]
+) -> tuple[Dataset]:
+    print("[red]==create circle 2d datasets==[/red]")
+    train_dataset: Dataset = CircleDataset2d(
+        radius, center, num_samples[0], randn_std
+    )
+    valid_dataset: Dataset = CircleDataset2d(
+        radius, center, num_samples[1], randn_std
+    )
+    test_dataset: Dataset = CircleDataset2d(
+        radius, center, num_samples[2], randn_std
+    )
+    print(
+        f"radius: {radius} center: {center} " +
+        f"randn_std: {randn_std}"
+    )
+    print()
+    return train_dataset, valid_dataset, test_dataset
 
 def create_image_dataset(
     train_path: Path,
@@ -162,6 +199,14 @@ def main(args):
         test_path: Path = root_path / test_folder_name
         train_dataset, valid_dataset, test_dataset = create_image_dataset(
             train_path, test_path, data_type
+        )
+    elif data_type == "circle2d":
+        radius: float = all_args.radius
+        center: list[float] = all_args.center
+        randn_std: float = all_args.randn_std
+        num_samples: list[int] = all_args.num_samples
+        train_dataset, valid_dataset, test_dataset = create_circle2d_dataset(
+            radius, center, randn_std, num_samples
         )
     else:
         raise NotImplementedError
