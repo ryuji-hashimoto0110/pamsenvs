@@ -262,9 +262,10 @@ class FlowTrainer:
             self.test_recon_loss: float = 0.0
             for batch in self.test_dataloader:
                 self.test_loss, self.test_recon_loss = self._validate_step(
-                    batch, self.test_loss,self.test_recon_loss
+                    batch, self.test_loss, self.test_recon_loss
                 )
             self.test_loss = self.test_loss / self.test_n
+            self.test_recon_loss = self.test_recon_loss / self.test_n
             print(
                 f"seed: {seed} test_loss={self.test_loss:.4f} " +
                 f"test_recon_loss={self.test_recon_loss:.7f}"
