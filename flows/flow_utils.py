@@ -238,5 +238,43 @@ class LinearResBlock(Module):
         output_tensor += self.bridge(input_tensor)
         return output_tensor
 
+class ConvResBlock(Module):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int
+    ) -> None:
+        super(ConvResBlock, self).__init__()
+        self.net: Module = nn.Sequential(
+            nn.BatchNorm2d(in_channels),
+            nn.ReLU(inplace=True),
+            weight_norm(
+                nn.Conv2d(
+                    in_channels=in_channels, out_channels=out_channels,
+                    kernel_size=3, stride=1, padding=1
+                )
+            ),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
+            weight_norm(
+                nn.Conv2d(
+                    in_channels=out_channels, out_channels=out_channels,
+                    kernel_size=3, stride=1, padding=1
+                )
+            )
+        )
+        if in_channels != out_channels:
+            self.bridge: Module = weight_norm(
+                nn.Conv2d(
+                    in_channels=in_channels, out_channels=out_channels,
+                    kernel_size=3, stride=1, padding=1
+                )
+            )
+        else:
+            self.bridge: Module = nn.Sequential()
 
+    def forward(self, input_tensor: Tensor):
+        output_tensor: Tensor = self.net(input_tensor)
+        output_tensor += self.bridge(input_tensor)
+        return output_tensor
 
