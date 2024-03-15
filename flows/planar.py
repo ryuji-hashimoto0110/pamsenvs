@@ -65,6 +65,15 @@ class PlanarTransformLayer(FlowTransformLayer):
         else:
             return False
 
+    def _calc_g_res(
+        self,
+        a: Tensor,
+        w_z_: Tensor,
+        w_u: Tensor
+    ) -> Tensor:
+        g_res: Tensor = w_z_ - a - w_u * torch.tanh(a + self.b)
+        return g_res
+
     def forward(
         self,
         z_k_: Tensor,
@@ -102,23 +111,16 @@ class PlanarTransformLayer(FlowTransformLayer):
             hi: Tensor = torch.full_like(w_z_, 1e+05)
             for _ in range(1000):
                 a: Tensor = 0.5 * (lo + hi)
-                val: Tensor = a + w_u * torch.tanh(a + self.b)
-                lo: Tensor = torch.where(val < w_z_, a, lo)
-                hi: Tensor = torch.where(w_z_ < val, a, hi)
+                g_res: Tensor = w_z_ - a + w_u * torch.tanh(a + self.b)
+                lo: Tensor = torch.where(0 < g_res, a, lo)
+                hi: Tensor = torch.where(g_res < 0, a, hi)
                 if torch.max(
-                    torch.abs(hi - lo)
-                ) < 1e-10:
+                    torch.abs(g_res)
+                ) < 1e-05:
                     break
         if not torch.max(
-            torch.abs(hi - lo)
-        ) < 0.1:
-            """
-            print(f"w.T@z_k_={w_z_}")
-            print(f"a={a}")
-            print(f"w.T@u={w_u}")
-            print(f"a+b={a+self.b}")
-            print(f"val={val}")
-            """
+            torch.abs(g_res)
+        ) < 1e-05:
             warnings.warn(
                 "numerical solver did not converge."
             )
