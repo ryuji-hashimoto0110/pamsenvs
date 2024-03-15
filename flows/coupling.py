@@ -372,7 +372,7 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
             log_det_jacobian
         """
         t_z_k1: Tensor = self.net(z_k1)
-        s_z_k1: Tensor = torch.tanh(t_z_k1) * self.log_scale + self.s_bias
+        s_z_k1: Tensor = torch.tanh(t_z_k1) * self.s_log_scale + self.s_bias
         z_k1_: Tensor = z_k1
         z_k2_: Tensor = (z_k2 - t_z_k1) * torch.exp(-s_z_k1)
         log_det_jacobian += torch.sum(s_z_k1.view(s_z_k1.shape[0], -1), dim=1)
