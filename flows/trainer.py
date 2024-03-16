@@ -18,6 +18,7 @@ class FlowTrainer:
         recon_coef: float,
         optimizer_type: str,
         lr: float,
+        weight_decay: float,
         train_dataset: Optional[Dataset],
         valid_dataset: Optional[Dataset],
         test_dataset: Optional[Dataset],
@@ -37,6 +38,7 @@ class FlowTrainer:
         self.recon_coef: float = recon_coef
         self.optimizer_type: str = optimizer_type
         self.lr: float = lr
+        self.weight_decay: float = weight_decay
         self.train_dataset = train_dataset
         if train_dataset is not None:
             self.train_n: int = len(train_dataset)
@@ -90,7 +92,7 @@ class FlowTrainer:
         if self.optimizer_type == "Adam":
             self.optimizer: Optimizer = optim.Adam(
                 self.model.parameters(),
-                lr=self.lr, weight_decay=0.00
+                lr=self.lr, weight_decay=self.weight_decay
             )
 
     def fit(self) -> None:

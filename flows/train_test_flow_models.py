@@ -6,12 +6,12 @@ import sys
 curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
 root_path: Path = curr_path.parents[0]
 sys.path.append(str(root_path))
-from .datasets import CircleDataset2d
-from .config import get_config
-from .flow_model import FlowModel
-from .trainer import FlowTrainer
-from .planar import PlanarFlow
-from .realnvp import RealNVP
+from flows import CircleDataset2d
+from flows import get_config
+from flows import FlowModel
+from flows import FlowTrainer
+from flows import PlanarFlow
+from flows import RealNVP
 import json
 from rich import print
 from rich.tree import Tree
@@ -32,6 +32,7 @@ def parse_args(args, parser):
         "--optimizer_type", type=str, choices=["Adam"]
     )
     parser.add_argument("--learning_rate", type=float)
+    parser.add_argument("--weight_decay", type=float)
     parser.add_argument("--num_epochs", type=int)
     parser.add_argument(
         "--checkpoints_name", type=str
@@ -88,7 +89,7 @@ def create_model(
         config_dic
     )
     print()
-    model: FlowModel = PlanarFlow(config_dic)
+    model: FlowModel = model_dic[flow_type](config_dic)
     return model
 
 def create_circle2d_dataset(
@@ -99,13 +100,13 @@ def create_circle2d_dataset(
 ) -> tuple[Dataset]:
     print("[red]==create circle 2d datasets==[/red]")
     train_dataset: Dataset = CircleDataset2d(
-        radius, center, num_samples[0], randn_std
+        radius, center, randn_std, num_samples[0]
     )
     valid_dataset: Dataset = CircleDataset2d(
-        radius, center, num_samples[1], randn_std
+        radius, center, randn_std, num_samples[1]
     )
     test_dataset: Dataset = CircleDataset2d(
-        radius, center, num_samples[2], randn_std
+        radius, center, randn_std, num_samples[2]
     )
     print(
         f"radius: {radius} center: {center} " +
@@ -216,6 +217,7 @@ def main(args):
     recon_coef: float = all_args.recon_coef
     optimizer_type: str = all_args.optimizer_type
     lr: float = all_args.learning_rate
+    weight_decay: float = all_args.weight_decay
     if optimizer_type != "Adam":
         raise NotImplementedError
     num_epochs: int = all_args.num_epochs
@@ -262,7 +264,7 @@ def main(args):
     print(f"checkpoints:", tree)
     print()
     trainer: FlowTrainer = FlowTrainer(
-        model, recon_coef, optimizer_type, lr,
+        model, recon_coef, optimizer_type, lr, weight_decay,
         train_dataset, valid_dataset, test_dataset,
         num_epochs, batch_size, num_workers, store_recon_loss,
         load_path, best_save_path, last_save_path,
