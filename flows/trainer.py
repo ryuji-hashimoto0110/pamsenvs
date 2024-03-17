@@ -34,7 +34,7 @@ class FlowTrainer:
         self.device: torch.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
-        self.model = model.to(self.device)
+        self.model: FlowModel = model.to(self.device)
         self.recon_coef: float = recon_coef
         self.optimizer_type: str = optimizer_type
         self.lr: float = lr
@@ -89,6 +89,7 @@ class FlowTrainer:
             self.valid_losses: list[float] = []
             self.valid_recon_losses: list[float] = []
             self.best_loss: float = 1e+10
+            self.model._init_weights()
         if self.optimizer_type == "Adam":
             self.optimizer: Optimizer = optim.Adam(
                 self.model.parameters(),
