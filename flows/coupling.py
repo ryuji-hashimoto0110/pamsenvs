@@ -296,7 +296,7 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
             input_dim: int = input_shape[0] // 2 if not is_odd else (input_shape[0] + 1) // 2
             output_dim: int = input_shape[0] - input_dim
             self.net: Module = LinearResBlock(
-                input_dim=input_dim, output_dim=output_dim
+                input_dim=input_dim, output_dim=output_dim*2
             )
             self.out_channels: int = output_dim
         elif len(input_shape) == 3:
@@ -309,7 +309,7 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
                 self.out_channels: int = input_shape[0] - in_channels
                 reduce_size: bool = False
             self.net: Module = ConvResBlock(
-                in_channels=in_channels, out_channels=self.out_channels,
+                in_channels=in_channels, out_channels=self.out_channels*2,
                 reduce_size=reduce_size
             )
         else:
@@ -342,10 +342,16 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
             log_det_jacobian
         """
         t_z_k1_: Tensor = self.net(z_k1_)
-        s_z_k1_: Tensor = torch.tanh(t_z_k1_) * self.s_log_scale + self.s_bias
+        s_z_k1_: Tensor = torch.tanh(
+            t_z_k1_[:,:t_z_k1_.shape[1]//2]
+        ) * self.s_log_scale + self.s_bias
+        t_z_k1_ = t_z_k1_[:,t_z_k1_.shape[1]//2:]
         z_k1: Tensor = z_k1_
         z_k2: Tensor = z_k2_ * torch.exp(s_z_k1_) + t_z_k1_
-        log_det_jacobian += torch.sum(s_z_k1_.view(s_z_k1_.shape[0], -1), dim=1)
+        log_det_jacobian = log_det_jacobian + torch.sum(
+            s_z_k1_.view(s_z_k1_.shape[0], -1),
+            dim=1
+        )
         return z_k1, z_k2, log_det_jacobian
 
     def _inverse_transform(
@@ -372,8 +378,14 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
             log_det_jacobian
         """
         t_z_k1: Tensor = self.net(z_k1)
-        s_z_k1: Tensor = torch.tanh(t_z_k1) * self.s_log_scale + self.s_bias
+        s_z_k1: Tensor = torch.tanh(
+            t_z_k1[:,:t_z_k1.shape[1]//2]
+        ) * self.s_log_scale + self.s_bias
+        t_z_k1 = t_z_k1[:,t_z_k1.shape[1]//2:]
         z_k1_: Tensor = z_k1
         z_k2_: Tensor = (z_k2 - t_z_k1) * torch.exp(-s_z_k1)
-        log_det_jacobian += torch.sum(s_z_k1.view(s_z_k1.shape[0], -1), dim=1)
+        log_det_jacobian = log_det_jacobian + torch.sum(
+            s_z_k1.view(s_z_k1.shape[0], -1),
+            dim=1
+        )
         return z_k1_, z_k2_, log_det_jacobian
