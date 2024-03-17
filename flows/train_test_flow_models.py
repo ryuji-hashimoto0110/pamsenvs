@@ -120,8 +120,8 @@ def create_image_dataset(
     test_path: Path,
     data_name: Literal["mnist", "cifar10"]
 ) -> tuple[Dataset]:
-    print("[red]==create MNIST datasets==[/red]")
     if data_name == "mnist":
+        print("[red]==create MNIST datasets==[/red]")
         trainval_dataset: Dataset = datasets.MNIST(
             train_path, train=True, download=True,
             transform=transforms.Compose(
@@ -145,6 +145,7 @@ def create_image_dataset(
             )
         )
     elif data_name == "cifar10":
+        print("[red]==create Cifar10 datasets==[/red]")
         trainval_dataset: Dataset = datasets.CIFAR10(
             train_path, train=True, download=True,
             transform=transforms.Compose(
