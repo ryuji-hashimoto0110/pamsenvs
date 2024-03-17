@@ -197,7 +197,7 @@ def main(args):
     data_type: str = all_args.data_type
     if data_type == "mnist" or data_type == "cifar10":
         train_folder_name: str = all_args.train_folder_name
-        test_folder_name: str = all_args.mnist_test_folder_name
+        test_folder_name: str = all_args.test_folder_name
         train_path: Path = root_path / train_folder_name
         test_path: Path = root_path / test_folder_name
         train_dataset, valid_dataset, test_dataset = create_image_dataset(
