@@ -116,11 +116,11 @@ class PlanarTransformLayer(FlowTransformLayer):
                 hi: Tensor = torch.where(g_res < 0, a, hi)
                 if torch.max(
                     torch.abs(g_res)
-                ) < 1e-05:
+                ) < 1e-08:
                     break
         if not torch.max(
             torch.abs(g_res)
-        ) < 1e-05:
+        ) < 1e-08:
             warnings.warn(
                 "numerical solver did not converge."
             )
