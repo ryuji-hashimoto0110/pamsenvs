@@ -300,10 +300,16 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
             )
             self.out_channels: int = output_dim
         elif len(input_shape) == 3:
+            if (input_shape[1] % 2) != (input_shape[2] % 2):
+                raise ValueError(
+                    "the even or odd of height and width of images must be the same."
+                )
             if split_pattern == "checkerboard":
                 in_channels: int = input_shape[0]
                 self.out_channels: int = in_channels
-                reduce_size: bool = True if not is_odd else False
+                reduce_size: bool = False
+                if (not is_odd) and (input_shape[1] % 2 == 1):
+                    reduce_size = True
             elif split_pattern == "channelwise":
                 in_channels: int = input_shape[0] // 2 if not is_odd else (input_shape[0] + 1) // 2
                 self.out_channels: int = input_shape[0] - in_channels
