@@ -7,7 +7,6 @@ from torch import nn
 from torch import Tensor
 from torch.nn import Module
 from torch.nn import ModuleList
-from torch.nn.utils.parametrizations import weight_norm
 from typing import Optional
 
 def deriv_tanh(x: float) -> float:
@@ -227,9 +226,7 @@ class LinearResBlock(Module):
             nn.Linear(output_dim, output_dim)
         )
         if input_dim != output_dim:
-            self.bridge: Module = weight_norm(
-                nn.Linear(input_dim, output_dim)
-            )
+            self.bridge: Module = nn.Linear(input_dim, output_dim)
         else:
             self.bridge: Module = nn.Sequential()
 
@@ -249,28 +246,23 @@ class ConvResBlock(Module):
         self.net: Module = nn.Sequential(
             nn.BatchNorm2d(in_channels),
             nn.ReLU(inplace=True),
-            weight_norm(
-                nn.Conv2d(
-                    in_channels=in_channels, out_channels=out_channels,
-                    kernel_size=3+int(reduce_size), stride=1, padding=1
-                )
-            ),
+            nn.Conv2d(
+                in_channels=in_channels, out_channels=out_channels,
+                kernel_size=3+int(reduce_size), stride=1, padding=1
+            )
+            ,
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
-            weight_norm(
-                nn.Conv2d(
-                    in_channels=out_channels, out_channels=out_channels,
-                    kernel_size=3, stride=1, padding=1
-                )
+            nn.Conv2d(
+                in_channels=out_channels, out_channels=out_channels,
+                kernel_size=3, stride=1, padding=1
             )
         )
         if in_channels != out_channels:
-            self.bridge: Module = weight_norm(
-                nn.Conv2d(
-                    in_channels=in_channels, out_channels=out_channels,
-                    kernel_size=3+int(reduce_size),
-                    stride=1, padding=1
-                )
+            self.bridge: Module = nn.Conv2d(
+                in_channels=in_channels, out_channels=out_channels,
+                kernel_size=3+int(reduce_size),
+                stride=1, padding=1
             )
         else:
             self.bridge: Module = nn.Sequential()
