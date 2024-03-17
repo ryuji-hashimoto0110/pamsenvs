@@ -221,10 +221,10 @@ class LinearResBlock(Module):
         self.net: Module = nn.Sequential(
             nn.BatchNorm1d(input_dim),
             nn.ReLU(inplace=True),
-            weight_norm(nn.Linear(input_dim, output_dim)),
+            nn.Linear(input_dim, output_dim),
             nn.BatchNorm1d(output_dim),
             nn.ReLU(inplace=True),
-            weight_norm(nn.Linear(output_dim, output_dim))
+            nn.Linear(output_dim, output_dim)
         )
         if input_dim != output_dim:
             self.bridge: Module = weight_norm(
@@ -268,7 +268,8 @@ class ConvResBlock(Module):
             self.bridge: Module = weight_norm(
                 nn.Conv2d(
                     in_channels=in_channels, out_channels=out_channels,
-                    kernel_size=3, stride=1, padding=1
+                    kernel_size=3+int(reduce_size),
+                    stride=1, padding=1
                 )
             )
         else:
