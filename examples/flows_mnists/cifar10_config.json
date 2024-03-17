@@ -1,0 +1,4 @@
+{
+    "input_shape": [3,32,32],
+    "num_layers": 32
+}

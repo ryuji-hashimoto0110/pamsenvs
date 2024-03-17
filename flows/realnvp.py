@@ -14,7 +14,6 @@ class RealNVP(FlowModel):
         num_layers: int = config_dic["num_layers"]
         layers: list[FlowTransformLayer] = []
         for i in range(num_layers):
-            layers.append(FlowBatchNorm(input_shape=self.input_shape))
             layers.append(
                 AffineCouplingLayer(
                     input_shape=self.input_shape,
