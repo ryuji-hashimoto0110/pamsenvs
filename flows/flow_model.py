@@ -272,3 +272,10 @@ class FlowModel(Module):
         latent_variables: Tensor = self.sample_latent_variables(num_samples)
         observed_variables, log_det_jacobian = self.forward(latent_variables)
         return observed_variables, log_det_jacobian
+
+    def _init_weights(self) -> None:
+        for name, param in self.named_parameters():
+            if "bias" in name:
+                nn.init.constant_(param, 0)
+            elif "weight" in name:
+                nn.init.normal_(param, std=0.01)
