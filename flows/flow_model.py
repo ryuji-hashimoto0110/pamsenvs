@@ -230,8 +230,8 @@ class FlowModel(Module):
         assert latent_variables.size(1) == self.input_dim
         num_samples, input_dim = latent_variables.shape
         log_likelihood: Tensor = - num_samples * input_dim * \
-            torch.log(2*torch.tensor([torch.pi])) / 2
-        log_likelihood -= num_samples * torch.log(torch.linalg.det(self.cov)) / 2
+            torch.log(2*torch.tensor([torch.pi])) / 2 - \
+            num_samples * torch.log(torch.linalg.det(self.cov)) / 2
         log_likelihood -= torch.sum(
             torch.diagonal(
                 (latent_variables - self.mu) @ self.inv_cov @ \
