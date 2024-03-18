@@ -53,11 +53,13 @@ def mask_checker(
     z1: Tensor,
     z2: Tensor
 ) -> tuple[Tensor]:
-    z1[:,:,0::2,1::2] *= 0
-    z1[:,:,1::2,0::2] *= 0
-    z2[:,:,0::2,0::2] *= 0
-    z2[:,:,1::2,1::2] *= 0
-    return z1, z2
+    masked_z1 = z1.clone()
+    masked_z2 = z2.clone()
+    masked_z1[:,:,0::2,1::2] = 0
+    masked_z1[:,:,1::2,0::2] = 0
+    masked_z2[:,:,0::2,0::2] = 0
+    masked_z2[:,:,1::2,1::2] = 0
+    return masked_z1, masked_z2
 
 def split_checker(
     z: Tensor,
@@ -75,10 +77,10 @@ def split_checker(
         )
     z1: Tensor = z.clone().contiguous()
     z2: Tensor = z.clone().contiguous()
-    z1, z2 = mask_checker(z1, z2)
+    masked_z1, masked_z2 = mask_checker(z1, z2)
     if is_odd:
-        z1, z2 = z2, z1
-    return z1, z2
+        masked_z1, masked_z2 = masked_z2, masked_z1
+    return masked_z1, masked_z2
 
 def merge_checker(
     z1: Tensor, z2: Tensor,
@@ -93,8 +95,8 @@ def merge_checker(
         )
     if is_odd:
         z1, z2 = z2, z1
-    z1, z2 = mask_checker(z1, z2)
-    z: Tensor = z1 + z2
+    masked_z1, masked_z2 = mask_checker(z1, z2)
+    z: Tensor = masked_z1 + masked_z2
     return z
 
 def split_channel(
