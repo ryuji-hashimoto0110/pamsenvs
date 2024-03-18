@@ -134,9 +134,9 @@ class FlowTrainer:
         self.model.train()
         self.optimizer.zero_grad()
         if isinstance(batch, Tensor):
-            observed_variables: Tensor = batch
+            observed_variables: Tensor = batch.to(self.device)
         elif isinstance(batch, tuple) or isinstance(batch, list):
-            observed_variables: Tensor = batch[0]
+            observed_variables: Tensor = batch[0].to(self.device)
         else:
             raise ValueError(
                 "batch must be either Tensor or tuple[Tensor]."
@@ -165,9 +165,9 @@ class FlowTrainer:
     ) -> float:
         self.model.eval()
         if isinstance(batch, Tensor):
-            observed_variables: Tensor = batch
+            observed_variables: Tensor = batch.to(self.device)
         elif isinstance(batch, tuple) or isinstance(batch, list):
-            observed_variables: Tensor = batch[0]
+            observed_variables: Tensor = batch[0].to(self.device)
         else:
             raise ValueError(
                 "batch must be either Tensor or tuple[Tensor]."
