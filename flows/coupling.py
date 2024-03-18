@@ -73,8 +73,8 @@ def split_checker(
         raise ValueError(
             f"z must be image-shaped. z.shape={z.shape}"
         )
-    z1: Tensor = z.clone()
-    z2: Tensor = z.clone()
+    z1: Tensor = z.clone().contiguous()
+    z2: Tensor = z.clone().contiguous()
     z1, z2 = mask_checker(z1, z2)
     if is_odd:
         z1, z2 = z2, z1
@@ -93,7 +93,7 @@ def merge_checker(
         )
     if is_odd:
         z1, z2 = z2, z1
-    mask_checker(z1, z2)
+    z1, z2 = mask_checker(z1, z2)
     z: Tensor = z1 + z2
     return z
 
