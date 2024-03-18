@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import copy
 from .flow_model import FlowTransformLayer
 from .flow_utils import ConvResBlock
 from .flow_utils import LinearResBlock
@@ -48,6 +49,16 @@ def merge1d(
     z: Tensor = torch.cat([z1, z2], dim=1).contiguous()
     return z
 
+def mask_checker(
+    z1: Tensor,
+    z2: Tensor
+) -> tuple[Tensor]:
+    z1[:,:,0::2,1::2] = 0
+    z1[:,:,1::2,0::2] = 0
+    z2[:,:,0::2,0::2] = 0
+    z2[:,:,1::2,1::2] = 0
+    return z1, z2
+
 def split_checker(
     z: Tensor,
     is_odd: bool
@@ -62,8 +73,9 @@ def split_checker(
         raise ValueError(
             f"z must be image-shaped. z.shape={z.shape}"
         )
-    z1: Tensor = z[:,:,0::2,0::2].contiguous()
-    z2: Tensor = z[:,:,1::2,1::2].contiguous()
+    z1: Tensor = z.clone()
+    z2: Tensor = z.clone()
+    z1, z2 = mask_checker(z1, z2)
     if is_odd:
         z1, z2 = z2, z1
     return z1, z2
@@ -79,17 +91,10 @@ def merge_checker(
             "merge_checker got tensor whose shape is" +
             f"z1.shape={z1.shape}, z2.shape={z2.shape}"
         )
-    b1, c1, h1, w1 = z1.shape
-    b2, c2, h2, w2 = z2.shape
-    assert b1 == b2 and c1 == c2
-    assert c1 == c2
-    z: Tensor = torch.zeros(
-        b1, c1, h1+h2, w1+w2
-    ).type_as(z1).to(z1.device)
     if is_odd:
         z1, z2 = z2, z1
-    z[:,:,0::2,0::2] = z1
-    z[:,:,1::2,1::2] = z2
+    mask_checker(z1, z2)
+    z: Tensor = z1 + z2
     return z
 
 def split_channel(
@@ -300,20 +305,13 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
             )
             self.out_channels: int = output_dim
         elif len(input_shape) == 3:
-            if (input_shape[1] % 2) != (input_shape[2] % 2):
-                raise ValueError(
-                    "the even or odd of height and width of images must be the same."
-                )
             if split_pattern == "checkerboard":
                 in_channels: int = input_shape[0]
                 self.out_channels: int = in_channels
-                reduce_size: bool = False
-                if (not is_odd) and (input_shape[1] % 2 == 1):
-                    reduce_size = True
             elif split_pattern == "channelwise":
                 in_channels: int = input_shape[0] // 2 if not is_odd else (input_shape[0] + 1) // 2
                 self.out_channels: int = input_shape[0] - in_channels
-                reduce_size: bool = False
+            reduce_size: bool = False
             self.net: Module = ConvResBlock(
                 in_channels=in_channels, out_channels=self.out_channels*2,
                 reduce_size=reduce_size
