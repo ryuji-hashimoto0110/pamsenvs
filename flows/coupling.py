@@ -163,12 +163,12 @@ class Squeeze2dLayer(FlowTransformLayer):
         b, c, h, w = z_k_.shape
         if c % 4 != 0:
             raise ValueError(
-                "the number of channels c must be mod(c) == 0. " +
+                "the number of channels c must be c=0 (mod 4). " +
                 f"z_k.shape={z_k.shape}"
             )
-        z_k = z_k_.view(b, c, 2, 2, h, w)
+        z_k = z_k_.view(b, c//4, 2, 2, h, w)
         z_k = z_k.permute(0,1,4,2,5,3).contiguous()
-        z_k = z_k.view(b, c, 2*h, 2*w)
+        z_k = z_k.view(b, c//4, 2*h, 2*w)
         return z_k, log_det_jacobian
 
     def backward(
