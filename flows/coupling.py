@@ -192,7 +192,7 @@ class ReshapeLayer(FlowTransformLayer):
         input_shape: ndarray,
         output_shape: ndarray,
     ) -> None:
-        super(Squeeze2dLayer, self).__init__(input_shape)
+        super(ReshapeLayer, self).__init__(input_shape)
         self.output_shape = output_shape
 
     def forward(
