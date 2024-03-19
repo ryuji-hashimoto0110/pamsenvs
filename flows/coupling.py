@@ -140,6 +140,52 @@ def merge_channel(
     z: Tensor = torch.cat([z1, z2], dim=1).contiguous()
     return z
 
+class Squeeze1dLayer(FlowTransformLayer):
+    def __init__(
+        self,
+        input_shape: ndarray,
+        is_odd: bool = False
+    ) -> None:
+        super(Squeeze1dLayer, self).__init__(input_shape)
+
+class Squeeze2dLayer(FlowTransformLayer):
+    def __init__(
+        self,
+        input_shape: ndarray,
+    ) -> None:
+        super(Squeeze2dLayer, self).__init__(input_shape)
+
+    def forward(
+        self,
+        z_k_: Tensor,
+        log_det_jacobian: Tensor
+    ) -> tuple[Tensor, Tensor]:
+        b, c, h, w = z_k_.shape
+        if c % 4 != 0:
+            raise ValueError(
+                "the number of channels c must be mod(c) == 0. " +
+                f"z_k.shape={z_k.shape}"
+            )
+        z_k = z_k_.view(b, c, 2, 2, h, w)
+        z_k = z_k.permute(0,1,4,2,5,3).contiguous()
+        z_k = z_k.view(b, c, 2*h, 2*w)
+        return z_k, log_det_jacobian
+
+    def backward(
+        self, z_k: Tensor,
+        log_det_jacobian: Tensor
+    ) -> tuple[Tensor, Tensor]:
+        b, c, h, w = z_k.shape
+        if (h % 2 != 0) or (w % 2 != 0):
+            raise ValueError(
+                "the shape of input image must have even height and width. " +
+                f"z_k.shape={z_k.shape}"
+            )
+        z_k_ = z_k.view(b, c, h//2, 2, w//2, 2)
+        z_k_ = z_k_.permute(0,1,3,5,2,4).contiguous()
+        z_k_ = z_k_.view(b, 4*c, h//2, w//2)
+        return z_k_, log_det_jacobian
+
 class BijectiveCouplingLayer(FlowTransformLayer):
     """abstract class for bijective coupling layers
     """
