@@ -1,6 +1,7 @@
 from flows.config import get_config
 from flows.coupling import AffineCouplingLayer
 from flows.coupling import BijectiveCouplingLayer
+from flows.coupling import ReshapeLayer
 from flows.coupling import Squeeze1dLayer
 from flows.coupling import Squeeze2dLayer
 from flows.datasets import CircleDataset2d
