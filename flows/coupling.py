@@ -144,7 +144,6 @@ class Squeeze1dLayer(FlowTransformLayer):
     def __init__(
         self,
         input_shape: ndarray,
-        is_odd: bool = False
     ) -> None:
         super(Squeeze1dLayer, self).__init__(input_shape)
 
@@ -160,7 +159,7 @@ class Squeeze2dLayer(FlowTransformLayer):
         z_k_: Tensor,
         log_det_jacobian: Tensor
     ) -> tuple[Tensor, Tensor]:
-        b, c, h, w = z_k_.shape
+        b, c, h, w = self.input_shape
         if c % 4 != 0:
             raise ValueError(
                 "the number of channels c must be c=0 (mod 4). " +
@@ -184,6 +183,34 @@ class Squeeze2dLayer(FlowTransformLayer):
         z_k_ = z_k.view(b, c, h//2, 2, w//2, 2)
         z_k_ = z_k_.permute(0,1,3,5,2,4).contiguous()
         z_k_ = z_k_.view(b, 4*c, h//2, w//2)
+        assert z_k_.shape == self.input_shape
+        return z_k_, log_det_jacobian
+
+class ReshapeLayer(FlowTransformLayer):
+    def __init__(
+        self,
+        input_shape: ndarray,
+        output_shape: ndarray,
+    ) -> None:
+        super(Squeeze2dLayer, self).__init__(input_shape)
+        self.output_shape = output_shape
+
+    def forward(
+        self,
+        z_k_: Tensor,
+        log_det_jacobian: Tensor
+    ) -> tuple[Tensor, Tensor]:
+        b = z_k_.shape[0]
+        z_k = z_k_.view(b, *self.output_shape)
+        return z_k, log_det_jacobian
+
+    def backward(
+        self,
+        z_k: Tensor,
+        log_det_jacobian: Tensor
+    ) -> tuple[Tensor, Tensor]:
+        b = z_k.shape[0]
+        z_k_ = z_k.view(b, *self.input_shape)
         return z_k_, log_det_jacobian
 
 class BijectiveCouplingLayer(FlowTransformLayer):
