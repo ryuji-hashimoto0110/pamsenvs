@@ -99,6 +99,18 @@ def merge_checker(
     z: Tensor = masked_z1 + masked_z2
     return z
 
+def mask_channel(
+    z1: Tensor,
+    z2: Tensor
+) -> tuple[Tensor]:
+    c: int = z1.shape[1]
+    assert 2 <= c
+    masked_z1 = z1.clone()
+    masked_z2 = z2.clone()
+    masked_z1[:,:c//2,:,:] = 0
+    masked_z2[:,c//2:,:,:] = 0
+    return masked_z1, masked_z2
+
 def split_channel(
     z: Tensor,
     is_odd: bool
@@ -113,13 +125,12 @@ def split_channel(
         raise ValueError(
             f"z must be image-shaped. z.shape={z.shape}"
         )
-    c: int = z.shape[1]
-    assert 2 <= c
-    z1: Tensor = z[:,:c//2,:,:].contiguous()
-    z2: Tensor = z[:,c//2:,:,:].contiguous()
+    z1: Tensor = z.clone().contiguous()
+    z2: Tensor = z.clone().contiguous()
+    masked_z1, masked_z2 = mask_channel(z1, z2)
     if is_odd:
-        z1, z2 = z2, z1
-    return z1, z2
+        masked_z1, masked_z2 = masked_z2, masked_z1
+    return masked_z1, masked_z2
 
 def merge_channel(
     z1: Tensor, z2: Tensor,
@@ -132,12 +143,10 @@ def merge_channel(
             "merge_channel got tensor whose shape is" +
             f"z1.shape={z1.shape}, z2.shape={z2.shape}"
         )
-    b1, _, h1, w1 = z1.shape
-    b2, _, h2, w2 = z2.shape
-    assert b1 == b2 and h1 == h2 and w1 == w2
     if is_odd:
         z1, z2 = z2, z1
-    z: Tensor = torch.cat([z1, z2], dim=1).contiguous()
+    masked_z1, masked_z2 = mask_channel(z1, z2)
+    z: Tensor = masked_z1 + masked_z2
     return z
 
 class Squeeze1dLayer(FlowTransformLayer):
@@ -379,15 +388,10 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
             )
             self.out_channels: int = output_dim
         elif len(input_shape) == 3:
-            if split_pattern == "checkerboard":
-                in_channels: int = input_shape[0]
-                self.out_channels: int = in_channels
-            elif split_pattern == "channelwise":
-                in_channels: int = input_shape[0] // 2 if not is_odd else (input_shape[0] + 1) // 2
-                self.out_channels: int = input_shape[0] - in_channels
+            in_channels: int = input_shape[0]
             reduce_size: bool = False
             self.net: Module = ConvResBlock(
-                in_channels=in_channels, out_channels=self.out_channels*2,
+                in_channels=in_channels, out_channels=in_channels*2,
                 reduce_size=reduce_size
             )
         else:
