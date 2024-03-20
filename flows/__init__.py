@@ -5,10 +5,10 @@ from flows.coupling import ReshapeLayer
 from flows.coupling import Squeeze1dLayer
 from flows.coupling import Squeeze2dLayer
 from flows.datasets import CircleDataset2d
+from flows.dequantization import DequantizationLayer
 from flows.flow_model import FlowModel
 from flows.flow_model import FlowTransformLayer
 from flows.flow_utils import deriv_tanh
-from flows.flow_utils import FlowBatchNorm
 from flows.flow_utils import FlowLayerStacker
 from flows.flow_utils import LinearResBlock
 from flows.flow_utils import ConvResBlock
