@@ -78,7 +78,10 @@ class RealNVP(FlowModel):
             )
         if config_dic["output_activation"] == "dequantization":
             layers.append(
-                DequantizationLayer(input_shape=self.input_shape)
+                DequantizationLayer(
+                    input_shape=self.input_shape,
+                    config_dic=config_dic
+                )
             )
         net: Module = FlowLayerStacker(layers)
         return net
