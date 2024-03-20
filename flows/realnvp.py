@@ -1,6 +1,7 @@
 from .coupling import AffineCouplingLayer
 from .coupling import ReshapeLayer
 from .coupling import Squeeze2dLayer
+from .dequantization import DequantizationLayer
 from .flow_model import FlowModel
 from .flow_model import FlowTransformLayer
 from .flow_utils import FlowLayerStacker
@@ -56,7 +57,7 @@ class RealNVP(FlowModel):
                 for j in range(num_mid_layers):
                     layers.append(
                         AffineCouplingLayer(
-                            input_shape=[c,h,w],
+                            input_shape=[c_,h_,w_],
                             split_pattern=split_patterns[i%2],
                             is_odd=j%2!=0
                         )
@@ -70,6 +71,14 @@ class RealNVP(FlowModel):
                     c_, h_, w_ = c_//4, h_*2, w_*2
                     if c_ <= 2:
                         split_patterns = ["checkerboard", "checkerboard"]
-
+            assert c == c_ and h == h_ and w == w_
+        if not "output_activation" in config_dic.keys():
+            raise ValueError(
+                "RealNVP requires 'output_activation' in config_dic."
+            )
+        if config_dic["output_activation"] == "dequantization":
+            layers.append(
+                DequantizationLayer(input_shape=self.input_shape)
+            )
         net: Module = FlowLayerStacker(layers)
         return net
