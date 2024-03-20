@@ -143,7 +143,8 @@ class FlowTrainer:
             )
         loss: Tensor = - self.model.calc_log_likelihood(
             observed_variables=observed_variables,
-            reduction="joint"
+            reduction="joint",
+            is_by_bit=True
         )
         latent_variables, _ = self.model.backward(observed_variables)
         observed_variables_, _ = self.model(latent_variables)
@@ -174,7 +175,8 @@ class FlowTrainer:
             )
         loss: Tensor = - self.model.calc_log_likelihood(
             observed_variables=observed_variables,
-            reduction="joint"
+            reduction="joint",
+            is_by_bit=True
         )
         recon_loss_: float = 0
         latent_variables, _ = self.model.backward(observed_variables)

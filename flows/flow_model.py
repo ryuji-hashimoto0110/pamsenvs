@@ -167,7 +167,8 @@ class FlowModel(Module):
         self,
         observed_variables: Optional[Tensor] = None,
         latent_variables: Optional[Tensor] = None,
-        reduction: Literal["none", "joint"] = "none"
+        reduction: Literal["none", "joint"] = "none",
+        is_by_bit: bool = True
     ) -> Tensor:
         """calculate log likelihood.
 
@@ -224,6 +225,8 @@ class FlowModel(Module):
             raise ValueError(
                 "either of observed_variable or latent_variable must be Tensor."
             )
+        if is_by_bit:
+            log_likelihoods = log_likelihoods / self.input_dim
         return log_likelihoods
 
     def _calc_joint_log_prob(
