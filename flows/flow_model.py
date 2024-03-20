@@ -281,4 +281,4 @@ class FlowModel(Module):
             if "bias" in name:
                 nn.init.constant_(param, 0)
             elif "weight" in name:
-                nn.init.normal_(param, std=0.01)
+                nn.init.normal_(param, std=0.0001)
