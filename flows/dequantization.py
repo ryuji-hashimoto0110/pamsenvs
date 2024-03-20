@@ -29,12 +29,11 @@ class DequantizationLayer(FlowTransformLayer):
         log_det_jacobian: Tensor
     ) -> tuple[Tensor, Tensor]:
         b: int = z_k_.shape[0]
-        z_k: Tensor = z_k_
         if (
             self.training and
             self.random_noise is not None
         ):
-            z_k = z_k - self.random_noise
+            z_k_ = z_k_ - self.random_noise
         if self.activate_func == "tanh":
             z_k = torch.tanh(z_k_)
             log_det_jacobian = log_det_jacobian + torch.sum(
@@ -43,6 +42,8 @@ class DequantizationLayer(FlowTransformLayer):
                 ),
                 dim=1
             )
+        else:
+            z_k = z_k_
         return z_k, log_det_jacobian
 
     def backward(
@@ -51,7 +52,6 @@ class DequantizationLayer(FlowTransformLayer):
         log_det_jacobian: Tensor
     ) -> tuple[Tensor, Tensor]:
         b: int = z_k.shape[0]
-        z_k_: Tensor = z_k
         if self.activate_func == "tanh":
             z_k = torch.clamp(z_k, -0.99999, 0.99999)
             z_k_: Tensor = 0.5 * torch.log(
@@ -63,6 +63,8 @@ class DequantizationLayer(FlowTransformLayer):
                 ),
                 dim=1
             )
+        else:
+            z_k_ = z_k
         if self.training:
             self.random_noise: Tensor = self.randn_std * torch.randn_like(z_k_)
             z_k_ = z_k_ + self.random_noise
