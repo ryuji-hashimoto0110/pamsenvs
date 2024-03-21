@@ -13,7 +13,7 @@ class DequantizationLayer(FlowTransformLayer):
     ) -> None:
         super(DequantizationLayer, self).__init__(input_shape)
         self.randn_std: float = 1.0
-        if "randon_std" in config_dic.keys():
+        if "randn_std" in config_dic.keys():
             self.randn_std: float = config_dic["randn_std"]
         self.activate_func: Optional[str] = None
         if "activate_func" in config_dic.keys():
