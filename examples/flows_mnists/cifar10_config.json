@@ -2,7 +2,7 @@
     "input_shape": [3,32,32],
     "output_activation": "dequantization",
     "activate_func": "tanh",
-    "randn_std": 0.1,
+    "randn_std": 0.001,
     "num_squeeze": 3,
     "num_layers": 32
 }
