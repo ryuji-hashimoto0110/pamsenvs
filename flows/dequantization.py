@@ -53,7 +53,7 @@ class DequantizationLayer(FlowTransformLayer):
     ) -> tuple[Tensor, Tensor]:
         b: int = z_k.shape[0]
         if self.training:
-            self.random_noise: Tensor = self.randn_std * torch.randn_like(z_k_)
+            self.random_noise: Tensor = self.randn_std * torch.randn_like(z_k)
             z_k = z_k + self.random_noise
         if self.activate_func == "tanh":
             z_k = torch.clamp(z_k, -0.999, 0.999)
