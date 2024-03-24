@@ -59,7 +59,7 @@ class DequantizationLayer(FlowTransformLayer):
             )
             log_det_jacobian = log_det_jacobian + torch.sum(
                 torch.log(
-                    1 - z_k.view(b,-1).pow_(2)
+                    deriv_tanh(z_k_.view(b,-1))
                 ),
                 dim=1
             )
