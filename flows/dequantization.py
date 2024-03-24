@@ -56,7 +56,7 @@ class DequantizationLayer(FlowTransformLayer):
             self.random_noise: Tensor = self.randn_std * torch.randn_like(z_k_)
             z_k = z_k + self.random_noise
         if self.activate_func == "tanh":
-            z_k = torch.clamp(z_k, -0.99999, 0.99999)
+            z_k = torch.clamp(z_k, -0.999, 0.999)
             z_k_: Tensor = 0.5 * torch.log(
                 (1 + z_k) / (1 - z_k)
             )
