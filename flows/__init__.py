@@ -9,6 +9,7 @@ from flows.dequantization import DequantizationLayer
 from flows.flow_model import FlowModel
 from flows.flow_model import FlowTransformLayer
 from flows.flow_utils import deriv_tanh
+from flows.flow_utils import deriv_arctanh
 from flows.flow_utils import FlowLayerStacker
 from flows.flow_utils import LinearResBlock
 from flows.flow_utils import ConvResBlock

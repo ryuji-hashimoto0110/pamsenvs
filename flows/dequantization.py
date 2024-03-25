@@ -1,5 +1,6 @@
 from .flow_model import FlowTransformLayer
 from .flow_utils import deriv_tanh
+from .flow_utils import deriv_arctanh
 from numpy import ndarray
 import torch
 from torch import Tensor
@@ -22,6 +23,7 @@ class DequantizationLayer(FlowTransformLayer):
             else:
                 raise NotImplementedError
         self.random_noise: Optional[Tensor] = None
+        self.eps: float = 1e-08
 
     def forward(
         self,
@@ -31,7 +33,7 @@ class DequantizationLayer(FlowTransformLayer):
         b: int = z_k_.shape[0]
         if self.activate_func == "tanh":
             z_k = torch.tanh(z_k_)
-            z_k = torch.clamp(z_k, -0.999, 0.999)
+            z_k = torch.clamp(z_k, -1+self.eps, 1-self.eps)
             log_det_jacobian = log_det_jacobian + torch.sum(
                 torch.log(
                     deriv_tanh(z_k_.view(b,-1))
@@ -57,13 +59,11 @@ class DequantizationLayer(FlowTransformLayer):
             self.random_noise: Tensor = self.randn_std * torch.randn_like(z_k)
             z_k = z_k + self.random_noise
         if self.activate_func == "tanh":
-            z_k = torch.clamp(z_k, -0.999, 0.999)
-            z_k_: Tensor = 0.5 * torch.log(
-                (1 + z_k) / (1 - z_k)
-            )
-            log_det_jacobian = log_det_jacobian + torch.sum(
+            z_k = torch.clamp(z_k, -1+self.eps, 1-self.eps)
+            z_k_: Tensor = torch.arctanh(z_k)
+            log_det_jacobian = log_det_jacobian - torch.sum(
                 torch.log(
-                    deriv_tanh(z_k_.view(b,-1))
+                    deriv_arctanh(z_k_.view(b,-1))
                 ),
                 dim=1
             )
