@@ -200,6 +200,7 @@ class FlowModel(Module):
                     "both observed_variable and latent_variable found not None."
                 )
             latent_variables, log_det_jacobians = self.backward(observed_variables)
+            print(log_det_jacobians, latent_variables.min(), latent_variables.max())
             if reduction == "none":
                 log_likelihoods: Tensor = self.normal_dist.log_prob(
                     latent_variables.view(-1, self.input_dim)

@@ -156,7 +156,6 @@ class FlowTrainer:
         self.optimizer.step()
         self.train_loss += float(loss)
         self.train_recon_loss += float(recon_loss)
-        print(float(loss), observed_variables_.min(), observed_variables_.max())
 
     @torch.no_grad()
     def _validate_step(
