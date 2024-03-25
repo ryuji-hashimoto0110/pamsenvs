@@ -8,9 +8,13 @@ from torch.nn import Module
 from torch.nn import ModuleList
 from typing import Optional
 
-def deriv_tanh(x: float) -> float:
+def deriv_tanh(x: Tensor) -> Tensor:
     """derivative of tanh"""
     return 1.0 - torch.tanh(x)**2
+
+def deriv_arctanh(x: Tensor, eps: float = 1e-08) -> Tensor:
+    x = torch.clamp(x, -1.0+eps, 1.0-eps)
+    return 1.0 / (1.0 - x*x)
 
 class FlowLayerStacker(Module):
     """stack flow layers."""
@@ -122,8 +126,7 @@ class ConvResBlock(Module):
             nn.Conv2d(
                 in_channels=in_channels, out_channels=out_channels,
                 kernel_size=3+int(reduce_size), stride=1, padding=1
-            )
-            ,
+            ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
             nn.Conv2d(
