@@ -128,7 +128,7 @@ def create_image_dataset(
                 [
                     transforms.ToTensor(),
                     transforms.Normalize(
-                        [0.5],[0.5]
+                        [0.5],[0.55]
                     )
                 ]
             )
@@ -139,7 +139,7 @@ def create_image_dataset(
                 [
                     transforms.ToTensor(),
                     transforms.Normalize(
-                        [0.5],[0.5]
+                        [0.5],[0.55]
                     )
                 ]
             )
@@ -152,7 +152,7 @@ def create_image_dataset(
                 [
                     transforms.ToTensor(),
                     transforms.Normalize(
-                        [0.5],[0.5]
+                        [0.5],[0.55]
                     )
                 ]
             )
@@ -163,7 +163,7 @@ def create_image_dataset(
                 [
                     transforms.ToTensor(),
                     transforms.Normalize(
-                        [0.5],[0.5]
+                        [0.5],[0.55]
                     )
                 ]
             )
