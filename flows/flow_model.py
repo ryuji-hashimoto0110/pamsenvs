@@ -200,7 +200,7 @@ class FlowModel(Module):
                     "both observed_variable and latent_variable found not None."
                 )
             latent_variables, log_det_jacobians = self.backward(observed_variables)
-            print(torch.sum(log_det_jacobians), latent_variables.min(), latent_variables.max())
+            print(torch.sum(log_det_jacobians), latent_variables.mean(), latent_variables.std())
             if reduction == "none":
                 log_likelihoods: Tensor = self.normal_dist.log_prob(
                     latent_variables.view(-1, self.input_dim)
