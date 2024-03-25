@@ -60,7 +60,7 @@ class DequantizationLayer(FlowTransformLayer):
             z_k_: Tensor = torch.arctanh(z_k)
             log_det_jacobian = log_det_jacobian - torch.sum(
                 torch.log(
-                    deriv_arctanh(z_k_.view(b,-1))
+                    deriv_arctanh(z_k.view(b,-1))
                 ),
                 dim=1
             )
