@@ -31,6 +31,7 @@ class DequantizationLayer(FlowTransformLayer):
         b: int = z_k_.shape[0]
         if self.activate_func == "tanh":
             z_k = torch.tanh(z_k_)
+            z_k = torch.clamp(z_k, -0.999, 0.999)
             log_det_jacobian = log_det_jacobian + torch.sum(
                 torch.log(
                     deriv_tanh(z_k_.view(b,-1))
