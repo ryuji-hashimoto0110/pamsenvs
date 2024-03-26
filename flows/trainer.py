@@ -5,6 +5,7 @@ import random
 from rich import print
 import torch
 from torch import Tensor
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim import Optimizer
 from torch.utils.data import Dataset
@@ -152,7 +153,7 @@ class FlowTrainer:
             (observed_variables - observed_variables_).pow_(2),
         )
         loss += self.recon_coef * recon_loss
-        loss.backward()
+        F.softplus(loss).backward()
         self.optimizer.step()
         self.train_loss += float(loss)
         self.train_recon_loss += float(recon_loss)
