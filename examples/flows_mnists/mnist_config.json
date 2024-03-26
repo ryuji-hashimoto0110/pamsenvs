@@ -3,6 +3,6 @@
     "output_activation": "dequantization",
     "activate_func": "tanh",
     "randn_std": 0.001,
-    "num_squeeze": 2,
-    "num_layers": 32
+    "num_squeeze": 1,
+    "num_layers": 16
 }
