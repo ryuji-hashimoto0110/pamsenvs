@@ -69,7 +69,7 @@ class RealNVP(FlowModel):
                         )
                     )
                     c_, h_, w_ = c_//4, h_*2, w_*2
-                    if c_ <= 2:
+                    if c_ % 2 != 0:
                         split_patterns = ["checkerboard", "checkerboard"]
             assert c == c_ and h == h_ and w == w_
         if not "output_activation" in config_dic.keys():
