@@ -49,38 +49,39 @@ def merge1d(
     z: Tensor = torch.cat([z1, z2], dim=1).contiguous()
     return z
 
-def mask_checker(
-    z1: Tensor,
-    z2: Tensor
-) -> tuple[Tensor]:
-    masked_z1 = z1.clone()
-    masked_z2 = z2.clone()
-    masked_z1[:,:,0::2,1::2] = 0
-    masked_z1[:,:,1::2,0::2] = 0
-    masked_z2[:,:,0::2,0::2] = 0
-    masked_z2[:,:,1::2,1::2] = 0
-    return masked_z1, masked_z2
-
 def split_checker(
     z: Tensor,
     is_odd: bool
 ) -> tuple[Tensor]:
     """split image shaped latent variables with spatial checkerboard pattern.
 
+    [b,c,h,w] -> [b,2*c,h/2,w/2], [b,2*c,h/2,w/2]
+
     Args:
         z (Tensor): latent variable. ```[batch_size, c, h, w]```
         is_odd (bool): wether the number of the layer in the flow layers is odd.
+    Return:
+        z1 (Tensor)
+        z2 (Tensor)
     """
     if z.dim() != 4:
         raise ValueError(
             f"z must be image-shaped. z.shape={z.shape}"
         )
-    z1: Tensor = z.clone().contiguous()
-    z2: Tensor = z.clone().contiguous()
-    masked_z1, masked_z2 = mask_checker(z1, z2)
+    b, c, h, w = z.shape
+    if (h % 2 != 0) or (w % 2 != 0):
+        raise ValueError(
+            f"cannot split z by checkerboard pattern with size ({w},{h})."
+        )
+    z = z.view(b, c, h//2, 2, w//2, 2)
+    z = z.permute(0,1,3,5,2,4).contiguous()
+    z = z.view(b, 4*c, h//2, w//2)
+    za, zb, zc, zd = torch.split(z, c, dim=1)
+    z1: Tensor = torch.cat([za, zd], dim=1)
+    z2: Tensor = torch.cat([zb, zc], dim=1)
     if is_odd:
-        masked_z1, masked_z2 = masked_z2, masked_z1
-    return masked_z1, masked_z2
+        z1, z2 = z2, z1
+    return z1, z2
 
 def merge_checker(
     z1: Tensor, z2: Tensor,
@@ -95,27 +96,25 @@ def merge_checker(
         )
     if is_odd:
         z1, z2 = z2, z1
-    masked_z1, masked_z2 = mask_checker(z1, z2)
-    z: Tensor = masked_z1 + masked_z2
+    b, c_, h_, w_ = z1.shape
+    c: int = c_ // 2
+    za, zd = torch.split(z1, c, dim=1)
+    zb, zc = torch.split(z2, c, dim=1)
+    z: Tensor = torch.cat(
+        [za, zb, zc, zd], dim=1
+    )
+    z = z.view(b, c, 2, 2, h_, w_)
+    z = z.permute(0,1,4,2,5,3).contiguous()
+    z = z.view(b, c, h_*2, w_*2)
     return z
-
-def mask_channel(
-    z1: Tensor,
-    z2: Tensor
-) -> tuple[Tensor]:
-    c: int = z1.shape[1]
-    assert 2 <= c
-    masked_z1 = z1.clone()
-    masked_z2 = z2.clone()
-    masked_z1[:,:c//2,:,:] = 0
-    masked_z2[:,c//2:,:,:] = 0
-    return masked_z1, masked_z2
 
 def split_channel(
     z: Tensor,
     is_odd: bool
 ) -> tuple[Tensor]:
     """split image shaped latent variables with channel-wise masking.
+
+    [b,c,h,w] -> [b,c//2,h,w], [b,c-c//2,h,w]
 
     Args:
         z (Tensor): latent variable. ```[batch_size, c, h, w]```
@@ -125,12 +124,15 @@ def split_channel(
         raise ValueError(
             f"z must be image-shaped. z.shape={z.shape}"
         )
-    z1: Tensor = z.clone().contiguous()
-    z2: Tensor = z.clone().contiguous()
-    masked_z1, masked_z2 = mask_channel(z1, z2)
+    _, c, _, _ = z.shape
+    if c % 2 != 0:
+        raise ValueError(
+            f"cannnot channel-wise split z with channel {c}."
+        )
+    z1, z2 = torch.split(z, c//2, dim=1)
     if is_odd:
-        masked_z1, masked_z2 = masked_z2, masked_z1
-    return masked_z1, masked_z2
+        z1, z2 = z2, z1
+    return z1, z2
 
 def merge_channel(
     z1: Tensor, z2: Tensor,
@@ -145,8 +147,7 @@ def merge_channel(
         )
     if is_odd:
         z1, z2 = z2, z1
-    masked_z1, masked_z2 = mask_channel(z1, z2)
-    z: Tensor = masked_z1 + masked_z2
+    z: Tensor = torch.cat([z1, z2], dim=1)
     return z
 
 class Squeeze1dLayer(FlowTransformLayer):
@@ -388,10 +389,15 @@ class AffineCouplingLayer(BijectiveCouplingLayer):
             )
             self.out_channels: int = output_dim
         elif len(input_shape) == 3:
-            in_channels: int = input_shape[0]
+            if split_pattern == "checkerboard":
+                in_channels: int = input_shape[0] * 2
+                out_channels: int = in_channels*2
+            elif split_pattern == "channelwise":
+                in_channels: int = input_shape[0] // 2 if not is_odd else (input_shape[0] + 1) // 2
+                out_channels: int = (input_shape[0] - in_channels) * 2
             reduce_size: bool = False
             self.net: Module = ConvResBlock(
-                in_channels=in_channels, out_channels=in_channels*2,
+                in_channels=in_channels, out_channels=out_channels,
                 reduce_size=reduce_size
             )
         else:
