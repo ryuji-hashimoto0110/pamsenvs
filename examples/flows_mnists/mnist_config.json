@@ -4,5 +4,5 @@
     "activate_func": "tanh",
     "randn_std": 0.0015,
     "num_squeeze": 1,
-    "num_layers": 12
+    "num_layers": 32
 }
