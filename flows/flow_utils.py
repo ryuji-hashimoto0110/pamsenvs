@@ -217,7 +217,7 @@ class FlowBatchNorm(FlowTransformLayer):
         ) // (
             z_k_.size(0) * z_k_.size(1)
         )
-        log_det_jacobian = log_det_jacobian + torch.sum(
+        log_det_jacobian = log_det_jacobian - torch.sum(
             self.log_gamma - 0.5 * torch.log(var)
         ) * num_pixels
         return z_k_, log_det_jacobian
@@ -271,6 +271,6 @@ class FlowBatchNorm(FlowTransformLayer):
             z_k.size(0) * z_k.size(1)
         )
         log_det_jacobian = log_det_jacobian + torch.sum(
-            self.log_gamma - 0.5 * torch.log(var)
+            - self.log_gamma + 0.5 * torch.log(var)
         ) * num_pixels
         return z_k, log_det_jacobian
