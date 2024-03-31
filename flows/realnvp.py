@@ -4,6 +4,7 @@ from .coupling import Squeeze2dLayer
 from .dequantization import DequantizationLayer
 from .flow_model import FlowModel
 from .flow_model import FlowTransformLayer
+from .flow_utils import FlowBatchNorm
 from .flow_utils import FlowLayerStacker
 from numpy import ndarray
 from torch.nn import Module
@@ -23,6 +24,12 @@ class RealNVP(FlowModel):
                         input_shape=self.input_shape,
                         split_pattern="checkerboard",
                         is_odd=i%2!=0
+                    )
+                )
+                layers.append(
+                    FlowBatchNorm(
+                        input_shape=self.input_shape,
+                        is_affine_learnable=False
                     )
                 )
         elif len(self.input_shape) == 3:
@@ -60,6 +67,12 @@ class RealNVP(FlowModel):
                             input_shape=[c_,h_,w_],
                             split_pattern=split_patterns[i%2],
                             is_odd=j%2!=0
+                        )
+                    )
+                    layers.append(
+                        FlowBatchNorm(
+                            input_shape=[c_,h_,w_],
+                            is_affine_learnable=False
                         )
                     )
                 if not i == len(num_mid_layers_list)-1:
