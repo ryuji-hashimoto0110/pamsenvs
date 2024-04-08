@@ -2,9 +2,12 @@ from pams.logs import Logger
 from pams.logs import ExecutionLog
 from pams.logs import MarketStepEndLog
 from pams.logs.base import MarketStepBeginLog
+from pams.logs.base import OrderLog
 from pams.market import Market
+from pams.order import OrderKind
+from pams.order import MARKET_ORDER
 from pams.order_book import OrderBook
-from typing import List, Optional
+from typing import Optional
 from typing import TypeVar
 
 MarketID = TypeVar("MarketID")
@@ -86,7 +89,6 @@ class FlexSaver(Logger):
         """process market step begin log.
 
         store buy/sell order book at the beginning of step t.
-        prepare current log at step t.
 
         Args:
             log (MarketStepBeginLog): market step begin log.
@@ -101,10 +103,6 @@ class FlexSaver(Logger):
         self._add_price_volume_dic(
             market_id, previous_buy_order_book, previous_sell_order_book
         )
-        log_time: int = market.get_time()
-        current_log_dic: dict[str, dict[str, list | dict | str]] = \
-            self._create_empty_log_dic(log_time, market_id)
-        self.current_log_dics[market_id] = current_log_dic
 
     def process_execution_log(self, log: ExecutionLog) -> None:
         """process execution log.
@@ -114,8 +112,9 @@ class FlexSaver(Logger):
         Args:
             log (ExecutionLog): execution log.
         """
-        market_id: Market = log.market_id
-        execution_price: Optional[float] = log.price
+        market_id: int = log.market_id
+        execution_price: float = log.price
+        execution_price_str: str = self._convert_price2str(execution_price)
         execution_volume: int = log.volume
         if market_id not in self.execution_dics.keys():
             self.execution_dics[market_id] = {
@@ -123,19 +122,16 @@ class FlexSaver(Logger):
             }
         else:
             if execution_price in self.execution_dics[market_id].keys():
-                self.execution_dics[market_id][
-                    self._convert_price2str(execution_price)
-                ] += execution_volume
+                self.execution_dics[market_id][execution_price_str] += execution_volume
             else:
-                self.execution_dics[market_id][
-                    self._convert_price2str(execution_price)
-                ] = execution_volume
+                self.execution_dics[market_id][execution_price_str] = execution_volume
 
     def process_market_step_end_log(self, log: MarketStepEndLog) -> None:
         market: Market = log.market
+        log_time: int = market.get_time()
         market_id: Market = market.market_id
         current_log_dic: dict[str, dict[str, list | dict | str]] = \
-            self.current_log_dics[market_id]
+            self._create_empty_log_dic(log_time, market_id)
         self._write_prices(market, current_log_dic)
         self._write_executions(
             self.execution_dics[market_id],
@@ -144,12 +140,6 @@ class FlexSaver(Logger):
         current_buy_order_book: OrderBook = market.buy_order_book
         current_buy_price_volume_dic: dict[Optional[float], int] = \
             current_buy_order_book.get_price_volume()
-        self._write_order_book_diffs(
-            current_log_dic,
-            current_price_volume_dic=current_buy_price_volume_dic,
-            previous_price_volume_dic=self.previous_buy_price_volume_dic,
-            is_buy=True
-        )
         self._write_order_book(
             current_log_dic, current_buy_price_volume_dic, is_buy=True
         )
@@ -190,6 +180,8 @@ class FlexSaver(Logger):
         buy_order_book: OrderBook,
         sell_order_book: OrderBook
     ) -> None:
+        assert buy_order_book.is_buy
+        assert not sell_order_book.is_buy
         self.previous_buy_price_volume_dic[market_id] = \
             buy_order_book.get_price_volume()
         self.previous_sell_price_volume_dic[market_id] = \
@@ -241,15 +233,6 @@ class FlexSaver(Logger):
             log_dic["Data"]["message"].append(
                 {"tag":"VL", "volume":str(volume)}
             )
-
-    def _write_order_book_diffs(
-        self,
-        log_dic: dict[str, list | dict | str],
-        current_price_volume_dic: dict[Optional[float], int],
-        previous_price_volume_dic: dict[Optional[float], int],
-        is_buy: bool
-    ) -> None:
-        pass
 
     def _write_order_book(
         self,
