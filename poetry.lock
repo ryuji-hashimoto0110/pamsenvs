@@ -1102,13 +1102,13 @@ files = [
 
 [[package]]
 name = "pams"
-version = "0.2.0"
+version = "0.2.1"
 description = "PAMS: Platform for Artificial Market Simulations"
 optional = false
-python-versions = ">=3.8.1,<4.0.0"
+python-versions = "<4.0.0,>=3.8.1"
 files = [
-    {file = "pams-0.2.0-py3-none-any.whl", hash = "sha256:da38dde08e0379ba7ea2abf1a4faebb2e01e85664030807650816f34622f0560"},
-    {file = "pams-0.2.0.tar.gz", hash = "sha256:cc197a2a1ac06581d2910fd06f03344a239262d9028af427e3db8a24e3c93633"},
+    {file = "pams-0.2.1-py3-none-any.whl", hash = "sha256:4d3c4c005b69c6fbaa1ae5e28f39cef20191f45e61fb081e299052f360f8f007"},
+    {file = "pams-0.2.1.tar.gz", hash = "sha256:f985eb8048655aa0450ffe5756dcdcb7c3a29e61a3a93890fdf48f5d4815ecbb"},
 ]
 
 [package.dependencies]
