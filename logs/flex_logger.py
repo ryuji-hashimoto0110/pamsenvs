@@ -1,12 +1,14 @@
-from pams.logs import Logger
+from pams.logs import CancelLog
 from pams.logs import ExecutionLog
-from pams.logs import MarketStepEndLog
-from pams.logs.base import MarketStepBeginLog
-from pams.logs.base import OrderLog
+from pams.logs import ExpirationLog
+from pams.logs import Logger
+from pams.logs import MarketStepBeginLog
+from pams.logs import OrderLog
+from pams.logs.base import SimulationBeginLog
 from pams.market import Market
-from pams.order import OrderKind
 from pams.order import MARKET_ORDER
 from pams.order_book import OrderBook
+from pams.simulator import Simulator
 from typing import Optional
 from typing import TypeVar
 
@@ -70,7 +72,8 @@ class FlexSaver(Logger):
     """
     def __init__(
         self,
-        significant_figures: int = 1
+        significant_figures: int = 1,
+        is_execution_only: bool = True
     ) -> None:
         """initialization
 
@@ -78,79 +81,104 @@ class FlexSaver(Logger):
             significant_figures (int): significant figures to store prices. defaut to 1.
         """
         super().__init__()
-        self.current_log_dics: dict[MarketID, dict[str, list | dict | str]] = {}
-        self.execution_dics: dict[MarketID, dict[str, int]] = {}
         self.logs_dic: dict[MarketID, list[str]] = {}
-        self.previous_buy_price_volume_dic: dict[MarketID, dict[Optional[float], int]] = {}
-        self.previous_sell_price_volume_dic: dict[MarketID, dict[Optional[float], int]] = {}
+        self.market_dic: dict[MarketID, Market] = {}
+        self.buy_order_book_dic: dict[MarketID, OrderBook] = {}
+        self.sell_order_book_dic: dict[MarketID, OrderBook] = {}
         self.significant_figures: int = significant_figures
+        self.is_execution_only: bool = is_execution_only
 
-    def process_market_step_begin_log(self, log: MarketStepBeginLog) -> None:
-        """process market step begin log.
+    def process_simulation_begin_log(self, log: SimulationBeginLog) -> None:
+        """process simulation begin log.
 
-        store buy/sell order book at the beginning of step t.
+        store market and buy/sell order book.
 
         Args:
             log (MarketStepBeginLog): market step begin log.
         """
-        market: Market = log.market
-        market_id: Market = market.market_id
-        if market_id not in self.logs_dic.keys():
+        simulator: Simulator = log.simulator
+        for market in simulator.markets:
+            market_id: MarketID = market.market_id
             self.logs_dic[market_id] = []
-        self.execution_dics[market_id] = {}
-        previous_buy_order_book: OrderBook = market.buy_order_book
-        previous_sell_order_book: OrderBook = market.sell_order_book
-        self._add_price_volume_dic(
-            market_id, previous_buy_order_book, previous_sell_order_book
+            self.buy_order_book_dic[market_id] = market.buy_order_book
+            self.sell_order_book_dic[market_id] = market.sell_order_book
+
+    def _prepare_log_dic(
+        self,
+        log: CancelLog | ExecutionLog | ExpirationLog | OrderLog
+    ) -> dict[str, dict[str, list | dict | str]]:
+        """prepare base log_dic.
+
+        write all informations except for messages.
+
+        Args:
+            log (CancelLog | ExecutionLog | ExpirationLog | OrderLog)
+
+        Returns:
+            dict[str, dict[str, list | dict | str]]
+        """
+        if isinstance(log, CancelLog):
+            log_time: int = log.cancel_time
+        else:
+            log_time: int = log.time
+        market_id: int = log.market_id
+        log_dic = self._create_empty_log_dic(log_time, market_id)
+        market: Market = self.market_dic[market_id]
+        buy_volume_price_dic: dict[Optional[float], int] = \
+            self.buy_order_book_dic[market_id].get_price_volume()
+        sell_volume_price_dic: dict[Optional[float], int] = \
+            self.sell_order_book_dic[market_id].get_price_volume()
+        self._bulk_write(
+            log_dic,
+            market,
+            buy_volume_price_dic,
+            sell_volume_price_dic
         )
+        return log_dic
+
+    def _process_log_but_execution(
+        self,
+        log: CancelLog | ExpirationLog | OrderLog
+    ) -> dict[str, dict[str, list | dict | str]]:
+        if self.is_execution_only:
+            pass
+        else:
+            market_id: int = log.market_id
+            log_dic: dict[str, dict[str, list | dict | str]] = self._prepare_log_dic(log)
+            self.logs_dic[market_id].append(
+                self._convert_dic2str(log_dic)
+            )
+
+    def process_order_log(self, log: OrderLog) -> None:
+        self._process_log_but_execution(log)
+
+    def process_cancel_log(self, log: CancelLog) -> None:
+        self._process_log_but_execution(log)
+
+    def process_expiration_log(self, log: ExpirationLog) -> None:
+        self._process_log_but_execution(log)
 
     def process_execution_log(self, log: ExecutionLog) -> None:
         """process execution log.
 
-        add execution log to execution_dics.
+        add execution log logs_dic.
 
         Args:
             log (ExecutionLog): execution log.
         """
         market_id: int = log.market_id
+        log_dic: dict[str, dict[str, list | dict | str]] = self._prepare_log_dic(log)
         execution_price: float = log.price
         execution_price_str: str = self._convert_price2str(execution_price)
         execution_volume: int = log.volume
-        if market_id not in self.execution_dics.keys():
-            self.execution_dics[market_id] = {
-                self._convert_price2str(execution_price): execution_volume
-            }
-        else:
-            if execution_price in self.execution_dics[market_id].keys():
-                self.execution_dics[market_id][execution_price_str] += execution_volume
-            else:
-                self.execution_dics[market_id][execution_price_str] = execution_volume
-
-    def process_market_step_end_log(self, log: MarketStepEndLog) -> None:
-        market: Market = log.market
-        log_time: int = market.get_time()
-        market_id: Market = market.market_id
-        current_log_dic: dict[str, dict[str, list | dict | str]] = \
-            self._create_empty_log_dic(log_time, market_id)
-        self._write_prices(market, current_log_dic)
-        self._write_executions(
-            self.execution_dics[market_id],
-            current_log_dic
+        log_dic["Data"]["message"].append(
+            {"tag":"1P", "price":str(execution_price_str)}
         )
-        current_buy_order_book: OrderBook = market.buy_order_book
-        current_buy_price_volume_dic: dict[Optional[float], int] = \
-            current_buy_order_book.get_price_volume()
-        self._write_order_book(
-            current_log_dic, current_buy_price_volume_dic, is_buy=True
-        )
-        current_sell_order_book: OrderBook = market.sell_order_book
-        current_sell_price_volume_dic: dict[Optional[float], int] = \
-            current_sell_order_book.get_price_volume()
-        self._write_order_book(
-            current_log_dic, current_sell_price_volume_dic, is_buy=False
+        log_dic["Data"]["message"].append(
+            {"tag":"VL", "volume":str(execution_volume)}
         )
         self.logs_dic[market_id].append(
-            self._convert_dic2str(current_log_dic)
+            self._convert_dic2str(log_dic)
         )
 
     def _create_empty_log_dic(
@@ -174,19 +202,6 @@ class FlexSaver(Logger):
         }
         return empty_log_dic
 
-    def _add_price_volume_dic(
-        self,
-        market_id: MarketID,
-        buy_order_book: OrderBook,
-        sell_order_book: OrderBook
-    ) -> None:
-        assert buy_order_book.is_buy
-        assert not sell_order_book.is_buy
-        self.previous_buy_price_volume_dic[market_id] = \
-            buy_order_book.get_price_volume()
-        self.previous_sell_price_volume_dic[market_id] = \
-            sell_order_book.get_price_volume()
-
     def _convert_dic2str(
         self,
         dic: dict
@@ -204,8 +219,8 @@ class FlexSaver(Logger):
 
     def _write_prices(
         self,
-        market: Market,
-        log_dic: dict[str, list | dict | str]
+        log_dic: dict[str, list | dict | str],
+        market: Market
     ) -> None:
         market_price: Optional[float | str] = market.get_last_executed_price()
         log_dic["Data"]["market_price"] = \
@@ -220,19 +235,6 @@ class FlexSaver(Logger):
         log_dic["Data"]["mid_price"] = \
             f"{self._convert_price2str(mid_price)}"
         return mid_price
-
-    def _write_executions(
-        self,
-        execution_dic: dict[str, int],
-        log_dic: dict[str, dict[str, list | dict | str]]
-    ) -> None:
-        for price_str, volume in execution_dic.items():
-            log_dic["Data"]["message"].append(
-                {"tag":"1P", "price":str(price_str)}
-            )
-            log_dic["Data"]["message"].append(
-                {"tag":"VL", "volume":str(volume)}
-            )
 
     def _write_order_book(
         self,
@@ -251,3 +253,18 @@ class FlexSaver(Logger):
             log_dic["buy_book"] = str_volume_price_dic
         else:
             log_dic["sell_book"] = str_volume_price_dic
+
+    def _bulk_write(
+        self,
+        log_dic: dict[str, list | dict | str],
+        market: Market,
+        buy_volume_price_dic: dict[Optional[float], int],
+        sell_volume_price_dic: dict[Optional[float], int]
+    ) -> None:
+        self._write_prices(log_dic, market)
+        self._write_order_book(
+            log_dic, buy_volume_price_dic, is_buy=True
+        )
+        self._write_order_book(
+            log_dic, sell_volume_price_dic, is_buy=False
+        )
