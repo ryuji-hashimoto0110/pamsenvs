@@ -2,11 +2,9 @@ from pams.logs import CancelLog
 from pams.logs import ExecutionLog
 from pams.logs import ExpirationLog
 from pams.logs import Logger
-from pams.logs import MarketStepBeginLog
 from pams.logs import OrderLog
 from pams.logs.base import SimulationBeginLog
 from pams.market import Market
-from pams.order import MARKET_ORDER
 from pams.order_book import OrderBook
 from pams.simulator import Simulator
 from typing import Optional
