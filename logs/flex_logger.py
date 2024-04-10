@@ -69,6 +69,7 @@ class FlexSaver(Logger):
             "buy_book":{"275":"17000","274":"19000","273":"24000","272":"11000",...},
             "sell_book":{"276":"13000","277":"1000","278":"5000","279":"4000",...}
         }
+    }
     """
     def __init__(
         self,
@@ -100,6 +101,7 @@ class FlexSaver(Logger):
         for market in simulator.markets:
             market_id: MarketID = market.market_id
             self.logs_dic[market_id] = []
+            self.market_dic[market_id] = market
             self.buy_order_book_dic[market_id] = market.buy_order_book
             self.sell_order_book_dic[market_id] = market.sell_order_book
 
@@ -250,9 +252,9 @@ class FlexSaver(Logger):
                 price_str: str = self._convert_price2str(price)
             str_volume_price_dic[f"{price_str}"] = f"{volume}"
         if is_buy:
-            log_dic["buy_book"] = str_volume_price_dic
+            log_dic["Data"]["buy_book"] = str_volume_price_dic
         else:
-            log_dic["sell_book"] = str_volume_price_dic
+            log_dic["Data"]["sell_book"] = str_volume_price_dic
 
     def _bulk_write(
         self,
