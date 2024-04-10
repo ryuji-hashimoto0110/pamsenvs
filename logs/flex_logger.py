@@ -122,8 +122,14 @@ class FlexSaver(Logger):
         else:
             log_time: int = log.time
         market_id: int = log.market_id
-        log_dic = self._create_empty_log_dic(log_time, market_id)
         market: Market = self.market_dic[market_id]
+        if log_time != market.get_time():
+            raise ValueError(
+                "FlexSaver needs to write log concurrently with the event occurr but found " +
+                f"log_time={log_time}, market.time={market.get_time()} in {log}. " +
+                "please rewrite pams/market.py as in README.md."
+            )
+        log_dic = self._create_empty_log_dic(log_time, market_id)
         buy_volume_price_dic: dict[Optional[float], int] = \
             self.buy_order_book_dic[market_id].get_price_volume()
         sell_volume_price_dic: dict[Optional[float], int] = \

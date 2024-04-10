@@ -1,26 +1,11 @@
-## Important notice
+## Important note
 
-```OrderBookSaver``` does not work if you use raw ```pams.market``` because ```pams.logs.logger``` does not save logs in sequential (time series) order. Therefore, please replace ```pams/market.py``` to ```market_.py``` [here](https://drive.google.com/file/d/1eWW4kQSAo0VLPQ96b2r8xOAdq1DZ_EUk/view?usp=share_link) or rewrite the ```pams/market.py``` code in your virtual environment as follows.
+The loggers in this directory do not work if you use raw ```pams.market``` because ```pams.logs.logger``` does not save logs in sequential (time series) order and does not write log at log.time. Therefore, please replace ```pams/market.py``` to ```market_.py``` [here](https://drive.google.com/file/d/1iDoWINiyDzXa0q4upMOUCkuomT2jJvWu/view?usp=share_link) or replace all ```.read_and_write()``` in ```pams/market.py``` to ```.read_and_write_with_direct_process()``` in your virtual environment. Also, comment out the following code in ```_execution()```.
 
-- l656 in ```._cancel_order``` method;
-
-before: ```log.read_and_write(logger=self.logger)```
-
-after: ```log.read_and_write_with_direct_process(logger=self.logger)```
-
-- l727 in ```._execute_orders``` method;
-
-before: ```log.read_and_write(logger=self.logger)```
-
-after: ```log.read_and_write_with_direct_process(logger=self.logger)```
-
-- l776 in ```._add_order``` method;
-
-before: ```log.read_and_write(logger=self.logger)```
-
-after: ```log.read_and_write_with_direct_process(logger=self.logger)```
-
-- comment out l930~932 in ```._execution``` method.
+```python
+if self.logger is not None:
+    self.logger.bulk_write(logs=cast(List[Log], logs))
+```
 
 ## Remaining bugs or malfunctions
 
