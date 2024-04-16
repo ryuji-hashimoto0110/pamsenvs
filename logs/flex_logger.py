@@ -106,7 +106,7 @@ class FlexSaver(Logger):
     def _prepare_log_dic(
         self,
         log: CancelLog | ExecutionLog | ExpirationLog | OrderLog
-    ) -> dict[str, dict[str, list | dict | str]]:
+    ) -> dict[str, dict[str, dict[str, list | dict, str]]]:
         """prepare base log_dic.
 
         write all informations except for messages.
@@ -115,7 +115,7 @@ class FlexSaver(Logger):
             log (CancelLog | ExecutionLog | ExpirationLog | OrderLog)
 
         Returns:
-            dict[str, dict[str, list | dict | str]]
+            dict[str, dict[str, dict[str, list | dict, str]]]
         """
         if isinstance(log, CancelLog):
             log_time: int = log.cancel_time
@@ -145,12 +145,12 @@ class FlexSaver(Logger):
     def _process_log_but_execution(
         self,
         log: CancelLog | ExpirationLog | OrderLog
-    ) -> dict[str, dict[str, list | dict | str]]:
+    ) -> dict[str, dict[str, dict[str, list | dict, str]]]:
         if self.is_execution_only:
             pass
         else:
             market_id: int = log.market_id
-            log_dic: dict[str, dict[str, list | dict | str]] = self._prepare_log_dic(log)
+            log_dic: dict[str, dict[str, dict[str, list | dict, str]]] = self._prepare_log_dic(log)
             self.logs_dic[market_id].append(
                 self._convert_dic2str(log_dic)
             )
@@ -173,7 +173,7 @@ class FlexSaver(Logger):
             log (ExecutionLog): execution log.
         """
         market_id: int = log.market_id
-        log_dic: dict[str, dict[str, list | dict | str]] = self._prepare_log_dic(log)
+        log_dic: dict[str, dict[str, dict[str, list | dict, str]]] = self._prepare_log_dic(log)
         execution_price: float = log.price
         execution_price_str: str = self._convert_price2str(execution_price)
         execution_volume: int = log.volume
@@ -191,8 +191,8 @@ class FlexSaver(Logger):
         self,
         log_time: int,
         market_id: int
-    ) -> dict[str, dict[str, list | dict | str]]:
-        empty_log_dic: dict[str, list | dict | str] = {
+    ) -> dict[str, dict[str, dict[str, list | dict, str]]]:
+        empty_log_dic: dict[str, dict[str, list | dict, str]] = {
             "Data": {
                 "time": f"{str(log_time)}",
                 "code": f"{str(market_id)}",
@@ -225,7 +225,7 @@ class FlexSaver(Logger):
 
     def _write_prices(
         self,
-        log_dic: dict[str, list | dict | str],
+        log_dic: dict[str, dict[str, list | dict, str]],
         market: Market
     ) -> None:
         market_price: Optional[float | str] = market.get_last_executed_price()
@@ -244,7 +244,7 @@ class FlexSaver(Logger):
 
     def _write_order_book(
         self,
-        log_dic: dict[str, list | dict | str],
+        log_dic: dict[str, dict[str, list | dict, str]],
         volume_price_dic: dict[Optional[float], int],
         is_buy: bool
     ) -> None:
@@ -262,7 +262,7 @@ class FlexSaver(Logger):
 
     def _bulk_write(
         self,
-        log_dic: dict[str, list | dict | str],
+        log_dic: dict[str, dict[str, list | dict, str]],
         market: Market,
         buy_volume_price_dic: dict[Optional[float], int],
         sell_volume_price_dic: dict[Optional[float], int]
