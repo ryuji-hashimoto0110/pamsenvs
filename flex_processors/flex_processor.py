@@ -1,6 +1,8 @@
+import csv
 import json
 import pathlib
 from pathlib import Path
+import warnings
 
 class FlexProcessor:
     """FlexProcessor class.
@@ -59,14 +61,17 @@ class FlexProcessor:
 
     Flex Processor create following structured dataframe from the above txt data with FLEX format, for example.
 
-    datetime       | event_flag | market_price | mid_price | best_buy | best_sell | ...
-    09:00:00.50400 | execution  | 275          | 275.5     | 275      | 276       | ...
-    ...
+    | time           | event_flag | event_volume | event_price | market_price | mid_price |\n
+    | 09:00:00.50400 | execution  | 22000        | 275         | 275          | 275.5     |\n
+
+    | best_buy | best_sell | buy1_price | buy1_volume | buy2_price | buy2_volume | ...
+    | 275      | 276       | 275        | 17000       | 274        | 19000       | ...
     """
     def __init__(
         self,
         txt_datas_path: Path,
         csv_datas_path: Path,
+        quote_num: int = 10,
         is_execution_only: bool = True
     ) -> None:
         """initialization.
@@ -77,12 +82,29 @@ class FlexProcessor:
         Args:
             txt_datas_path (Path): target folder path.
             csv_datas_path (Path): folder path to create csv datas.
+            quote_num (int): number of limit prices to store in order books.
             is_execution_only (bool): wether to record execution event only. default to True.
         """
         self.txt_datas_path: Path = txt_datas_path
         assert self.txt_datas_path.exists()
         self.csv_datas_path: Path = csv_datas_path
+        self.quote_num: int = quote_num
         self.is_execution_only: bool = is_execution_only
+        self.column_names: list[str] = self._create_columns()
+
+    def _create_columns(self) -> list[str]:
+        column_names: list[str] = [
+            "time", "event_flag", "market_price", "best_buy", "best_sell"
+        ]
+        [
+            (column_names.append(f"buy{i+1}_price"), column_names.append(f"buy{i+1}_volume")) \
+                for i in range(self.quote_num)
+        ]
+        [
+            (column_names.append(f"sell{i+1}_price"), column_names.append(f"sell{i+1}_volume")) \
+                for i in range(self.quote_num)
+        ]
+        return column_names
 
     def convert_all_txt2csv(self) -> None:
         for txt_path in self.txt_datas_path.rglob("*.txt"):
@@ -101,3 +123,86 @@ class FlexProcessor:
     ) -> None:
         assert txt_path.suffix == ".txt"
         assert csv_path.suffix == ".csv"
+        if csv_path.exists():
+            warnings.warn(
+                f"file: {str(csv_path)} already exists. " +
+                "the content of the file will be overwritten."
+            )
+        with open(txt_path, mode="r") as f:
+            with open(csv_path, mode="w") as g:
+                writer = csv.writer(g)
+                writer.writerow(self.column_names)
+                line: str
+                for line in f.read().splitlines():
+                    log_dic: dict[
+                        str, dict[str, dict[str, list | dict, str]]
+                    ] = json.loads(line.replace("'", '"'))
+                    log_columns: list[str] = self._extract_info_from_log(log_dic)
+                    if len(log_columns) == 0:
+                        pass
+                    elif len(log_columns) == len(self.column_names):
+                        writer.writerow(log_columns)
+                    else:
+                        raise ValueError(
+                            "column mismatch.\n" +
+                            f"column names = {self.column_names}\n" +
+                            f"records = {log_columns}"
+                        )
+
+    def _extract_info_from_log(
+        self,
+        log_dic: dict[str, dict[str, dict[str, list | dict, str]]]
+    ) -> list[str]:
+        message_dics: list[dict[str, str]] = log_dic["Data"]["message"]
+        if self.is_execution_only:
+            execution_infos: list[str] = self._extract_execution_info_from_message_dics(message_dics)
+        else:
+            raise NotImplementedError
+        if len(execution_infos) == 0:
+            return []
+        elif len(execution_infos) == 3:
+            log_columns: list[str] = [log_dic["Data"]["time"]]
+            log_columns.extend(execution_infos)
+            log_columns.extend(
+                [
+                    log_dic["Data"]["market_price"],
+                    log_dic["Data"]["mid_price"],
+                    log_dic["Data"]["best_bid"],
+                    log_dic["Data"]["best_ask"]
+                ]
+            )
+        else:
+            raise ValueError(
+                f"length of execution_infos must be 3 (event_flag, event_volume, event_price) " +
+                f"but found {execution_infos}"
+            )
+        buy_price_volumes: list[str] = self._extract_price_volume_info_from_log(
+            log_dic, key_name="buy_book"
+        )
+        log_columns.extend(buy_price_volumes)
+        sell_price_volumes: list[str] = self._extract_price_volume_info_from_log(
+            log_dic, key_name="sell_book"
+        )
+        log_columns.extend(sell_price_volumes)
+        return log_columns
+
+    def _extract_execution_info_from_message_dics(
+        self,
+        message_dics: list[dict[str, str]]
+    ) -> list[str]:
+        execution_infos: list[str] = []
+        # WRITE ME
+
+        return execution_infos
+
+    def _extract_price_volume_info_from_log(
+        self,
+        log_dic: dict[str, dict[str, dict[str, list | dict, str]]],
+        key_name: str
+    ) -> list[str]:
+        price_volumes: list[str] = []
+        order_book_dic: dict[str, str] = log_dic["Data"][key_name]
+        # WRIT ME
+
+        assert len(price_volumes) == 2*self.quote_num
+        return price_volumes
