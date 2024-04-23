@@ -91,6 +91,7 @@ class aFCNAgent(Agent):
         super().setup(
             settings=settings, accessible_markets_ids=accessible_markets_ids
         )
+        self._convert_exp2pareto(settings)
         if 2 <= len(accessible_markets_ids):
             warnings.warn(
                 "order decision for multiple assets has not implemented yet."
@@ -130,6 +131,42 @@ class aFCNAgent(Agent):
         else:
             self.is_chart_following: bool = True
         self.unexecuted_orders: list[Order] = []
+
+    def _convert_exp2pareto(self, settings: dict[str, Any]) -> None:
+        """_summary_
+
+        {
+            "assetVolume": {"expon": [50]},
+		    "cashAmount": {"expon": [100]},
+            "paretoVariables: {
+                "cashAmount": {"alpha": 1.0, "beta": 2.0},
+                "assetVolume": {"alpha": ..., "beta": ...}
+            }
+        }
+        """
+        if "paretoVariables" in settings:
+            pareto_variables: dict[str, dict[str, float]] = settings["paretoVariables"]
+        else:
+            return
+        for pareto_variable, param_dic in pareto_variables.items():
+            if "expon" not in settings[pareto_variable]:
+                raise ValueError(
+                    f"inappropriate distribution type to convert to pareto: {settings[pareto_variable]}"
+                )
+            lam: float = settings[pareto_variable]["expon"]
+            alpha: float = param_dic["alpha"]
+            beta: float = param_dic["beta"]
+            if pareto_variable == "cashAmount":
+                cash_amount: float = lam * self.cash_amount
+                cash_amount = alpha * np.exp(cash_amount / beta)
+                self.set_cash_amount(cash_amount)
+            elif pareto_variable == "assetVolume":
+                for market_id in self.asset_volumes.keys():
+                    asset_volume = lam * self.asset_volumes[market_id]
+                    asset_volume = alpha * np.exp(asset_volume / beta)
+                    self.set_asset_volume(market_id, asset_volume)
+            else:
+                raise NotImplementedError
 
     def submit_orders(
         self, markets: list[Market]
