@@ -155,7 +155,8 @@ class FlexProcessor:
     ) -> list[str]:
         message_dics: list[dict[str, str]] = log_dic["Data"]["message"]
         if self.is_execution_only:
-            execution_infos: list[str] = self._extract_execution_info_from_message_dics(message_dics)
+            execution_infos: list[str | float | int] = \
+                self._extract_execution_info_from_message_dics(message_dics)
         else:
             raise NotImplementedError
         if len(execution_infos) == 0:
@@ -176,11 +177,11 @@ class FlexProcessor:
                 f"length of execution_infos must be 3 (event_flag, event_volume, event_price) " +
                 f"but found {execution_infos}"
             )
-        buy_price_volumes: list[str] = self._extract_price_volume_info_from_log(
+        buy_price_volumes: list[Optional[int | float]] = self._extract_price_volume_info_from_log(
             log_dic, key_name="buy_book"
         )
         log_columns.extend(buy_price_volumes)
-        sell_price_volumes: list[str] = self._extract_price_volume_info_from_log(
+        sell_price_volumes: list[Optional[int | float]] = self._extract_price_volume_info_from_log(
             log_dic, key_name="sell_book"
         )
         log_columns.extend(sell_price_volumes)
@@ -189,7 +190,7 @@ class FlexProcessor:
     def _extract_execution_info_from_message_dics(
         self,
         message_dics: list[dict[str, str]]
-    ) -> list[str]:
+    ) -> list[int | float]:
         """
         Args:
             message_dics (list[dict[str, str]]): ex: [
@@ -235,9 +236,16 @@ class FlexProcessor:
         self,
         log_dic: dict[str, dict[str, dict[str, list | dict, str]]],
         key_name: str
-    ) -> list[str]:
+    ) -> list[Optional[int | float]]:
         price_volumes: list[str] = []
         order_book_dic: dict[str, str] = log_dic["Data"][key_name]
-        # WRIT ME
+        for i, price, volume in enumerate(order_book_dic.items()):
+            if i+1 <= self.quote_num:
+                price_volumes.append(float(price))
+                price_volumes.append(int(volume))
+            else:
+                break
+        while len(price_volumes) < 2*self.quote_num:
+            len(price_volumes.append(None))
         assert len(price_volumes) == 2*self.quote_num
         return price_volumes
