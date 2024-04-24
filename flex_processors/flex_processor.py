@@ -1,7 +1,7 @@
 import csv
 import json
-import pathlib
 from pathlib import Path
+from typing import Optional
 import warnings
 
 class FlexProcessor:
@@ -190,9 +190,45 @@ class FlexProcessor:
         self,
         message_dics: list[dict[str, str]]
     ) -> list[str]:
-        execution_infos: list[str] = []
-        # WRITE ME
+        """
+        Args:
+            message_dics (list[dict[str, str]]): ex: [
+                {"tag":"1P","price":"275"},
+                {"tag":"VL","volume":"22000"},
+                {"tag":"QS","price":"MO","qty":"16000->0"},
+                {"tag":"QS","price":"222","qty":"2000->0"},
+                ...
+            ]
 
+        Returns:
+            list[str]: [] or [event_flag, event_volume, event_price]
+        """
+        execution_infos: list[str] = []
+        event_flag: str = "execution"
+        event_volume: int = 0
+        event_price: Optional[float] = None
+        for message_dic in message_dics:
+            if message_dic["tag"] == "1P":
+                if event_price is None:
+                    event_price = float(message_dic["price"])
+                else:
+                    if event_price != float(message_dic["price"]):
+                        raise ValueError(
+                            f"executions with different prices found! {event_price} and {float(message_dic["price"])}"
+                        )
+            elif message_dic["tag"] == "VL":
+                event_volume += int(message_dic["volume"])
+            else:
+                pass
+        if event_price is not None or 0 < event_volume:
+            if event_price is None or event_volume == 0:
+                raise ValueError(
+                    f"incompatible log: event_price={event_price}, event_volume={event_volume}"
+                )
+            else:
+                execution_infos = [
+                    event_flag, event_volume, event_price
+                ]
         return execution_infos
 
     def _extract_price_volume_info_from_log(
@@ -203,6 +239,5 @@ class FlexProcessor:
         price_volumes: list[str] = []
         order_book_dic: dict[str, str] = log_dic["Data"][key_name]
         # WRIT ME
-
         assert len(price_volumes) == 2*self.quote_num
         return price_volumes
