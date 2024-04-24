@@ -246,6 +246,6 @@ class FlexProcessor:
             else:
                 break
         while len(price_volumes) < 2*self.quote_num:
-            len(price_volumes.append(None))
+            price_volumes.append(None)
         assert len(price_volumes) == 2*self.quote_num
         return price_volumes
