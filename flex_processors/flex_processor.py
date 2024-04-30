@@ -116,8 +116,8 @@ class FlexProcessor:
             current_date = int(current_datetime.strftime("%Y%m%d"))
             command: str = f"ruby {str(self.flex_downloader_path)} {current_date} {tickers}"
             try:
-                subprocess.run(command, shell=True)
-            except:
+                _ = subprocess.run(command, shell=True)
+            except Exception as e:
                 pass
             current_datetime += timedelta(days=1)
 
