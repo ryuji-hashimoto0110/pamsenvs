@@ -2,6 +2,7 @@ import csv
 from datetime import datetime
 from datetime import timedelta
 import json
+import pathlib
 from pathlib import Path
 import subprocess
 from typing import Optional
@@ -113,13 +114,14 @@ class FlexProcessor:
         end_datetime = datetime.strptime(str(end_date), "%Y%m%d")
         while current_datetime <= end_datetime:
             current_date = int(current_datetime.strftime("%Y%m%d"))
+            data_path: Path = pathlib.Path(__file__).resolve().parents[0] / current_date
             download_command: str = f"ruby {str(self.flex_downloader_path)} {current_date} {tickers}"
             try:
                 _ = subprocess.run(download_command, shell=True)
-                data_path: Path = Path(__file__).resolve().parents[0] / current_date
                 move_command: str = f"mv {str(data_path)} {str(self.txt_datas_path)}"
-                subprocess.run(move_command, shell=True)
+                _ = subprocess.run(move_command, shell=True)
             except Exception as e:
+                print(e)
                 pass
             current_datetime += timedelta(days=1)
 
