@@ -106,7 +106,7 @@ class FlexProcessor:
         ]
         return column_names
 
-    def convert_all_txt2csv(self) -> None:
+    def convert_all_txt2csv(self, display_path: bool = True) -> None:
         for txt_path in self.txt_datas_path.rglob("*.txt"):
             csv_path: Path = \
                 self.csv_datas_path / txt_path.relative_to(
@@ -115,6 +115,8 @@ class FlexProcessor:
             self.convert_txt2csv(
                 txt_path, csv_path
             )
+            if display_path:
+                print(f"converted from {str(txt_path)} to {str(txt_path)}")
 
     def convert_txt2csv(
         self,
