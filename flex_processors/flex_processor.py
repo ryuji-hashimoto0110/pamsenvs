@@ -94,7 +94,8 @@ class FlexProcessor:
 
     def _create_columns(self) -> list[str]:
         column_names: list[str] = [
-            "time", "event_flag", "market_price", "best_buy", "best_sell"
+            "time", "event_flag", "event_volume", "event_price (avg)",
+            "market_price", "mid_price", "best_buy", "best_sell"
         ]
         [
             (column_names.append(f"buy{i+1}_price"), column_names.append(f"buy{i+1}_volume")) \
@@ -106,22 +107,25 @@ class FlexProcessor:
         ]
         return column_names
 
-    def convert_all_txt2csv(self, display_path: bool = True) -> None:
+    def convert_all_txt2csv(self, is_display_path: bool = True) -> None:
         for txt_path in self.txt_datas_path.rglob("*.txt"):
             csv_path: Path = \
                 self.csv_datas_path / txt_path.relative_to(
                     self.txt_datas_path
-                ).with_suffix(".txt")
+                ).with_suffix(".csv")
+            csv_parent_path: Path = csv_path.parent
+            if not csv_parent_path.exists():
+                csv_parent_path.mkdir(parents=True)
             self.convert_txt2csv(
-                txt_path, csv_path
+                txt_path, csv_path,
+                is_display_path
             )
-            if display_path:
-                print(f"converted from {str(txt_path)} to {str(txt_path)}")
 
     def convert_txt2csv(
         self,
         txt_path: Path,
-        csv_path: Path
+        csv_path: Path,
+        is_display_path: bool
     ) -> None:
         assert txt_path.suffix == ".txt"
         assert csv_path.suffix == ".csv"
@@ -135,6 +139,8 @@ class FlexProcessor:
                 writer = csv.writer(g)
                 writer.writerow(self.column_names)
                 line: str
+                if is_display_path:
+                    print(f"convert from {str(txt_path)} to {str(csv_path)}")
                 for line in f.read().splitlines():
                     log_dic: dict[
                         str, dict[str, dict[str, list | dict, str]]
@@ -145,6 +151,7 @@ class FlexProcessor:
                     elif len(log_columns) == len(self.column_names):
                         writer.writerow(log_columns)
                     else:
+                        print(len(self.column_names), len(log_columns))
                         raise ValueError(
                             "column mismatch.\n" +
                             f"column names = {self.column_names}\n" +
@@ -168,10 +175,10 @@ class FlexProcessor:
             log_columns.extend(execution_infos)
             log_columns.extend(
                 [
-                    log_dic["Data"]["market_price"],
-                    log_dic["Data"]["mid_price"],
-                    log_dic["Data"]["best_bid"],
-                    log_dic["Data"]["best_ask"]
+                    float(log_dic["Data"]["market_price"]),
+                    float(log_dic["Data"]["mid_price"]),
+                    float(log_dic["Data"]["best_bid"]),
+                    float(log_dic["Data"]["best_ask"])
                 ]
             )
         else:
@@ -209,29 +216,19 @@ class FlexProcessor:
         execution_infos: list[str] = []
         event_flag: str = "execution"
         event_volume: int = 0
-        event_price: Optional[float] = None
+        event_prices: list[float] = []
         for message_dic in message_dics:
             if message_dic["tag"] == "1P":
-                if event_price is None:
-                    event_price = float(message_dic["price"])
-                else:
-                    if event_price != float(message_dic["price"]):
-                        raise ValueError(
-                            f"executions with different prices found! {event_price} and {float(message_dic["price"])}"
-                        )
+                event_prices.append(float(message_dic["price"]))
             elif message_dic["tag"] == "VL":
                 event_volume += int(message_dic["volume"])
             else:
                 pass
-        if event_price is not None or 0 < event_volume:
-            if event_price is None or event_volume == 0:
-                raise ValueError(
-                    f"incompatible log: event_price={event_price}, event_volume={event_volume}"
-                )
-            else:
-                execution_infos = [
-                    event_flag, event_volume, event_price
-                ]
+        if 0 < len(event_prices):
+            event_price: float = sum(event_prices) / len(event_prices)
+            execution_infos = [
+                event_flag, event_volume, event_price
+            ]
         return execution_infos
 
     def _extract_price_volume_info_from_log(
@@ -241,9 +238,12 @@ class FlexProcessor:
     ) -> list[Optional[int | float]]:
         price_volumes: list[str] = []
         order_book_dic: dict[str, str] = log_dic["Data"][key_name]
-        for i, price, volume in enumerate(order_book_dic.items()):
+        for i, (price, volume) in enumerate(order_book_dic.items()):
             if i+1 <= self.quote_num:
-                price_volumes.append(float(price))
+                if price == "MO":
+                    price_volumes.append(None)
+                else:
+                    price_volumes.append(float(price))
                 price_volumes.append(int(volume))
             else:
                 break
