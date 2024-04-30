@@ -111,12 +111,15 @@ class FlexProcessor:
         assert self.flex_downloader_path.suffix == ".rb"
         current_datetime = datetime.strptime(str(start_date), "%Y%m%d")
         end_datetime = datetime.strptime(str(end_date), "%Y%m%d")
-        subprocess.run(f"cd {str(self.txt_datas_path.resolve())}", shell=True)
+        flex_parent_path: Path = self.flex_downloader_path.parent
         while current_datetime <= end_datetime:
             current_date = int(current_datetime.strftime("%Y%m%d"))
-            command: str = f"ruby {str(self.flex_downloader_path)} {current_date} {tickers}"
+            download_command: str = f"ruby {str(self.flex_downloader_path)} {current_date} {tickers}"
             try:
-                _ = subprocess.run(command, shell=True)
+                _ = subprocess.run(download_command, shell=True)
+                data_path: Path = flex_parent_path / current_date
+                move_command: str = f"mv {str(data_path)} {str(self.txt_datas_path)}"
+                subprocess.run(move_command, shell=True)
             except Exception as e:
                 pass
             current_datetime += timedelta(days=1)
