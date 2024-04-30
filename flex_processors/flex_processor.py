@@ -1,6 +1,9 @@
 import csv
+from datetime import datetime
+from datetime import timedelta
 import json
 from pathlib import Path
+import subprocess
 from typing import Optional
 import warnings
 
@@ -69,8 +72,9 @@ class FlexProcessor:
     """
     def __init__(
         self,
-        txt_datas_path: Path,
-        csv_datas_path: Path,
+        txt_datas_path: Optional[Path] = None,
+        csv_datas_path: Optional[Path] = None,
+        flex_downloader_path: Optional[Path] = None,
         quote_num: int = 10,
         is_execution_only: bool = True
     ) -> None:
@@ -80,17 +84,42 @@ class FlexProcessor:
         as txt_datas_path under csv_datas_path with csv files.
 
         Args:
-            txt_datas_path (Path): target folder path.
-            csv_datas_path (Path): folder path to create csv datas.
-            quote_num (int): number of limit prices to store in order books.
+            txt_datas_path (Path): target folder path. default to None.
+            csv_datas_path (Path): folder path to create csv datas. default to None.
+            flex_downloader_path (Path): path to FlexDownloader. default to None.
+                Ex) ~/flex_full_processed_downloader/downloader.rb
+            quote_num (int): number of limit prices to store in order books. default to 10.
             is_execution_only (bool): wether to record execution event only. default to True.
         """
-        self.txt_datas_path: Path = txt_datas_path
-        assert self.txt_datas_path.exists()
-        self.csv_datas_path: Path = csv_datas_path
+        self.txt_datas_path: Optional[Path] = txt_datas_path
+        self.csv_datas_path: Optional[Path] = csv_datas_path
+        self.flex_downloader_path: Optional[Path] = flex_downloader_path
         self.quote_num: int = quote_num
         self.is_execution_only: bool = is_execution_only
         self.column_names: list[str] = self._create_columns()
+
+    def download_datas(
+        self,
+        tickers: str,
+        start_date: int | str = 20150101,
+        end_date: int | str = 20211231
+    ) -> None:
+        assert self.txt_datas_path is not None
+        if not self.txt_datas_path.exists():
+            self.txt_datas_path.mkdir(parents=True)
+        assert self.flex_downloader_path is not None
+        assert self.flex_downloader_path.suffix == ".rb"
+        current_datetime = datetime.strptime(str(start_date), "%Y%m%d")
+        end_datetime = datetime.strptime(str(end_date), "%Y%m%d")
+        subprocess.run(f"cd {str(self.txt_datas_path.resolve())}")
+        while current_datetime <= end_datetime:
+            current_date = int(current_datetime.strftime("%Y%m%d"))
+            command: str = f"ruby {str(self.flex_downloader_path)} {current_date} {tickers}"
+            try:
+                subprocess.run(command, shell=True)
+            except:
+                pass
+            current_datetime += timedelta(days=1)
 
     def _create_columns(self) -> list[str]:
         column_names: list[str] = [
