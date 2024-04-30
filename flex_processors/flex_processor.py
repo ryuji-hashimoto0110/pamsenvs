@@ -114,7 +114,7 @@ class FlexProcessor:
         end_datetime = datetime.strptime(str(end_date), "%Y%m%d")
         while current_datetime <= end_datetime:
             current_date = int(current_datetime.strftime("%Y%m%d"))
-            data_path: Path = pathlib.Path(__file__).resolve().parents[0] / current_date
+            data_path: Path = pathlib.Path(__file__).resolve().parents[0] / str(current_date)
             download_command: str = f"ruby {str(self.flex_downloader_path)} {current_date} {tickers}"
             try:
                 _ = subprocess.run(download_command, shell=True)
