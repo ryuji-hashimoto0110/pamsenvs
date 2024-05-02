@@ -175,9 +175,14 @@ class FlexProcessor:
                 if is_display_path:
                     print(f"convert from {str(txt_path)} to {str(csv_path)}")
                 for line in f.read().splitlines():
-                    log_dic: dict[
-                        str, dict[str, dict[str, list | dict, str]]
-                    ] = json.loads(line.replace("'", '"'))
+                    try:
+                        log_dic: dict[
+                            str, dict[str, dict[str, list | dict, str]]
+                        ] = json.loads(line.replace("'", '"'))
+                    except Exception as e:
+                        warnings.warn(e)
+                        print(line)
+                        continue
                     log_columns: list[str] = self._extract_info_from_log(log_dic)
                     if len(log_columns) == 0:
                         pass
