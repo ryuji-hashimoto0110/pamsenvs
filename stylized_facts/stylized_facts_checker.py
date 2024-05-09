@@ -14,6 +14,7 @@ class StylizedFactsChecker:
         self,
         ohlcv_dfs_path: Optional[Path] = None,
         specific_name: Optional[str] = None,
+        need_resample: bool = False,
         figs_save_path: Optional[Path] = None
     ) -> None:
         """initialization.
@@ -25,12 +26,17 @@ class StylizedFactsChecker:
                 ohlcv data consists of 5 columns: open, high, low, close, volume.
             specific_name (Optional[str]): the specific name in csv file name. Files that contain specific_name
                 are collected if this argument is specified by _read_csvs.
+            need_resample (bool): whether resampling is needed. In other words, 
             figs_save_path (Optional[Path]): path to save figures.
         """
         self.ohlcv_dfs: list[DataFrame] = []
         self.specific_name: Optional[str] = specific_name
         if ohlcv_dfs_path is not None:
-            self.ohlcv_dfs = self._read_csvs(ohlcv_dfs_path, index_col=0)
+            self.ohlcv_dfs = self._read_csvs(
+                ohlcv_dfs_path,
+                need_resample=need_resample,
+                index_col=0
+            )
             for df in self.ohlcv_dfs:
                 assert len(df.columns) == 5
                 df.columns = ["open", "high", "low", "close", "volume"]
@@ -40,6 +46,7 @@ class StylizedFactsChecker:
     def _read_csvs(
         self,
         csvs_path: Path,
+        need_resample: bool,
         index_col: Optional[int] = None
     ) -> list[DataFrame]:
         """read all csv files in given folder path.
@@ -51,10 +58,16 @@ class StylizedFactsChecker:
                 if self.specific_name in csv_name:
                     continue
             if index_col is not None:
-                dfs.append(pd.read_csv(csv_path, index_col=index_col))
+                df: DataFrame = pd.read_csv(csv_path, index_col=index_col)
             else:
-                dfs.append(pd.read_csv(csv_path))
+                df: DataFrame = pd.read_csv(csv_path)
+            if need_resample:
+                df = self._resample(df)
+            dfs.append(df)
         return dfs
+
+    def _resample(self, df: DataFrame) -> DataFrame:
+        pass
 
     def _is_stacking_possible(
         self,
