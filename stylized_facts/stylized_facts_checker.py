@@ -12,9 +12,8 @@ import warnings
 class StylizedFactsChecker:
     def __init__(
         self,
-        olhcv_dfs_path: Optional[Path] = None,
-        orderbook_dfs_path: Optional[Path] = None,
-        tick_num: Optional[int] = None,
+        ohlcv_dfs_path: Optional[Path] = None,
+        specific_name: Optional[str] = None,
         figs_save_path: Optional[Path] = None
     ) -> None:
         """initialization.
@@ -22,31 +21,19 @@ class StylizedFactsChecker:
         load dataframes.
 
         Args:
-            olhcv_dfs_path (Optional[Path]): path in which OLHCV csv datas are saved. Defaults to None.
-                OLHCV data consists of 5 columns: open, low, high, close, volume.
-            orderbook_dfs_path (Optional[Path]): path in which limit order book csv datas are saved. Defaults to None.
-                order book data consists of 2*(tick_num+1) columns: sell+tick_num, ..., +0, buy-0,...,-tick_num.
+            ohlcv_dfs_path (Optional[Path]): path in which ohlcv csv datas are saved. Defaults to None.
+                ohlcv data consists of 5 columns: open, high, low, close, volume.
+            specific_name (Optional[str]): the specific name in csv file name. Files that contain specific_name
+                are collected if this argument is specified by _read_csvs.
+            figs_save_path (Optional[Path]): path to save figures.
         """
-        self.olhcv_dfs: list[DataFrame] = []
-        if olhcv_dfs_path is not None:
-            self.olhcv_dfs = self._read_csvs(olhcv_dfs_path, index_col=0)
-            for df in self.olhcv_dfs:
+        self.ohlcv_dfs: list[DataFrame] = []
+        self.specific_name: Optional[str] = specific_name
+        if ohlcv_dfs_path is not None:
+            self.ohlcv_dfs = self._read_csvs(ohlcv_dfs_path, index_col=0)
+            for df in self.ohlcv_dfs:
                 assert len(df.columns) == 5
-                df.columns = ["open", "low", "high", "close", "volume"]
-        self.orderbook_dfs: list[DataFrame] = []
-        if orderbook_dfs_path is not None:
-            self.orderbook_dfs = self._read_csvs(orderbook_dfs_path, index_col=0)
-            if tick_num is None:
-                raise ValueError(
-                    "Specify tick_num."
-                )
-            for df in self.orderbook_dfs:
-                assert len(df.columns) == 2 * (tick_num + 1)
-                df.columns = (
-                    [f"sell+{t}" for t in reversed(range(tick_num+1))]
-                ) + (
-                    [f"buy-{t}" for t in range(tick_num+1)]
-                )
+                df.columns = ["open", "high", "low", "close", "volume"]
         self.return_arr: Optional[ndarray] = None
         self.figs_save_path: Optional[Path] = figs_save_path
 
@@ -58,12 +45,15 @@ class StylizedFactsChecker:
         """read all csv files in given folder path.
         """
         dfs: list[DataFrame] = []
-        for csv_path in sorted(csvs_path.iterdir()):
-            if csv_path.suffix == ".csv":
-                if index_col is not None:
-                    dfs.append(pd.read_csv(csv_path, index_col=index_col))
-                else:
-                    dfs.append(pd.read_csv(csv_path))
+        for csv_path in sorted(csvs_path.rglob("*.csv")):
+            if self.specific_name is not None:
+                csv_name: str = csv_path.name
+                if self.specific_name in csv_name:
+                    continue
+            if index_col is not None:
+                dfs.append(pd.read_csv(csv_path, index_col=index_col))
+            else:
+                dfs.append(pd.read_csv(csv_path))
         return dfs
 
     def _is_stacking_possible(
@@ -79,7 +69,7 @@ class StylizedFactsChecker:
             - number of NaN in df[colname] of all dataframes are the same.
 
         Args:
-            dfs (list[DataFrame]): list whose elements are dataframe. Ex: self.olhcv_dfs
+            dfs (list[DataFrame]): list whose elements are dataframe. Ex: self.ohlcv_dfs
             colname (str): column name to check if stacking is possible.
         """
         for df in dfs:
@@ -99,7 +89,7 @@ class StylizedFactsChecker:
         """stack specified column of all dataframes.
 
         Args:
-            dfs (list[DataFrame]): list whose elements are dataframe. Ex: self.olhcv_dfs
+            dfs (list[DataFrame]): list whose elements are dataframe. Ex: self.ohlcv_dfs
             colname (str): column name to stack.
 
         Returns:
@@ -113,12 +103,12 @@ class StylizedFactsChecker:
 
     def _calc_return_arr_from_df(
         self,
-        olhcv_df: DataFrame,
+        ohlcv_df: DataFrame,
         colname: str
     ) -> ndarray:
         """convert price time series to return time series from 1 dataframe.
         """
-        price_arr: ndarray = olhcv_df[colname].dropna().values
+        price_arr: ndarray = ohlcv_df[colname].dropna().values
         assert np.sum((price_arr <= 0)) == 0
         return_arr: ndarray = np.log(
             price_arr[1:] / price_arr[:-1] + 1e-10
@@ -127,12 +117,12 @@ class StylizedFactsChecker:
 
     def _calc_return_arr_from_dfs(
         self,
-        olhcv_dfs: list[DataFrame],
+        ohlcv_dfs: list[DataFrame],
         colname: str
     ) -> ndarray:
         """convert price time series to return time series from dataframes list.
         """
-        price_arr: ndarray = self._stack_dfs(olhcv_dfs, colname)
+        price_arr: ndarray = self._stack_dfs(ohlcv_dfs, colname)
         assert np.sum((price_arr <= 0)) == 0
         return_arr: ndarray = np.log(
             price_arr[:,1:] / price_arr[:,:-1] + 1e-10
@@ -157,12 +147,12 @@ class StylizedFactsChecker:
             kurtosis_arr (ndarray): kurtosises. (number of data,1)
             pvalues_arr (ndarray): p-values. (number of data,1)
         """
-        if self._is_stacking_possible(self.olhcv_dfs, "close"):
+        if self._is_stacking_possible(self.ohlcv_dfs, "close"):
             if self.return_arr is not None:
                 kurtosis_arr, pvalue_arr = self._calc_kurtosis(self.return_arr)
             else:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                    self.olhcv_dfs, "close"
+                    self.ohlcv_dfs, "close"
                 )
                 kurtosis_arr, pvalue_arr = self._calc_kurtosis(self.return_arr)
         else:
@@ -171,8 +161,8 @@ class StylizedFactsChecker:
             )
             kurtosises: list[float] = []
             pvalues: list[float] = []
-            for olhcv_df in self.olhcv_dfs:
-                return_arr: ndarray = self._calc_return_arr_from_df(olhcv_df, "close")
+            for ohlcv_df in self.ohlcv_dfs:
+                return_arr: ndarray = self._calc_return_arr_from_df(ohlcv_df, "close")
                 kurtosis, pvalue = self._calc_kurtosis(return_arr)
                 kurtosises.append(kurtosis.item())
                 pvalues.append(pvalue.item())
@@ -242,10 +232,10 @@ class StylizedFactsChecker:
             right_tail_arr (ndarray): tail indices of right side of samples.
         """
         assert 0 < cut_off_th and cut_off_th < 1
-        if self._is_stacking_possible(self.olhcv_dfs, "close"):
+        if self._is_stacking_possible(self.ohlcv_dfs, "close"):
             if self.return_arr is None:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                    self.olhcv_dfs, "close"
+                    self.ohlcv_dfs, "close"
                 )
             left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indices(
                 self.return_arr, cut_off_th
@@ -256,8 +246,8 @@ class StylizedFactsChecker:
             )
             left_tails: list[float] = []
             right_tails: list[float] = []
-            for olhcv_df in self.olhcv_dfs:
-                return_arr: ndarray = self._calc_return_arr_from_df(olhcv_df, "close")
+            for ohlcv_df in self.ohlcv_dfs:
+                return_arr: ndarray = self._calc_return_arr_from_df(ohlcv_df, "close")
                 left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indices(
                     return_arr, cut_off_th
                 )
@@ -351,14 +341,14 @@ class StylizedFactsChecker:
             color: color
             save_name (Optional[str]): file name to save figure. Default to None.
             draw_idx (Optional[int]): If draw_idx is specified, price data of
-                self.olhcv_dfs[draw_idx] is only chosen to draw figure. Otherwise, all data
+                self.ohlcv_dfs[draw_idx] is only chosen to draw figure. Otherwise, all data
                 are concatted and used to draw. Defaults to None.
         """
         if draw_idx is None:
-            if self._is_stacking_possible(self.olhcv_dfs, "close"):
+            if self._is_stacking_possible(self.ohlcv_dfs, "close"):
                 if self.return_arr is None:
                     self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                        self.olhcv_dfs, "close"
+                        self.ohlcv_dfs, "close"
                     )
                 return_arr: ndarray = self.return_arr.flatten()
             else:
@@ -367,14 +357,14 @@ class StylizedFactsChecker:
                     "Following procedure may takes time..."
                 )
                 return_arrs: list[ndarray] = []
-                for olhcv_df in self.olhcv_dfs:
+                for ohlcv_df in self.ohlcv_dfs:
                     return_arrs.append(
-                        self._calc_return_arr_from_df(olhcv_df, "close").flatten()
+                        self._calc_return_arr_from_df(ohlcv_df, "close").flatten()
                     )
                 return_arr: ndarray = np.concatenate(return_arrs)
         else:
             return_arr: ndarray = self._calc_return_arr_from_df(
-                self.olhcv_dfs[draw_idx], "close"
+                self.ohlcv_dfs[draw_idx], "close"
             ).flatten()
         assert len(return_arr.shape) == 1
         sorted_abs_return_arr: ndarray = np.sort(np.abs(return_arr))
@@ -407,10 +397,10 @@ class StylizedFactsChecker:
 
         Returns:
         """
-        if self._is_stacking_possible(self.olhcv_dfs, "close"):
+        if self._is_stacking_possible(self.ohlcv_dfs, "close"):
             if self.return_arr is None:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                    self.olhcv_dfs, "close"
+                    self.ohlcv_dfs, "close"
                 )
             acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
                 np.abs(self.return_arr), lags
@@ -420,8 +410,8 @@ class StylizedFactsChecker:
                 "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
             )
             acorr_l_dic: dict[int, list[float]] = {lag: [] for lag in lags}
-            for olhcv_df in self.olhcv_dfs:
-                return_arr: ndarray = self._calc_return_arr_from_df(olhcv_df, "close")
+            for ohlcv_df in self.ohlcv_dfs:
+                return_arr: ndarray = self._calc_return_arr_from_df(ohlcv_df, "close")
                 acorr_dic_: dict[int, float] = self._calc_autocorrelation(
                     np.abs(return_arr), lags
                 )
@@ -458,14 +448,14 @@ class StylizedFactsChecker:
         return acorr_dic
 
     def check_volume_volatility_correlation(self) -> ndarray:
-        if self._is_stacking_possible(self.olhcv_dfs, "close"):
+        if self._is_stacking_possible(self.ohlcv_dfs, "close"):
             volume_arr: ndarray = self._stack_dfs(
-                self.olhcv_dfs, "volume"
+                self.ohlcv_dfs, "volume"
             )
             volume_arr = volume_arr[:,1:]
             if self.return_arr is None:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                    self.olhcv_dfs, "close"
+                    self.ohlcv_dfs, "close"
                 )
             corr_arr: ndarray = self._calc_volume_volatility_correlation(
                 np.abs(self.return_arr), volume_arr
@@ -475,9 +465,9 @@ class StylizedFactsChecker:
                 "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
             )
             corrs: list[float] = []
-            for olhcv_df in self.olhcv_dfs:
-                return_arr: ndarray = self._calc_return_arr_from_df(olhcv_df, "close")
-                volume_arr: ndarray = olhcv_df["volume"].values[np.newaxis,:]
+            for ohlcv_df in self.ohlcv_dfs:
+                return_arr: ndarray = self._calc_return_arr_from_df(ohlcv_df, "close")
+                volume_arr: ndarray = ohlcv_df["volume"].values[np.newaxis,:]
                 corrs.append(
                     self._calc_volume_volatility_correlation(
                         np.abs(return_arr), volume_arr
@@ -524,7 +514,7 @@ class StylizedFactsChecker:
         self,
         save_path: Path
     ) -> None:
-        if 0 < len(self.olhcv_dfs):
+        if 0 < len(self.ohlcv_dfs):
             kurtosis_arr, p_values = self.check_kurtosis()
             left_tail_arr, right_tail_arr = self.check_hill_index()
             volume_volatility_correlation = self.check_volume_volatility_correlation()
