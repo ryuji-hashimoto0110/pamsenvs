@@ -175,8 +175,8 @@ class VolumePriceSaver(Logger):
         ohlcv_df: DataFrame = pd.DataFrame(
             {
                 "open": prices_arr[:,0],
-                "low": np.min(prices_arr, axis=1),
                 "high": np.max(prices_arr, axis=1),
+                "low": np.min(prices_arr, axis=1),
                 "close": prices_arr[:,-1],
                 "volume": np.sum(volumes_arr, axis=1)
             },
