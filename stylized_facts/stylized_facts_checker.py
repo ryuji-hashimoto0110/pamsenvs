@@ -53,6 +53,11 @@ class StylizedFactsChecker:
         index_col: Optional[int] = None
     ) -> list[DataFrame]:
         """read all csv files in given folder path.
+
+        Args:
+            csvs_path (Path): folder path to be searched for target csvs.
+            need_resample (bool): whether resampling is needed. If True, all target csvs must be tick data.
+            index_col (Optional[int])
         """
         dfs: list[DataFrame] = []
         for csv_path in sorted(csvs_path.rglob("*.csv")):
