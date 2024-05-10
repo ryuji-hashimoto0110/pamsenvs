@@ -145,19 +145,19 @@ class VolumePriceSaver(Logger):
         ]
         return indices
 
-    def save_olhcv(
+    def save_ohlcv(
         self,
         market_id: MarketID,
         start_index: int,
         index_interval: int,
         save_path: Path
     ) -> None:
-        """save OLHCV csv data.
+        """save ohlcv csv data.
 
         Args:
             market_id (MarketID): market id.
             start_index (int): first index to tally the data.
-            index_interval (int): fixed time interval to tally OLHCV.
+            index_interval (int): fixed time interval to tally ohlcv.
             save_path (Path): csv save path.
         """
         logs_dic: dict[str, list] = self.logs_dic[market_id]
@@ -172,7 +172,7 @@ class VolumePriceSaver(Logger):
         )[start_index:]
         prices_arr = self._reshape2matrix(prices_arr, index_interval)
         volumes_arr = self._reshape2matrix(volumes_arr, index_interval, 0)
-        olhcv_df: DataFrame = pd.DataFrame(
+        ohlcv_df: DataFrame = pd.DataFrame(
             {
                 "open": prices_arr[:,0],
                 "low": np.min(prices_arr, axis=1),
@@ -184,7 +184,7 @@ class VolumePriceSaver(Logger):
         )
         if save_path.suffix != "csv":
             save_path.with_suffix(".csv")
-        olhcv_df.to_csv(str(save_path))
+        ohlcv_df.to_csv(str(save_path))
 
     def _back_pad(
         self,
