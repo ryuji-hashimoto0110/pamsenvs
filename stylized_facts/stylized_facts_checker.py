@@ -39,10 +39,8 @@ class StylizedFactsChecker:
                 index_col=0
             )
             for df in self.ohlcv_dfs:
-                if len(df.columns) == 5:
-                    df.columns = ["open", "high", "low", "close", "volume"]
-                elif len(df.columns) == 6:
-                    df.columns = ["open", "high", "low", "close", "volume", "num_events"]
+                df.columns = df.columns.str.lower()
+                if "num_events" in df.columns:
                     df["num_events"] = df["num_events"] / df["num_events"].sum()
                 df["volume"] = df["volume"] / df["volume"].sum()
         self.return_arr: Optional[ndarray] = None
