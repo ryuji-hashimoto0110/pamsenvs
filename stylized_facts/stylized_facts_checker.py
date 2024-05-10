@@ -26,7 +26,8 @@ class StylizedFactsChecker:
                 ohlcv data consists of 5 columns: open, high, low, close, volume.
             specific_name (Optional[str]): the specific name in csv file name. Files that contain specific_name
                 are collected if this argument is specified by _read_csvs.
-            need_resample (bool): whether resampling is needed. In other words, 
+            need_resample (bool): whether resampling is needed. need_resample must be True when the target data
+                is tick data.
             figs_save_path (Optional[Path]): path to save figures.
         """
         self.ohlcv_dfs: list[DataFrame] = []
@@ -38,8 +39,12 @@ class StylizedFactsChecker:
                 index_col=0
             )
             for df in self.ohlcv_dfs:
-                assert len(df.columns) == 5
-                df.columns = ["open", "high", "low", "close", "volume"]
+                if len(df.columns) == 5:
+                    df.columns = ["open", "high", "low", "close", "volume"]
+                elif len(df.columns) == 6:
+                    df.columns = ["open", "high", "low", "close", "volume", "num_events"]
+                    df["num_events"] = df["num_events"] / df["num_events"].sum()
+                df["volume"] = df["volume"] / df["volume"].sum()
         self.return_arr: Optional[ndarray] = None
         self.figs_save_path: Optional[Path] = figs_save_path
 
@@ -67,7 +72,18 @@ class StylizedFactsChecker:
         return dfs
 
     def _resample(self, df: DataFrame) -> DataFrame:
-        pass
+        """resample tick data to OHLCV data.
+
+        Args:
+            df (DataFrame): dataframe of tick data. df must have at least "market_price", "num_events" columns.
+        """
+        assert "market_price" in df.columns
+        assert "num_events" in df.columns
+        df.index = pd.to_datetime(df.index)
+        resampled_df: DataFrame = df["market_price"].resample(rule="min").ohlc()
+        resampled_df["volume"] = df["event_volume"].resample(rule="min").apply(sum)
+        resampled_df["num_events"] = df["event_volume"].resample(rule="min").count()
+        return resampled_df
 
     def _is_stacking_possible(
         self,
@@ -219,7 +235,7 @@ class StylizedFactsChecker:
 
         The stock return distribution is generally said to be fat-tail.
         According to some empirical researches, the tail index is normally around or below 3
-        in real markets.
+        in real markets (universal cubic law).
         Also, the skewness of the returns is negative. In other words,
         tail due to negative returns is fatter than that due to positive returns.
 
