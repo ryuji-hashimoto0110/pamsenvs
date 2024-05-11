@@ -1,0 +1,1 @@
+from stylized_facts.stylized_facts_checker import StylizedFactsChecker
