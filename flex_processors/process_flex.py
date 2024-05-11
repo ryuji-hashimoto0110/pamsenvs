@@ -6,7 +6,6 @@ parent_path: Path = curr_path.parents[0]
 import sys
 sys.path.append(str(parent_path))
 from flex_processors import FlexProcessor
-import sys
 
 def get_config():
     parser = argparse.ArgumentParser()
