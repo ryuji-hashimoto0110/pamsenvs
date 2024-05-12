@@ -72,6 +72,7 @@ class StylizedFactsChecker:
         """
         dfs: list[DataFrame] = []
         for csv_path in sorted(csvs_path.rglob("*.csv")):
+            store_df: bool = True
             csv_name: str = csv_path.name
             if self.specific_name is not None:
                 if self.specific_name not in csv_name:
@@ -81,12 +82,17 @@ class StylizedFactsChecker:
             else:
                 df: DataFrame = pd.read_csv(csv_path)
             if need_resample:
-                print(f"process {str(csv_path)}")
                 df = self._resample(df)
                 if resampled_dfs_save_path is not None:
                     save_path: Path = resampled_dfs_save_path / csv_name
                     df.to_csv(str(save_path))
-            dfs.append(df)
+                if len(df) != 302:
+                    warnings.warn(
+                        f"length of df is {len(df)}, not 302. This df is not stored in dfs. csv name: {csv_name}"
+                    )
+                    store_df = False
+            if store_df:
+                dfs.append(df)
         return dfs
 
     def _resample(self, df: DataFrame) -> DataFrame:
@@ -108,10 +114,6 @@ class StylizedFactsChecker:
         resampled_df = resampled_df[
             (resampled_df.index < start_time) | (end_time < resampled_df.index)
         ]
-        if len(resampled_df) != 302:
-            warnings.warn(
-                f"length of resampled_df is {len(resampled_df)}, not 302. This might be a problem."
-            )
         return resampled_df
 
     def _is_stacking_possible(
