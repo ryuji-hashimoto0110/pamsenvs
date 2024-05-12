@@ -50,6 +50,9 @@ def main(args):
     results_csv_name: str = all_args.results_csv_name
     results_save_path: Path = pathlib.Path(results_folder).resolve() / results_csv_name
     checker.check_stylized_facts(results_save_path)
+    if figs_save_path is not None:
+        checker.plot_ccdf(save_name="ccdf.pdf")
+        checker.cumulative_transactions(save_name="transactions_time_series.pdf")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
