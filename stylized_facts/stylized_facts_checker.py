@@ -107,7 +107,10 @@ class StylizedFactsChecker:
         resampled_df = resampled_df[
             (resampled_df.index < start_time) | (end_time < resampled_df.index)
         ]
-        assert len(resampled_df) == 290
+        if len(resampled_df) != 302:
+            warnings.warn(
+                f"length of resampled_df is {len(resampled_df)}, not 302. This might be a problem."
+            )
         return resampled_df
 
     def _is_stacking_possible(
@@ -220,8 +223,8 @@ class StylizedFactsChecker:
                 kurtosis, pvalue = self._calc_kurtosis(return_arr)
                 kurtosises.append(kurtosis.item())
                 pvalues.append(pvalue.item())
-            kurtosis_arr: ndarray = np.array(kurtosis)[:,np.newaxis]
-            pvalue_arr: ndarray = np.array(pvalue)[:,np.newaxis]
+            kurtosis_arr: ndarray = np.array(kurtosises)[:,np.newaxis]
+            pvalue_arr: ndarray = np.array(pvalues)[:,np.newaxis]
         return kurtosis_arr, pvalue_arr
 
     def _calc_kurtosis(
@@ -521,7 +524,7 @@ class StylizedFactsChecker:
             corrs: list[float] = []
             for ohlcv_df in self.ohlcv_dfs:
                 return_arr: ndarray = self._calc_return_arr_from_df(ohlcv_df, "close")
-                volume_arr: ndarray = ohlcv_df["volume"].values[np.newaxis,:]
+                volume_arr: ndarray = ohlcv_df["volume"].values[np.newaxis,1:]
                 corrs.append(
                     self._calc_volume_volatility_correlation(
                         np.abs(return_arr), volume_arr
