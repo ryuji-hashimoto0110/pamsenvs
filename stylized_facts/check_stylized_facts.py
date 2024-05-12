@@ -16,6 +16,7 @@ def get_config():
                         help="folder path that target csv datas are stored.")
     parser.add_argument("--specific_name", type=str, default=None,
                         help="the specific name contained in target csv file name in common.")
+    parser.add_argument("--choose_full_size_df", action="store_true")
     parser.add_argument("--need_resample", action="store_true")
     parser.add_argument("--figs_folder", type=str, default=None)
     parser.add_argument("--results_folder", type=str)
@@ -33,6 +34,7 @@ def main(args):
     else:
         ohlcv_dfs_save_path = None
     specific_name: Optional[str] = all_args.specific_name
+    choose_full_size_df: bool = all_args.choose_full_size_df
     need_resample: bool = all_args.need_resample
     figs_folder: Optional[str] = all_args.figs_folder
     if figs_folder is not None:
@@ -42,6 +44,7 @@ def main(args):
     checker = StylizedFactsChecker(
         ohlcv_dfs_path=ohlcv_dfs_path,
         ohlcv_dfs_save_path=ohlcv_dfs_save_path,
+        choose_full_size_df=choose_full_size_df,
         specific_name=specific_name,
         need_resample=need_resample,
         figs_save_path=figs_save_path
@@ -52,7 +55,7 @@ def main(args):
     checker.check_stylized_facts(results_save_path)
     if figs_save_path is not None:
         checker.plot_ccdf(save_name="ccdf.pdf")
-        checker.cumulative_transactions(save_name="transactions_time_series.pdf")
+        checker.scatter_cumulative_transactions(save_name="transactions_time_series.pdf")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
