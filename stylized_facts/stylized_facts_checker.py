@@ -1,6 +1,8 @@
+import datetime
+import matplotlib.dates as mdates
+from matplotlib.dates import date2num
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes, Figure
-import matplotlib.dates as mdates
 import numpy as np
 from numpy import ndarray
 import pandas as pd
@@ -15,6 +17,7 @@ class StylizedFactsChecker:
         self,
         ohlcv_dfs_path: Optional[Path] = None,
         ohlcv_dfs_save_path: Optional[Path] = None,
+        choose_full_size_df: bool = True,
         specific_name: Optional[str] = None,
         need_resample: bool = False,
         figs_save_path: Optional[Path] = None
@@ -46,6 +49,7 @@ class StylizedFactsChecker:
             self.ohlcv_dfs = self._read_csvs(
                 ohlcv_dfs_path,
                 need_resample=need_resample,
+                choose_full_size_df=choose_full_size_df,
                 index_col=0,
                 resampled_dfs_save_path=ohlcv_dfs_save_path
             )
@@ -63,6 +67,7 @@ class StylizedFactsChecker:
         self,
         csvs_path: Path,
         need_resample: bool,
+        choose_full_size_df: bool,
         index_col: Optional[int] = None,
         resampled_dfs_save_path: Optional[Path] = None
     ) -> list[DataFrame]:
@@ -75,6 +80,7 @@ class StylizedFactsChecker:
         """
         dfs: list[DataFrame] = []
         for csv_path in sorted(csvs_path.rglob("*.csv")):
+            store_df: bool = True
             csv_name: str = csv_path.name
             if self.specific_name is not None:
                 if self.specific_name not in csv_name:
@@ -88,7 +94,12 @@ class StylizedFactsChecker:
                 if resampled_dfs_save_path is not None:
                     save_path: Path = resampled_dfs_save_path / csv_name
                     df.to_csv(str(save_path))
-            dfs.append(df)
+                if len(df) < 302 and choose_full_size_df:
+                    store_df = False
+                else:
+                    store_df = True
+            if store_df:
+                dfs.append(df)
         return dfs
 
     def _resample(self, df: DataFrame) -> DataFrame:
@@ -575,12 +586,12 @@ class StylizedFactsChecker:
             fig: Figure = plt.figure(figsize=(10,6))
             ax: Axes = fig.add_subplot(1,1,1)
         ax.plot(sorted_abs_return_arr, ccdf, color=color, label=label)
-        ax.legend()
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("return")
         ax.set_ylabel("CCDF")
         ax.set_title("Complementary Cumulative Distribution Function (CCDF) of absolute price returns")
+        ax.set_xlim([0.0001, 1])
         if save_name is not None:
             if self.figs_save_path is None:
                 raise ValueError(
@@ -589,7 +600,7 @@ class StylizedFactsChecker:
             save_path: Path = self.figs_save_path / save_name
             plt.savefig(str(save_path))
 
-    def plot_cumulative_transactions(
+    def scatter_cumulative_transactions(
         self,
         save_name: str,
         color: str = "black",
@@ -597,15 +608,20 @@ class StylizedFactsChecker:
         fig: Figure = plt.figure(figsize=(10,6))
         ax: Axes = fig.add_subplot(1,1,1)
         for ohlcv_df in self.ohlcv_dfs:
-            times = ohlcv_df.index
+            dummy_date = datetime.date(1990, 1, 1)
+            datetimes = [
+                datetime.datetime.combine(dummy_date, t) for t in ohlcv_df.index
+            ]
             normed_num_events = ohlcv_df["num_events"].values
             cumsum_events = np.cumsum(normed_num_events)
-            ax.plot(times, cumsum_events, color=color)
+            ax.scatter(
+                datetimes, cumsum_events, color=color, s=0.01
+            )
         ax.set_xlabel("time")
         ax.set_ylabel("cumulative number of transactions")
         ax.set_title("The number of intraday transactions (scaled to 1) increases.")
         ax.xaxis.set_major_locator(
-            mdates.MinuteLocator(range(60, 60))
+            mdates.MinuteLocator(range(60), 60)
         )
         ax.xaxis.set_major_formatter(
             mdates.DateFormatter("%H:%M")
