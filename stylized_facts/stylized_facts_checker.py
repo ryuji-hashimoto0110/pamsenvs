@@ -72,7 +72,6 @@ class StylizedFactsChecker:
         """
         dfs: list[DataFrame] = []
         for csv_path in sorted(csvs_path.rglob("*.csv")):
-            store_df: bool = True
             csv_name: str = csv_path.name
             if self.specific_name is not None:
                 if self.specific_name not in csv_name:
@@ -86,13 +85,7 @@ class StylizedFactsChecker:
                 if resampled_dfs_save_path is not None:
                     save_path: Path = resampled_dfs_save_path / csv_name
                     df.to_csv(str(save_path))
-                if len(df) != 302:
-                    warnings.warn(
-                        f"length of df is {len(df)}, not 302. This df is not stored in dfs. csv name: {csv_name}"
-                    )
-                    store_df = False
-            if store_df:
-                dfs.append(df)
+            dfs.append(df)
         return dfs
 
     def _resample(self, df: DataFrame) -> DataFrame:
