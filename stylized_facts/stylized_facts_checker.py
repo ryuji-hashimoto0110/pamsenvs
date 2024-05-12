@@ -587,7 +587,7 @@ class StylizedFactsChecker:
             save_path: Path = self.figs_save_path / save_name
             plt.savefig(str(save_path))
 
-    def plot_calendar_executions(
+    def plot_cumulative_transactions(
         self,
         save_name: str,
         color: str = "black",
