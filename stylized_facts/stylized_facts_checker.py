@@ -55,6 +55,8 @@ class StylizedFactsChecker:
                     df["num_events"] = df["num_events"] / df["num_events"].sum()
                 df["volume"] = df["volume"] / df["volume"].sum()
         self.return_arr: Optional[ndarray] = None
+        if not figs_save_path.exists():
+            figs_save_path.mkdir(parents=True)
         self.figs_save_path: Optional[Path] = figs_save_path
 
     def _read_csvs(
