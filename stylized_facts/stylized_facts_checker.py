@@ -591,7 +591,7 @@ class StylizedFactsChecker:
         ax.set_xlabel("return")
         ax.set_ylabel("CCDF")
         ax.set_title("Complementary Cumulative Distribution Function (CCDF) of absolute price returns")
-        ax.set_xlim([0.0001, 1])
+        ax.set_xlim([0.0001, 0.1])
         if save_name is not None:
             if self.figs_save_path is None:
                 raise ValueError(
