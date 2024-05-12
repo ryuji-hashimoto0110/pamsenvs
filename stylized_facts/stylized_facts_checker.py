@@ -81,6 +81,7 @@ class StylizedFactsChecker:
             else:
                 df: DataFrame = pd.read_csv(csv_path)
             if need_resample:
+                print(f"process {str(csv_path)}")
                 df = self._resample(df)
                 if resampled_dfs_save_path is not None:
                     save_path: Path = resampled_dfs_save_path / csv_name
