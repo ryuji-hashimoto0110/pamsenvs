@@ -13,6 +13,7 @@ class StylizedFactsChecker:
     def __init__(
         self,
         ohlcv_dfs_path: Optional[Path] = None,
+        ohlcv_dfs_save_path: Optional[Path] = None,
         specific_name: Optional[str] = None,
         need_resample: bool = False,
         figs_save_path: Optional[Path] = None
@@ -24,6 +25,7 @@ class StylizedFactsChecker:
         Args:
             ohlcv_dfs_path (Optional[Path]): path in which ohlcv csv datas are saved. Defaults to None.
                 ohlcv data consists of 5 columns: open, high, low, close, volume.
+            resampled_ohlcv_dfs_path (Optional[Path]):
             specific_name (Optional[str]): the specific name in csv file name. Files that contain specific_name
                 are collected if this argument is specified by _read_csvs.
             need_resample (bool): whether resampling is needed. need_resample must be True when the target data
@@ -32,11 +34,19 @@ class StylizedFactsChecker:
         """
         self.ohlcv_dfs: list[DataFrame] = []
         self.specific_name: Optional[str] = specific_name
+        if ohlcv_dfs_save_path is not None:
+            if not need_resample:
+                raise ValueError(
+                    "ohlcv_dfs_save_path is specified even though need_resample is set False."
+                )
+            if not ohlcv_dfs_save_path.exists():
+                ohlcv_dfs_save_path.mkdir(parents=True)
         if ohlcv_dfs_path is not None:
             self.ohlcv_dfs = self._read_csvs(
                 ohlcv_dfs_path,
                 need_resample=need_resample,
-                index_col=0
+                index_col=0,
+                resampled_dfs_save_path=ohlcv_dfs_save_path
             )
             for df in self.ohlcv_dfs:
                 df.columns = df.columns.str.lower()
@@ -50,7 +60,8 @@ class StylizedFactsChecker:
         self,
         csvs_path: Path,
         need_resample: bool,
-        index_col: Optional[int] = None
+        index_col: Optional[int] = None,
+        resampled_dfs_save_path: Optional[Path] = None
     ) -> list[DataFrame]:
         """read all csv files in given folder path.
 
@@ -61,9 +72,9 @@ class StylizedFactsChecker:
         """
         dfs: list[DataFrame] = []
         for csv_path in sorted(csvs_path.rglob("*.csv")):
+            csv_name: str = csv_path.name
             if self.specific_name is not None:
-                csv_name: str = csv_path.name
-                if self.specific_name in csv_name:
+                if self.specific_name not in csv_name:
                     continue
             if index_col is not None:
                 df: DataFrame = pd.read_csv(csv_path, index_col=index_col)
@@ -71,6 +82,9 @@ class StylizedFactsChecker:
                 df: DataFrame = pd.read_csv(csv_path)
             if need_resample:
                 df = self._resample(df)
+                if resampled_dfs_save_path is not None:
+                    save_path: Path = resampled_dfs_save_path / csv_name
+                    df.to_csv(str(save_path))
             dfs.append(df)
         return dfs
 
@@ -81,11 +95,19 @@ class StylizedFactsChecker:
             df (DataFrame): dataframe of tick data. df must have at least "market_price", "num_events" columns.
         """
         assert "market_price" in df.columns
-        assert "num_events" in df.columns
-        df.index = pd.to_datetime(df.index)
+        assert "event_volume" in df.columns
+        df.index = pd.to_datetime(df.index, format="%H:%M:%S.%f") #09:00:00.357000
         resampled_df: DataFrame = df["market_price"].resample(rule="min").ohlc()
-        resampled_df["volume"] = df["event_volume"].resample(rule="min").apply(sum)
+        resampled_df["volume"] = df["event_volume"].resample(rule="min").apply("sum")
         resampled_df["num_events"] = df["event_volume"].resample(rule="min").count()
+        resampled_df.index = resampled_df.index.time
+        resampled_df["close"] = resampled_df["close"].ffill()
+        start_time = pd.to_datetime("11:30:30").time()
+        end_time = pd.to_datetime("12:29:30").time()
+        resampled_df = resampled_df[
+            (resampled_df.index < start_time) | (end_time < resampled_df.index)
+        ]
+        assert len(resampled_df) == 290
         return resampled_df
 
     def _is_stacking_possible(

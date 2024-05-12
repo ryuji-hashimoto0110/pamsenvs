@@ -11,6 +11,8 @@ from typing import Optional
 def get_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("--ohlcv_folder_path", type=str,
+                        help="folder path that target csv datas are stored. wither OHLCV or FLEX format is allowed.")
+    parser.add_argument("--new_ohlcv_folder_path", type=str, default=None,
                         help="folder path that target csv datas are stored.")
     parser.add_argument("--specific_name", type=str, default=None,
                         help="the specific name contained in target csv file name in common.")
@@ -25,6 +27,11 @@ def main(args):
     all_args = parser.parse_known_args(args)[0]
     ohlcv_folder: str = all_args.ohlcv_folder_path
     ohlcv_dfs_path: Path = pathlib.Path(ohlcv_folder).resolve()
+    new_ohlcv_folder: Optional[str] = all_args.new_ohlcv_folder_path
+    if new_ohlcv_folder is not None:
+        ohlcv_dfs_save_path: Optional[Path] = pathlib.Path(new_ohlcv_folder).resolve()
+    else:
+        ohlcv_dfs_save_path = None
     specific_name: Optional[str] = all_args.specific_name
     need_resample: bool = all_args.need_resample
     figs_folder: Optional[str] = all_args.figs_folder
@@ -34,6 +41,7 @@ def main(args):
         figs_save_path = None
     checker = StylizedFactsChecker(
         ohlcv_dfs_path=ohlcv_dfs_path,
+        ohlcv_dfs_save_path=ohlcv_dfs_save_path,
         specific_name=specific_name,
         need_resample=need_resample,
         figs_save_path=figs_save_path
