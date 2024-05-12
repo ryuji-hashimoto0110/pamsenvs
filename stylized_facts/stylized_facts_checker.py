@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes, Figure
+import matplotlib.dates as mdates
 import numpy as np
 from numpy import ndarray
 import pandas as pd
@@ -372,76 +373,6 @@ class StylizedFactsChecker:
         )
         return left_tail_arr, right_tail_arr
 
-    def check_ccdf(
-        self,
-        ax: Optional[Axes] = None,
-        label: str = "CCDF",
-        color: str = "black",
-        save_name: Optional[str] = None,
-        draw_idx: Optional[int] = None
-    ) -> None:
-        """draw CCDF of return distribution by log-log scale.
-
-        Complementary cumulative distribution function (CCDF) is defined as P[x<X], namely
-        defined as the probability that stochastic variable X is greater than a certain
-        threshold x.
-        CCDF is used to see the tail of samples that seems to be fitted by power law. Here,
-        using CCDF, one can check visually that return distribution is fat-tailed.
-
-        Args:
-            ax (Optional[Axes]): ax to draw figure. default to None.
-            label: label
-            color: color
-            save_name (Optional[str]): file name to save figure. Default to None.
-            draw_idx (Optional[int]): If draw_idx is specified, price data of
-                self.ohlcv_dfs[draw_idx] is only chosen to draw figure. Otherwise, all data
-                are concatted and used to draw. Defaults to None.
-        """
-        if draw_idx is None:
-            if self._is_stacking_possible(self.ohlcv_dfs, "close"):
-                if self.return_arr is None:
-                    self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                        self.ohlcv_dfs, "close"
-                    )
-                return_arr: ndarray = self.return_arr.flatten()
-            else:
-                warnings.warn(
-                    "Could not stack dataframe. Maybe the lengths of dataframes differ." + \
-                    "Following procedure may takes time..."
-                )
-                return_arrs: list[ndarray] = []
-                for ohlcv_df in self.ohlcv_dfs:
-                    return_arrs.append(
-                        self._calc_return_arr_from_df(ohlcv_df, "close").flatten()
-                    )
-                return_arr: ndarray = np.concatenate(return_arrs)
-        else:
-            return_arr: ndarray = self._calc_return_arr_from_df(
-                self.ohlcv_dfs[draw_idx], "close"
-            ).flatten()
-        assert len(return_arr.shape) == 1
-        sorted_abs_return_arr: ndarray = np.sort(np.abs(return_arr))
-        ccdf: ndarray = 1 - (
-            1 + np.arange(len(sorted_abs_return_arr))
-        ) / len(sorted_abs_return_arr)
-        if ax is None:
-            fig = plt.figure(figsize=(10,6))
-            ax: Axes = fig.add_subplot(1,1,1)
-        ax.plot(sorted_abs_return_arr, ccdf, color=color, label=label)
-        ax.legend()
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        ax.set_xlabel("return")
-        ax.set_ylabel("CCDF")
-        ax.set_title("Complementary Cumulative Distribution Function (CCDF) of absolute price returns")
-        if save_name is not None:
-            if self.figs_save_path is None:
-                raise ValueError(
-                    "specify directory: self.figs_save_path"
-                )
-            save_path: Path = self.figs_save_path / save_name
-            plt.savefig(str(save_path))
-
     def check_autocorrelation(self, lags: list[int]) -> dict[int, ndarray]:
         """_summary_
 
@@ -585,3 +516,101 @@ class StylizedFactsChecker:
                 data_dic[f"acorr lag{lag}"] = acorr.flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
             stylized_facts_df.to_csv(str(save_path))
+
+    def plot_ccdf(
+        self,
+        ax: Optional[Axes] = None,
+        label: str = "CCDF",
+        color: str = "black",
+        save_name: Optional[str] = None,
+        draw_idx: Optional[int] = None
+    ) -> None:
+        """draw CCDF of return distribution by log-log scale.
+
+        Complementary cumulative distribution function (CCDF) is defined as P[x<X], namely
+        defined as the probability that stochastic variable X is greater than a certain
+        threshold x.
+        CCDF is used to see the tail of samples that seems to be fitted by power law. Here,
+        using CCDF, one can check visually that return distribution is fat-tailed.
+
+        Args:
+            ax (Optional[Axes]): ax to draw figure. default to None.
+            label: label
+            color: color
+            save_name (Optional[str]): file name to save figure. Default to None.
+            draw_idx (Optional[int]): If draw_idx is specified, price data of
+                self.ohlcv_dfs[draw_idx] is only chosen to draw figure. Otherwise, all data
+                are concatted and used to draw. Defaults to None.
+        """
+        if draw_idx is None:
+            if self._is_stacking_possible(self.ohlcv_dfs, "close"):
+                if self.return_arr is None:
+                    self.return_arr: ndarray = self._calc_return_arr_from_dfs(
+                        self.ohlcv_dfs, "close"
+                    )
+                return_arr: ndarray = self.return_arr.flatten()
+            else:
+                warnings.warn(
+                    "Could not stack dataframe. Maybe the lengths of dataframes differ." + \
+                    "Following procedure may takes time..."
+                )
+                return_arrs: list[ndarray] = []
+                for ohlcv_df in self.ohlcv_dfs:
+                    return_arrs.append(
+                        self._calc_return_arr_from_df(ohlcv_df, "close").flatten()
+                    )
+                return_arr: ndarray = np.concatenate(return_arrs)
+        else:
+            return_arr: ndarray = self._calc_return_arr_from_df(
+                self.ohlcv_dfs[draw_idx], "close"
+            ).flatten()
+        assert len(return_arr.shape) == 1
+        sorted_abs_return_arr: ndarray = np.sort(np.abs(return_arr))
+        ccdf: ndarray = 1 - (
+            1 + np.arange(len(sorted_abs_return_arr))
+        ) / len(sorted_abs_return_arr)
+        if ax is None:
+            fig: Figure = plt.figure(figsize=(10,6))
+            ax: Axes = fig.add_subplot(1,1,1)
+        ax.plot(sorted_abs_return_arr, ccdf, color=color, label=label)
+        ax.legend()
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlabel("return")
+        ax.set_ylabel("CCDF")
+        ax.set_title("Complementary Cumulative Distribution Function (CCDF) of absolute price returns")
+        if save_name is not None:
+            if self.figs_save_path is None:
+                raise ValueError(
+                    "specify directory: self.figs_save_path"
+                )
+            save_path: Path = self.figs_save_path / save_name
+            plt.savefig(str(save_path))
+
+    def plot_calendar_executions(
+        self,
+        save_name: str,
+        color: str = "black",
+    ) -> None:
+        fig: Figure = plt.figure(figsize=(10,6))
+        ax: Axes = fig.add_subplot(1,1,1)
+        for ohlcv_df in self.ohlcv_dfs:
+            times = ohlcv_df.index
+            normed_num_events = ohlcv_df["num_events"].values
+            cumsum_events = np.cumsum(normed_num_events)
+            ax.plot(times, cumsum_events, color=color)
+        ax.set_xlabel("time")
+        ax.set_ylabel("cumulative number of transactions")
+        ax.set_title("The number of intraday transactions (scaled to 1) increases.")
+        ax.xaxis.set_major_locator(
+            mdates.MinuteLocator(range(60, 60))
+        )
+        ax.xaxis.set_major_formatter(
+            mdates.DateFormatter("%H:%M")
+        )
+        if self.figs_save_path is None:
+            raise ValueError(
+                "specify directory: self.figs_save_path"
+            )
+        save_path: Path = self.figs_save_path / save_name
+        plt.savefig(str(save_path))
