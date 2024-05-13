@@ -205,10 +205,6 @@ class StylizedFactsChecker:
         cumulative scaled number of transactions time series from 1 dataframe.
         """
         scaled_transactions: ndarray = ohlhv_df[colname].dropna().values
-        if np.sum(scaled_transactions) != 1:
-            raise ValueError(
-                f"column:{colname} does not mean scaled number of transactions."
-            )
         cumsum_scaled_transactions = np.cumsum(scaled_transactions)[np.newaxis,:]
         return cumsum_scaled_transactions
 
@@ -221,11 +217,7 @@ class StylizedFactsChecker:
         cumulative scaled number of transactions time series from dataframes list.
         """
         scaled_transactions: ndarray = self._stack_dfs(ohlcv_dfs, colname)
-        cumsum_scaled_transactions = np.cumsum(scaled_transactions, axis=0)
-        if np.sum(cumsum_scaled_transactions[-1,:]) != cumsum_scaled_transactions.shape[1]:
-            raise ValueError(
-                f"Not all elements of last row of cumsum_scaled_transactions are 1."
-            )
+        cumsum_scaled_transactions = np.cumsum(scaled_transactions, axis=1)
         return cumsum_scaled_transactions
 
     def check_kurtosis(self) -> tuple[ndarray, ndarray]:
@@ -641,17 +633,18 @@ class StylizedFactsChecker:
         cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_dfs(
             self.ohlcv_dfs, colname="num_events"
         )
+        cumsum_scaled_transactions = cumsum_scaled_transactions.T
         cumsum_scaled_transactions_df: DataFrame = pd.DataFrame(
             data=cumsum_scaled_transactions, index=self.ohlcv_dfs[0].index
         )
         mean_cumsum_scaled_transactions: ndarray = np.mean(
             cumsum_scaled_transactions, axis=1
-        )[np.newaxis,:]
+        )
         cumsum_scaled_transactions_df["mean"] = mean_cumsum_scaled_transactions
         if transactions_save_path is not None:
             cumsum_scaled_transactions_df.to_csv(str(transactions_save_path))
         if return_mean:
-            mean_cumsum_scaled_transactions
+            return mean_cumsum_scaled_transactions
         else:
             return None
 
@@ -672,16 +665,13 @@ class StylizedFactsChecker:
                 ohlcv_df, colname="num_events"
             )
             ax.scatter(
-                datetimes, cumsum_scaled_transactions[0,:],
+                datetimes, cumsum_scaled_transactions,
                 color=color, s=1
             )
         if self._is_stacking_possible(self.ohlcv_dfs, "num_events"):
             mean_cumsum_scaled_transactions: ndarray = self.calc_mean_cumulative_transactions(
                 transactions_save_path, return_mean=True
             )
-            datetimes = [
-                datetime.datetime.combine(dummy_date, t) for t in self.ohlcv_dfs[0].index
-            ]
             ax.plot(
                 datetimes, mean_cumsum_scaled_transactions, color="red"
             )
