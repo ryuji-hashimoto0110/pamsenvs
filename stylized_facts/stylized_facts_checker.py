@@ -111,9 +111,15 @@ class StylizedFactsChecker:
         assert "market_price" in df.columns
         assert "event_volume" in df.columns
         df.index = pd.to_datetime(df.index, format="%H:%M:%S.%f") #09:00:00.357000
-        resampled_df: DataFrame = df["market_price"].resample(rule="min").ohlc()
-        resampled_df["volume"] = df["event_volume"].resample(rule="min").apply("sum")
-        resampled_df["num_events"] = df["event_volume"].resample(rule="min").count()
+        resampled_df: DataFrame = df["market_price"].resample(
+            rule="min", closed="left", label="left"
+        ).ohlc()
+        resampled_df["volume"] = df["event_volume"].resample(
+            rule="min", closed="left", label="left"
+        ).apply("sum")
+        resampled_df["num_events"] = df["event_volume"].resample(
+            rule="min", closed="left", label="left"
+        ).count()
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill()
         start_time = pd.to_datetime("11:30:30").time()
