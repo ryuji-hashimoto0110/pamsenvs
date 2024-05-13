@@ -691,7 +691,7 @@ class StylizedFactsChecker:
                 )
         ax.set_xlabel("time")
         ax.set_ylabel("cumulative number of transactions")
-        ax.set_title("The number of intraday transactions (scaled to 1) increases.")
+        ax.set_title("cumulative number of intraday transactions (scaled to 1)")
         ax.xaxis.set_major_locator(
             mdates.MinuteLocator(range(60), 60)
         )
