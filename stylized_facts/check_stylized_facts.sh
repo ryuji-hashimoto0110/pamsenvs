@@ -1,5 +1,6 @@
 ohlcv_folder_path="../datas/real_datas/flex_csv"
 new_ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv"
+transactions_save_path="../datas/real_datas/intraday/flex_transactions/9202cumsum_scaled_transactions.csv"
 specific_name="9202"
 results_folder="./results"
 figs_folder="../imgs/9202"
@@ -7,6 +8,7 @@ results_csv_name="9202.csv"
 python check_stylized_facts.py \
 --ohlcv_folder_path ${ohlcv_folder_path} \
 --new_ohlcv_folder_path ${new_ohlcv_folder_path} \
+--transactions_save_path ${transactions_save_path} \
 --specific_name ${specific_name} \
 --choose_full_size_df \
 --need_resample \
