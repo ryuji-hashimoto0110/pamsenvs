@@ -16,10 +16,10 @@ class StylizedFactsChecker:
     def __init__(
         self,
         ohlcv_dfs_path: Optional[Path] = None,
+        tick_dfs_path: Optional[Path] = None,
         ohlcv_dfs_save_path: Optional[Path] = None,
         choose_full_size_df: bool = True,
         specific_name: Optional[str] = None,
-        need_resample: bool = False,
         figs_save_path: Optional[Path] = None
     ) -> None:
         """initialization.
@@ -27,37 +27,47 @@ class StylizedFactsChecker:
         load dataframes.
 
         Args:
-            ohlcv_dfs_path (Optional[Path]): path in which ohlcv csv datas are saved. Defaults to None.
+            ohlcv_dfs_path (Optional[Path]): path in which ohlcv csv datas are saved. Default to None.
                 ohlcv data consists of 5 columns: open, high, low, close, volume.
-            resampled_ohlcv_dfs_path (Optional[Path]):
+            tick_dfs_path (Optional[Path]): path in which tick csv datas are saved. Default to None.
+            ohlcv_dfs_save_path (Optional[Path]):
+            choose_full_size_df
             specific_name (Optional[str]): the specific name in csv file name. Files that contain specific_name
                 are collected if this argument is specified by _read_csvs.
-            need_resample (bool): whether resampling is needed. need_resample must be True when the target data
-                is tick data.
             figs_save_path (Optional[Path]): path to save figures.
         """
         self.ohlcv_dfs: list[DataFrame] = []
+        self.tick_dfs: list[DataFrame] = []
         self.specific_name: Optional[str] = specific_name
         if ohlcv_dfs_save_path is not None:
-            if not need_resample:
-                raise ValueError(
-                    "ohlcv_dfs_save_path is specified even though need_resample is set False."
-                )
             if not ohlcv_dfs_save_path.exists():
                 ohlcv_dfs_save_path.mkdir(parents=True)
+        if tick_dfs_path is not None:
+            self.tick_dfs = self._read_csvs(
+                tick_dfs_path,
+                need_resample=False,
+                index_col=0
+            )
+            if ohlcv_dfs_path is None:
+                self.ohlcv_dfs = self._read_csvs(
+                    tick_dfs_path,
+                    need_resample=True,
+                    choose_full_size_df=choose_full_size_df,
+                    index_col=0,
+                    resampled_dfs_save_path=ohlcv_dfs_save_path
+                )
         if ohlcv_dfs_path is not None:
             self.ohlcv_dfs = self._read_csvs(
                 ohlcv_dfs_path,
-                need_resample=need_resample,
-                choose_full_size_df=choose_full_size_df,
-                index_col=0,
-                resampled_dfs_save_path=ohlcv_dfs_save_path
+                need_resample=False,
+                choose_full_size_df=False,
+                index_col=0
             )
-            for df in self.ohlcv_dfs:
-                df.columns = df.columns.str.lower()
-                if "num_events" in df.columns:
-                    df["num_events"] = df["num_events"] / df["num_events"].sum()
-                df["volume"] = df["volume"] / df["volume"].sum()
+        for df in self.ohlcv_dfs:
+            df.columns = df.columns.str.lower()
+            if "num_events" in df.columns:
+                df["num_events"] = df["num_events"] / df["num_events"].sum()
+            df["volume"] = df["volume"] / df["volume"].sum()
         self.return_arr: Optional[ndarray] = None
         if not figs_save_path.exists():
             figs_save_path.mkdir(parents=True)
