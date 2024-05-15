@@ -1,6 +1,5 @@
 import datetime
 import matplotlib.dates as mdates
-from matplotlib.dates import date2num
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes, Figure
 import numpy as np
