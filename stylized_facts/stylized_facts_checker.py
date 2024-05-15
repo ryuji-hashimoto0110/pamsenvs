@@ -22,8 +22,8 @@ class StylizedFactsChecker:
         assign_session_id: bool = True,
         specific_name: Optional[str] = None,
         figs_save_path: Optional[Path] = None,
-        session1_end_time_str: str = "11:30:00.01",
-        session2_start_time_str: str = "12:29:59.09"
+        session1_end_time_str: str = "11:30:00.000000",
+        session2_start_time_str: str = "12:29:59.000000"
     ) -> None:
         """initialization.
 
@@ -129,8 +129,8 @@ class StylizedFactsChecker:
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill()
         resampled_df = resampled_df[
-            (resampled_df.index < self.session1_end_time) | \
-            (self.session2_start_time < resampled_df.index)
+            (resampled_df.index <= self.session1_end_time) | \
+            (self.session2_start_time <= resampled_df.index)
         ]
         return resampled_df
 
