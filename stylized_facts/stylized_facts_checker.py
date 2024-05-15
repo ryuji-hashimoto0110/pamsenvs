@@ -43,11 +43,7 @@ class StylizedFactsChecker:
             if not ohlcv_dfs_save_path.exists():
                 ohlcv_dfs_save_path.mkdir(parents=True)
         if tick_dfs_path is not None:
-            self.tick_dfs = self._read_csvs(
-                tick_dfs_path,
-                need_resample=False,
-                index_col=0
-            )
+            self._read_tick_dfs(tick_dfs_path)
             if ohlcv_dfs_path is None:
                 self.ohlcv_dfs = self._read_csvs(
                     tick_dfs_path,
@@ -57,16 +53,17 @@ class StylizedFactsChecker:
                     resampled_dfs_save_path=ohlcv_dfs_save_path
                 )
         if ohlcv_dfs_path is not None:
-            self.ohlcv_dfs = self._read_csvs(
-                ohlcv_dfs_path,
-                need_resample=False,
-                choose_full_size_df=False,
-                index_col=0
-            )
+            self._read_ohlcv_dfs(ohlcv_dfs_path)
         for df in self.ohlcv_dfs:
             df.columns = df.columns.str.lower()
+            session1_end_time = pd.to_datetime("11:30:30").time()
+            session2_start_time = pd.to_datetime("12:29:30").time()
             if "num_events" in df.columns:
+                num_events_session1: DataFrame = df["num_events"][df.index < session1_end_time]
+                num_events_session2: DataFrame = df["num_events"][session2_start_time < df.index]
                 df["num_events"] = df["num_events"] / df["num_events"].sum()
+            volume_session1: DataFrame = df["volume"][df.index < session1_end_time]
+            volume_session2: DataFrame = df["vulume"][session2_start_time < df.index]
             df["volume"] = df["volume"] / df["volume"].sum()
         self.return_arr: Optional[ndarray] = None
         if not figs_save_path.exists():
@@ -138,6 +135,21 @@ class StylizedFactsChecker:
             (resampled_df.index < start_time) | (end_time < resampled_df.index)
         ]
         return resampled_df
+
+    def _read_tick_dfs(self, tick_dfs_path: Path) -> None:
+        self.tick_dfs = self._read_csvs(
+            tick_dfs_path,
+            need_resample=False,
+            index_col=0
+        )
+
+    def _read_ohlcv_dfs(self, ohlcv_dfs_path: Path) -> None:
+        self.ohlcv_dfs = self._read_csvs(
+            ohlcv_dfs_path,
+            need_resample=False,
+            choose_full_size_df=False,
+            index_col=0
+        )
 
     def _is_stacking_possible(
         self,
