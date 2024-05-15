@@ -72,12 +72,19 @@ class FlexSaver(Logger):
     def __init__(
         self,
         significant_figures: int = 1,
-        is_execution_only: bool = True
+        is_execution_only: bool = True,
+        session1_end_time: Optional[int] = None,
+        session2_start_time: Optional[int] = None
     ) -> None:
         """initialization
 
+        There are 2 sessions in Japan's stock market in 1 day.
+
         Args:
             significant_figures (int): significant figures to store prices. defaut to 1.
+            is_execution_only (bool):
+            session1_end_time (Optional[int])
+            session2_start_time (Optional[int])
         """
         super().__init__()
         self.logs_dic: dict[MarketID, list[str]] = {}
@@ -86,6 +93,17 @@ class FlexSaver(Logger):
         self.sell_order_book_dic: dict[MarketID, OrderBook] = {}
         self.significant_figures: int = significant_figures
         self.is_execution_only: bool = is_execution_only
+        self.session1_end_time: Optional[int] = session1_end_time
+        self.session2_start_time: Optional[int] = session2_start_time
+        if (
+            self.session1_end_time is not None or self.session2_start_time is not None
+        ):
+            if (
+                self.session1_end_time is None or self.session2_start_time is None
+            ):
+                raise ValueError(
+                    "specify both session1_end_time and session2_start_time."
+                )
 
     def process_simulation_begin_log(self, log: SimulationBeginLog) -> None:
         """process simulation begin log.
@@ -206,6 +224,13 @@ class FlexSaver(Logger):
                 "sell_book": {}
             }
         }
+        if self.session1_end_time is not None:
+            if log_time <= self.session1_end_time:
+                empty_log_dic["Data"]["session_id"] = "1"
+            elif self.session2_start_time <= log_time:
+                empty_log_dic["Data"]["session_id"] = "2"
+            else:
+                raise ValueError("cannot identify session.")
         return empty_log_dic
 
     def _convert_dic2str(

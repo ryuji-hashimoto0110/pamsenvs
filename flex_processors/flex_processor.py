@@ -2,6 +2,7 @@ import csv
 from datetime import datetime
 from datetime import timedelta
 import json
+import pandas as pd
 import pathlib
 from pathlib import Path
 import subprocess
@@ -65,8 +66,8 @@ class FlexProcessor:
 
     Flex Processor create following structured dataframe from the above txt data with FLEX format, for example.
 
-    | time           | event_flag | event_volume | event_price | market_price | mid_price |\n
-    | 09:00:00.50400 | execution  | 22000        | 275         | 275          | 275.5     |\n
+    | time           | session_id |event_flag | event_volume | event_price | market_price | mid_price | \
+    | 09:00:00.50400 | 1          |execution  | 22000        | 275         | 275          | 275.5     | \
 
     | best_buy | best_sell | buy1_price | buy1_volume | buy2_price | buy2_volume | ...
     | 275      | 276       | 275        | 17000       | 274        | 19000       | ...
@@ -77,12 +78,16 @@ class FlexProcessor:
         csv_datas_path: Optional[Path] = None,
         flex_downloader_path: Optional[Path] = None,
         quote_num: int = 10,
-        is_execution_only: bool = True
+        is_execution_only: bool = True,
+        session1_end_time_str: str = "11:30:00.000000",
+        session2_start_time_str: str = "12:30:00.000000"
     ) -> None:
         """initialization.
 
         FlexProcessor scan all txt files under txt_datas_path and create the same directory structure
         as txt_datas_path under csv_datas_path with csv files.
+
+        There are 2 sessions in Japan's stock market in 1 day.
 
         Args:
             txt_datas_path (Path): target folder path. default to None.
@@ -98,6 +103,8 @@ class FlexProcessor:
         self.quote_num: int = quote_num
         self.is_execution_only: bool = is_execution_only
         self.column_names: list[str] = self._create_columns()
+        self.session1_end_time = pd.to_datetime(session1_end_time_str).time()
+        self.session2_start_time = pd.to_datetime(session2_start_time_str).time()
 
     def download_datas(
         self,
@@ -127,7 +134,7 @@ class FlexProcessor:
 
     def _create_columns(self) -> list[str]:
         column_names: list[str] = [
-            "time", "event_flag", "event_volume", "event_price (avg)",
+            "time", "session_id", "event_flag", "event_volume", "event_price (avg)",
             "market_price", "mid_price", "best_buy", "best_sell"
         ]
         [
@@ -209,7 +216,19 @@ class FlexProcessor:
         if len(execution_infos) == 0:
             return []
         elif len(execution_infos) == 3:
-            log_columns: list[str] = [log_dic["Data"]["time"]]
+            time_str: str = log_dic["Data"]["time"]
+            log_columns: list[str] = [time_str]
+            if "session_id" in log_dic["Data"].keys():
+                log_columns.append(log_dic["Data"]["session_id"])
+            else:
+                t = pd.to_datetime(time_str).time()
+                if t <= self.session1_end_time:
+                    session_id: str = "1"
+                elif self.session2_start_time <= t:
+                    session_id: str = "2"
+                else:
+                    raise ValueError("cannot identify session.")
+                log_columns.append(session_id)
             log_columns.extend(execution_infos)
             log_columns.extend(
                 [

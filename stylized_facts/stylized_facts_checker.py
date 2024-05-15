@@ -19,12 +19,15 @@ class StylizedFactsChecker:
         tick_dfs_path: Optional[Path] = None,
         ohlcv_dfs_save_path: Optional[Path] = None,
         choose_full_size_df: bool = True,
+        assign_session_id: bool = True,
         specific_name: Optional[str] = None,
-        figs_save_path: Optional[Path] = None
+        figs_save_path: Optional[Path] = None,
+        session1_end_time_str: str = "11:30:00.01",
+        session2_start_time_str: str = "12:29:59.09"
     ) -> None:
         """initialization.
 
-        load dataframes.
+        load dataframes. There are 2 sessions in Japan's stock market in 1 day.
 
         Args:
             ohlcv_dfs_path (Optional[Path]): path in which ohlcv csv datas are saved. Default to None.
@@ -32,13 +35,18 @@ class StylizedFactsChecker:
             tick_dfs_path (Optional[Path]): path in which tick csv datas are saved. Default to None.
             ohlcv_dfs_save_path (Optional[Path]):
             choose_full_size_df
+            assign_session_id
             specific_name (Optional[str]): the specific name in csv file name. Files that contain specific_name
                 are collected if this argument is specified by _read_csvs.
             figs_save_path (Optional[Path]): path to save figures.
+            session1_end_time_str (str):
+            session2_start_time_str (str)
         """
         self.ohlcv_dfs: list[DataFrame] = []
         self.tick_dfs: list[DataFrame] = []
         self.specific_name: Optional[str] = specific_name
+        self.session1_end_time = pd.to_datetime(session1_end_time_str).time()
+        self.session2_start_time = pd.to_datetime(session2_start_time_str).time()
         if ohlcv_dfs_save_path is not None:
             if not ohlcv_dfs_save_path.exists():
                 ohlcv_dfs_save_path.mkdir(parents=True)
@@ -55,16 +63,7 @@ class StylizedFactsChecker:
         if ohlcv_dfs_path is not None:
             self._read_ohlcv_dfs(ohlcv_dfs_path)
         for df in self.ohlcv_dfs:
-            df.columns = df.columns.str.lower()
-            session1_end_time = pd.to_datetime("11:30:30").time()
-            session2_start_time = pd.to_datetime("12:29:30").time()
-            if "num_events" in df.columns:
-                num_events_session1: DataFrame = df["num_events"][df.index < session1_end_time]
-                num_events_session2: DataFrame = df["num_events"][session2_start_time < df.index]
-                df["num_events"] = df["num_events"] / df["num_events"].sum()
-            volume_session1: DataFrame = df["volume"][df.index < session1_end_time]
-            volume_session2: DataFrame = df["vulume"][session2_start_time < df.index]
-            df["volume"] = df["volume"] / df["volume"].sum()
+            self.preprocess_ohlcv_df(df, assign_session_id=assign_session_id)
         self.return_arr: Optional[ndarray] = None
         if not figs_save_path.exists():
             figs_save_path.mkdir(parents=True)
@@ -129,10 +128,9 @@ class StylizedFactsChecker:
         ).count()
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill()
-        start_time = pd.to_datetime("11:30:30").time()
-        end_time = pd.to_datetime("12:29:30").time()
         resampled_df = resampled_df[
-            (resampled_df.index < start_time) | (end_time < resampled_df.index)
+            (resampled_df.index < self.session1_end_time) | \
+            (self.session2_start_time < resampled_df.index)
         ]
         return resampled_df
 
@@ -150,6 +148,28 @@ class StylizedFactsChecker:
             choose_full_size_df=False,
             index_col=0
         )
+
+    def preprocess_ohlcv_df(
+        self,
+        df: DataFrame,
+        assign_session_id: bool
+    ) -> None:
+        """preprocess OHLCV dataframe.
+
+        This method preprocess OHLCV dataframe with following procedure.
+
+        1. lowercase column names.
+        2. create scaled num_events and volume column.
+        3. if 
+
+        Args:
+            df (DataFrame): dataframe of OHLCV data.
+            assign_session_id (bool): whether to create "session_id", "session1_hoge", "session2_hoge" columns.
+
+        Returns:
+            DataFrame: _description_
+        """
+        df.columns = df.columns.str.lower()
 
     def _is_stacking_possible(
         self,
