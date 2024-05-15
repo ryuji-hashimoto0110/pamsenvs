@@ -23,7 +23,7 @@ class StylizedFactsChecker:
         specific_name: Optional[str] = None,
         figs_save_path: Optional[Path] = None,
         session1_end_time_str: str = "11:30:00.000000",
-        session2_start_time_str: str = "12:29:59.000000"
+        session2_start_time_str: str = "12:30:00.000000"
     ) -> None:
         """initialization.
 
