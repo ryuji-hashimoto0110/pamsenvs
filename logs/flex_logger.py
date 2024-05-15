@@ -83,7 +83,7 @@ class FlexSaver(Logger):
         Args:
             significant_figures (int): significant figures to store prices. defaut to 1.
             is_execution_only (bool):
-            session1_end_time (Optional[int])
+            session1_end_time (Optional[int]): specify according to the pams config.
             session2_start_time (Optional[int])
         """
         super().__init__()
@@ -227,7 +227,7 @@ class FlexSaver(Logger):
         if self.session1_end_time is not None:
             if log_time <= self.session1_end_time:
                 empty_log_dic["Data"]["session_id"] = "1"
-            elif self.session2_start_time <= log_time:
+            elif self.session2_start_time == log_time:
                 empty_log_dic["Data"]["session_id"] = "2"
             else:
                 raise ValueError("cannot identify session.")
