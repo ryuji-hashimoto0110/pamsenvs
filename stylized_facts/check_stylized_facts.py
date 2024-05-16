@@ -16,7 +16,7 @@ def get_config():
                         help="folder path that target tick datas are stored.")
     parser.add_argument("--new_ohlcv_folder_path", type=str, default=None,
                         help="folder path that target csv datas are stored.")
-    parser.add_argument("--transactions_save_path", type=str, default=None)
+    parser.add_argument("--transactions_save_folder_path", type=str, default=None)
     parser.add_argument("--specific_name", type=str, default=None,
                         help="the specific name contained in target csv file name in common.")
     parser.add_argument("--choose_full_size_df", action="store_true")
@@ -63,14 +63,13 @@ def main(args):
     results_save_path: Path = pathlib.Path(results_folder).resolve() / results_csv_name
     checker.check_stylized_facts(results_save_path)
     if figs_save_path is not None:
-        transactions_save_path: Path = pathlib.Path(all_args.transactions_save_path)
-        transactions_folder_path: Path = transactions_save_path.parent
-        if not transactions_folder_path.exists():
-            transactions_folder_path.mkdir(parents=True)
+        transactions_save_folder_path: Path = pathlib.Path(all_args.transactions_save_folder_path)
+        if not transactions_save_folder_path.exists():
+            transactions_save_folder_path.mkdir(parents=True)
         checker.plot_ccdf(img_save_name="ccdf.pdf")
         checker.scatter_cumulative_transactions(
             img_save_name="transactions_time_series.pdf",
-            transactions_save_path=transactions_save_path
+            transactions_save_folder_path=transactions_save_folder_path
         )
 
 if __name__ == "__main__":

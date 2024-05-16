@@ -181,22 +181,26 @@ class StylizedFactsChecker:
                 df.loc[
                     df.index <= self.session1_end_time, ["session1_scaled_volume"]
                 ] = df["scaled_volume"][df.index <= self.session1_end_time]
+                df["session1_scaled_volume"] = df["session1_scaled_volume"] / df["session1_scaled_volume"].sum()
             if not "session1_scaled_num_events" in df.columns:
                 df["session1_scaled_num_events"] = np.zeros(len(df))
                 df.loc[
                     df.index <= self.session1_end_time, ["session1_scaled_num_events"]
                 ] = df["scaled_num_events"][df.index <= self.session1_end_time]
+                df["session1_scaled_num_events"] = df["session1_scaled_num_events"] / df["session1_scaled_num_events"].sum()
         if self.session2_start_time is not None:
             if not "session2_scaled_volume" in df.columns:
                 df["session2_scaled_volume"] = np.zeros(len(df))
                 df.loc[
                     self.session2_start_time <= df.index, ["session2_scaled_volume"]
                 ] = df["scaled_volume"][self.session2_start_time <= df.index]
+                df["session2_scaled_volume"] = df["session2_scaled_volume"] / df["session2_scaled_volume"].sum()
             if not "session2_scaled_num_events" in df.columns:
                 df["session2_scaled_num_events"] = np.zeros(len(df))
                 df.loc[
                     self.session2_start_time <= df.index, ["session2_scaled_num_events"]
                 ] = df["scaled_num_events"][self.session2_start_time <= df.index]
+                df["session2_scaled_num_events"] = df["session2_scaled_num_events"] / df["session2_scaled_num_events"].sum()
         return df
 
     def _is_stacking_possible(
@@ -274,13 +278,13 @@ class StylizedFactsChecker:
 
     def _calc_cumsum_transactions_from_df(
         self,
-        ohlhv_df: DataFrame,
+        ohlcv_df: DataFrame,
         colname: str
     ) -> ndarray:
         """convert scaled number of transactions time series to
         cumulative scaled number of transactions time series from 1 dataframe.
         """
-        scaled_transactions: ndarray = ohlhv_df[colname].dropna().values
+        scaled_transactions: ndarray = ohlcv_df[colname].dropna().values
         cumsum_scaled_transactions = np.cumsum(scaled_transactions)[np.newaxis,:]
         return cumsum_scaled_transactions
 
@@ -703,15 +707,38 @@ class StylizedFactsChecker:
     def calc_mean_cumulative_transactions(
         self,
         transactions_save_path: Optional[Path] = None,
-        return_mean: bool = True
+        return_mean: bool = True,
+        session_name: Optional[int] = None
     ) -> Optional[ndarray]:
         assert self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events")
-        cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_dfs(
-            self.ohlcv_dfs, colname="scaled_num_events"
-        )
+        if session_name is None:
+            cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_dfs(
+                self.ohlcv_dfs, colname="scaled_num_events"
+            )
+            indexes = self.ohlcv_dfs[0].index
+        elif session_name == "session1":
+            cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_dfs(
+                self.ohlcv_dfs, colname="session1_scaled_num_events"
+            )
+            cumsum_scaled_transactions = cumsum_scaled_transactions[
+                :, (self.ohlcv_dfs[0].index <= self.session1_end_time)
+            ]
+            indexes = self.ohlcv_dfs[0][self.ohlcv_dfs[0].index <= self.session1_end_time].index
+        elif session_name == "session2":
+            cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_dfs(
+                self.ohlcv_dfs, colname="session2_scaled_num_events"
+            )
+            cumsum_scaled_transactions = cumsum_scaled_transactions[
+                :, (self.session2_start_time <= self.ohlcv_dfs[0].index)
+            ]
+            indexes = self.ohlcv_dfs[0][self.session2_start_time <= self.ohlcv_dfs[0].index].index
+        else:
+            raise ValueError(
+                f"unknown session_name: {session_name}"
+            )
         cumsum_scaled_transactions = cumsum_scaled_transactions.T
         cumsum_scaled_transactions_df: DataFrame = pd.DataFrame(
-            data=cumsum_scaled_transactions, index=self.ohlcv_dfs[0].index
+            data=cumsum_scaled_transactions, index=indexes
         )
         mean_cumsum_scaled_transactions: ndarray = np.mean(
             cumsum_scaled_transactions, axis=1
@@ -727,7 +754,7 @@ class StylizedFactsChecker:
     def scatter_cumulative_transactions(
         self,
         img_save_name: str,
-        transactions_save_path: Optional[Path] = None,
+        transactions_save_folder_path: Optional[Path] = None,
         color: str = "black",
     ) -> None:
         fig: Figure = plt.figure(figsize=(10,6))
@@ -745,8 +772,17 @@ class StylizedFactsChecker:
                 color=color, s=1
             )
         if self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events"):
+            transactions_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions.csv"
             mean_cumsum_scaled_transactions: ndarray = self.calc_mean_cumulative_transactions(
                 transactions_save_path, return_mean=True
+            )
+            transactions_session1_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions_session1.csv"
+            self.calc_mean_cumulative_transactions(
+                transactions_session1_save_path, return_mean=False, session_name="session1"
+            )
+            transactions_session2_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions_session2.csv"
+            self.calc_mean_cumulative_transactions(
+                transactions_session2_save_path, return_mean=False, session_name="session2"
             )
             ax.plot(
                 datetimes, mean_cumsum_scaled_transactions, color="red"
