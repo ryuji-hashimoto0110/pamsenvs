@@ -10,45 +10,53 @@ from typing import Optional
 
 def get_config():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ohlcv_folder_path", type=str,
-                        help="folder path that target csv datas are stored. wither OHLCV or FLEX format is allowed.")
+    parser.add_argument("--ohlcv_folder_path", type=str, default=None,
+                        help="folder path that target OHLCV datas are stored.")
+    parser.add_argument("--tick_folder_path", type=str, default=None,
+                        help="folder path that target tick datas are stored.")
     parser.add_argument("--new_ohlcv_folder_path", type=str, default=None,
                         help="folder path that target csv datas are stored.")
     parser.add_argument("--transactions_save_path", type=str, default=None)
     parser.add_argument("--specific_name", type=str, default=None,
                         help="the specific name contained in target csv file name in common.")
     parser.add_argument("--choose_full_size_df", action="store_true")
-    parser.add_argument("--need_resample", action="store_true")
     parser.add_argument("--figs_folder_path", type=str, default=None)
+    parser.add_argument("--session1_end_time_str", type=str, default=None)
+    parser.add_argument("--session2_start_time_str", type=str, default=None)
     parser.add_argument("--results_folder_path", type=str)
     parser.add_argument("--results_csv_name", type=str)
     return parser
 
+def create_path(folder_name: Optional[str]) -> Optional[Path]:
+    folder_path: Optional[Path] = None
+    if folder_name is not None:
+        folder_path: Path = pathlib.Path(folder_name).resolve()
+    return folder_path
+
 def main(args):
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
-    ohlcv_folder: str = all_args.ohlcv_folder_path
-    ohlcv_dfs_path: Path = pathlib.Path(ohlcv_folder).resolve()
+    ohlcv_folder: Optional[str] = all_args.ohlcv_folder_path
+    ohlcv_dfs_path: Optional[Path] = create_path(ohlcv_folder)
+    tick_folder: Optional[str] = all_args.tick_folder_path
+    tick_dfs_path: Optional[Path] = create_path(tick_folder)
     new_ohlcv_folder: Optional[str] = all_args.new_ohlcv_folder_path
-    if new_ohlcv_folder is not None:
-        ohlcv_dfs_save_path: Optional[Path] = pathlib.Path(new_ohlcv_folder).resolve()
-    else:
-        ohlcv_dfs_save_path = None
+    ohlcv_dfs_save_path: Optional[Path] = create_path(new_ohlcv_folder)
     specific_name: Optional[str] = all_args.specific_name
     choose_full_size_df: bool = all_args.choose_full_size_df
-    need_resample: bool = all_args.need_resample
     figs_folder: Optional[str] = all_args.figs_folder_path
-    if figs_folder is not None:
-        figs_save_path: Optional[Path] = pathlib.Path(figs_folder).resolve()
-    else:
-        figs_save_path = None
+    figs_save_path: Optional[Path] = create_path(figs_folder)
+    session1_end_time_str: Optional[str] = all_args.session1_end_time_str
+    session2_start_time_str: Optional[str] = all_args.session2_start_time_str
     checker = StylizedFactsChecker(
         ohlcv_dfs_path=ohlcv_dfs_path,
+        tick_dfs_path=tick_dfs_path,
         ohlcv_dfs_save_path=ohlcv_dfs_save_path,
         choose_full_size_df=choose_full_size_df,
         specific_name=specific_name,
-        need_resample=need_resample,
-        figs_save_path=figs_save_path
+        figs_save_path=figs_save_path,
+        session1_end_time_str=session1_end_time_str,
+        session2_start_time_str=session2_start_time_str
     )
     results_folder: str = all_args.results_folder_path
     results_csv_name: str = all_args.results_csv_name

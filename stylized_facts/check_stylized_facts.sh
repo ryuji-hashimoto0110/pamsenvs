@@ -1,17 +1,20 @@
-ohlcv_folder_path="../datas/real_datas/flex_csv"
+tick_folder_path="../datas/real_datas/flex_csv"
 new_ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv"
 transactions_save_path="../datas/real_datas/intraday/flex_transactions/9202cumsum_scaled_transactions.csv"
 specific_name="9202"
-results_folder="./results"
 figs_folder="../imgs/9202"
+session1_end_time_str="11:30:00.000000"
+session2_start_time_str="12:30:00.00000"
+results_folder="./results"
 results_csv_name="9202.csv"
 python check_stylized_facts.py \
---ohlcv_folder_path ${ohlcv_folder_path} \
+--tick_folder_path ${tick_folder_path} \
 --new_ohlcv_folder_path ${new_ohlcv_folder_path} \
 --transactions_save_path ${transactions_save_path} \
 --specific_name ${specific_name} \
 --choose_full_size_df \
---need_resample \
 --results_folder ${results_folder} \
 --figs_folder ${figs_folder} \
+--session1_end_time_str ${session1_end_time_str} \
+--session2_start_time_str ${session2_start_time_str} \
 --results_csv_name ${results_csv_name}

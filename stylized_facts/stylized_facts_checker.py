@@ -6,6 +6,7 @@ import numpy as np
 from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
+from pandas import Timestamp
 from pathlib import Path
 from scipy.stats import kurtosis, kurtosistest
 from typing import Optional
@@ -18,11 +19,10 @@ class StylizedFactsChecker:
         tick_dfs_path: Optional[Path] = None,
         ohlcv_dfs_save_path: Optional[Path] = None,
         choose_full_size_df: bool = True,
-        assign_session_id: bool = True,
         specific_name: Optional[str] = None,
         figs_save_path: Optional[Path] = None,
-        session1_end_time_str: str = "11:30:00.000000",
-        session2_start_time_str: str = "12:30:00.000000"
+        session1_end_time_str: Optional[str] = None, # "11:30:00.000000"
+        session2_start_time_str: Optional[str] = None # "12:30:00.000000"
     ) -> None:
         """initialization.
 
@@ -34,35 +34,41 @@ class StylizedFactsChecker:
             tick_dfs_path (Optional[Path]): path in which tick csv datas are saved. Default to None.
             ohlcv_dfs_save_path (Optional[Path]):
             choose_full_size_df
-            assign_session_id
             specific_name (Optional[str]): the specific name in csv file name. Files that contain specific_name
                 are collected if this argument is specified by _read_csvs.
             figs_save_path (Optional[Path]): path to save figures.
-            session1_end_time_str (str):
-            session2_start_time_str (str)
+            session1_end_time_str (Optional[str]):
+            session2_start_time_str (Optional[str]):
         """
         self.ohlcv_dfs: list[DataFrame] = []
+        self.ohlcv_csv_names: list[str] = []
         self.tick_dfs: list[DataFrame] = []
         self.specific_name: Optional[str] = specific_name
-        self.session1_end_time = pd.to_datetime(session1_end_time_str).time()
-        self.session2_start_time = pd.to_datetime(session2_start_time_str).time()
+        self.session1_end_time: Optional[Timestamp] = None
+        if session1_end_time_str is not None:
+            self.session1_end_time = pd.to_datetime(session1_end_time_str).time()
+        self.session2_start_time: Optional[Timestamp] = None
+        if session2_start_time_str is not None:
+            self.session2_start_time = pd.to_datetime(session2_start_time_str).time()
         if ohlcv_dfs_save_path is not None:
             if not ohlcv_dfs_save_path.exists():
                 ohlcv_dfs_save_path.mkdir(parents=True)
         if tick_dfs_path is not None:
             self._read_tick_dfs(tick_dfs_path)
             if ohlcv_dfs_path is None:
-                self.ohlcv_dfs = self._read_csvs(
+                self.ohlcv_dfs, self.ohlcv_csv_names = self._read_csvs(
                     tick_dfs_path,
                     need_resample=True,
                     choose_full_size_df=choose_full_size_df,
-                    index_col=0,
-                    resampled_dfs_save_path=ohlcv_dfs_save_path
+                    index_col=0
                 )
         if ohlcv_dfs_path is not None:
-            self._read_ohlcv_dfs(ohlcv_dfs_path)
-        for df in self.ohlcv_dfs:
-            self.preprocess_ohlcv_df(df, assign_session_id=assign_session_id)
+            self._read_ohlcv_dfs(ohlcv_dfs_path, choose_full_size_df)
+        for i, df in enumerate(self.ohlcv_dfs):
+            self.preprocess_ohlcv_df(df)
+            csv_name: str = self.ohlcv_csv_names[i]
+            save_path: Path = ohlcv_dfs_save_path / csv_name
+            df.to_csv(str(save_path))
         self.return_arr: Optional[ndarray] = None
         if not figs_save_path.exists():
             figs_save_path.mkdir(parents=True)
@@ -72,10 +78,9 @@ class StylizedFactsChecker:
         self,
         csvs_path: Path,
         need_resample: bool,
-        choose_full_size_df: bool,
+        choose_full_size_df: bool = False,
         index_col: Optional[int] = None,
-        resampled_dfs_save_path: Optional[Path] = None
-    ) -> list[DataFrame]:
+    ) -> tuple[list[DataFrame], list[str]]:
         """read all csv files in given folder path.
 
         Args:
@@ -84,6 +89,7 @@ class StylizedFactsChecker:
             index_col (Optional[int])
         """
         dfs: list[DataFrame] = []
+        csv_names: list[str] = []
         for csv_path in sorted(csvs_path.rglob("*.csv")):
             store_df: bool = True
             csv_name: str = csv_path.name
@@ -96,16 +102,14 @@ class StylizedFactsChecker:
                 df: DataFrame = pd.read_csv(csv_path)
             if need_resample:
                 df = self._resample(df)
-                if resampled_dfs_save_path is not None:
-                    save_path: Path = resampled_dfs_save_path / csv_name
-                    df.to_csv(str(save_path))
                 if len(df) < 302 and choose_full_size_df:
                     store_df = False
                 else:
                     store_df = True
             if store_df:
+                csv_names.append(csv_name)
                 dfs.append(df)
-        return dfs
+        return dfs, csv_names
 
     def _resample(self, df: DataFrame) -> DataFrame:
         """resample tick data to OHLCV data.
@@ -134,24 +138,23 @@ class StylizedFactsChecker:
         return resampled_df
 
     def _read_tick_dfs(self, tick_dfs_path: Path) -> None:
-        self.tick_dfs = self._read_csvs(
+        self.tick_dfs, _ = self._read_csvs(
             tick_dfs_path,
             need_resample=False,
             index_col=0
         )
 
-    def _read_ohlcv_dfs(self, ohlcv_dfs_path: Path) -> None:
-        self.ohlcv_dfs = self._read_csvs(
+    def _read_ohlcv_dfs(self, ohlcv_dfs_path: Path, choose_full_size_df: bool) -> None:
+        self.ohlcv_dfs, self.ohlcv_csv_names = self._read_csvs(
             ohlcv_dfs_path,
             need_resample=False,
-            choose_full_size_df=False,
+            choose_full_size_df=choose_full_size_df,
             index_col=0
         )
 
     def preprocess_ohlcv_df(
         self,
         df: DataFrame,
-        assign_session_id: bool
     ) -> None:
         """preprocess OHLCV dataframe.
 
@@ -159,16 +162,42 @@ class StylizedFactsChecker:
 
         1. lowercase column names.
         2. create scaled num_events and volume column.
-        3. if 
+        3. assign session ID.
 
         Args:
             df (DataFrame): dataframe of OHLCV data.
-            assign_session_id (bool): whether to create "session_id", "session1_hoge", "session2_hoge" columns.
 
         Returns:
             DataFrame: _description_
         """
         df.columns = df.columns.str.lower()
+        if not "scaled_volume" in df.columns:
+            df["scaled_volume"] = df["volume"] / df["volume"].sum()
+        if not "scaled_num_events" in df.columns:
+            df["scaled_num_events"] = df["num_events"] / df["num_events"].sum()
+        if self.session1_end_time is not None:
+            if not "session1_scaled_volume" in df.columns:
+                df["session1_scaled_volume"] = np.zeros(len(df))
+                df.loc[
+                    df.index <= self.session1_end_time, ["session1_scaled_volume"]
+                ] = df["scaled_volume"][df.index <= self.session1_end_time]
+            if not "session1_scaled_num_events" in df.columns:
+                df["session1_scaled_num_events"] = np.zeros(len(df))
+                df.loc[
+                    df.index <= self.session1_end_time, ["session1_scaled_num_events"]
+                ] = df["scaled_num_events"][df.index <= self.session1_end_time]
+        if self.session2_start_time is not None:
+            if not "session2_scaled_volume" in df.columns:
+                df["session2_scaled_volume"] = np.zeros(len(df))
+                df.loc[
+                    self.session2_start_time <= df.index, ["session2_scaled_volume"]
+                ] = df["scaled_volume"][self.session2_start_time <= df.index]
+            if not "session2_scaled_num_events" in df.columns:
+                df["session2_scaled_num_events"] = np.zeros(len(df))
+                df.loc[
+                    self.session2_start_time <= df.index, ["session2_scaled_num_events"]
+                ] = df["scaled_num_events"][self.session2_start_time <= df.index]
+        return df
 
     def _is_stacking_possible(
         self,
@@ -676,9 +705,9 @@ class StylizedFactsChecker:
         transactions_save_path: Optional[Path] = None,
         return_mean: bool = True
     ) -> Optional[ndarray]:
-        assert self._is_stacking_possible(self.ohlcv_dfs, "num_events")
+        assert self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events")
         cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_dfs(
-            self.ohlcv_dfs, colname="num_events"
+            self.ohlcv_dfs, colname="scaled_num_events"
         )
         cumsum_scaled_transactions = cumsum_scaled_transactions.T
         cumsum_scaled_transactions_df: DataFrame = pd.DataFrame(
@@ -709,13 +738,13 @@ class StylizedFactsChecker:
                 datetime.datetime.combine(dummy_date, t) for t in ohlcv_df.index
             ]
             cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_df(
-                ohlcv_df, colname="num_events"
+                ohlcv_df, colname="scaled_num_events"
             )
             ax.scatter(
                 datetimes, cumsum_scaled_transactions,
                 color=color, s=1
             )
-        if self._is_stacking_possible(self.ohlcv_dfs, "num_events"):
+        if self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events"):
             mean_cumsum_scaled_transactions: ndarray = self.calc_mean_cumulative_transactions(
                 transactions_save_path, return_mean=True
             )
