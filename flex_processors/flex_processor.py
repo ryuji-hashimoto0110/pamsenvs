@@ -3,6 +3,7 @@ from datetime import datetime
 from datetime import timedelta
 import json
 import pandas as pd
+from pandas import Timestamp
 import pathlib
 from pathlib import Path
 import subprocess
@@ -103,8 +104,8 @@ class FlexProcessor:
         self.quote_num: int = quote_num
         self.is_execution_only: bool = is_execution_only
         self.column_names: list[str] = self._create_columns()
-        self.session1_end_time = pd.to_datetime(session1_end_time_str).time()
-        self.session2_start_time = pd.to_datetime(session2_start_time_str).time()
+        self.session1_end_time: Timestamp = pd.to_datetime(session1_end_time_str).time()
+        self.session2_start_time: Timestamp = pd.to_datetime(session2_start_time_str).time()
 
     def download_datas(
         self,
@@ -221,7 +222,7 @@ class FlexProcessor:
             if "session_id" in log_dic["Data"].keys():
                 log_columns.append(log_dic["Data"]["session_id"])
             else:
-                t = pd.to_datetime(time_str).time()
+                t: Timestamp = pd.to_datetime(time_str).time()
                 if t <= self.session1_end_time:
                     session_id: str = "1"
                 elif self.session2_start_time <= t:
