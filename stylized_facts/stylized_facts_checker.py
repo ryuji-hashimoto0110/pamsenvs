@@ -8,6 +8,7 @@ import pandas as pd
 from pandas import DataFrame
 from pandas import Timestamp
 from pathlib import Path
+import random
 from scipy.stats import kurtosis, kurtosistest
 from typing import Optional
 import warnings
@@ -21,15 +22,20 @@ class StylizedFactsChecker:
     """
     def __init__(
         self,
+        seed: int = 42,
         ohlcv_dfs_path: Optional[Path] = None,
         tick_dfs_path: Optional[Path] = None,
+        resample_rule: str = "min",
         is_real: bool = True,
         ohlcv_dfs_save_path: Optional[Path] = None,
         choose_full_size_df: bool = True,
         specific_name: Optional[str] = None,
         figs_save_path: Optional[Path] = None,
-        session1_end_time_str: Optional[str] = None, # "11:30:00.000000"
-        session2_start_time_str: Optional[str] = None # "12:30:00.000000"
+        session1_end_time_str: Optional[str] = None,
+        session2_start_time_str: Optional[str] = None,
+        transactions_folder_path: Optional[Path] = None,
+        session1_transactions_file_name: Optional[str] = None,
+        session2_transactions_file_name: Optional[str] = None
     ) -> None:
         """initialization.
 
@@ -48,7 +54,9 @@ class StylizedFactsChecker:
             session1_end_time_str (Optional[str]):
             session2_start_time_str (Optional[str]):
         """
+        self.prng = random.Random(seed)
         self.is_real: bool = is_real
+        self.resample_rule: str = resample_rule
         self.ohlcv_dfs: list[DataFrame] = []
         self.ohlcv_csv_names: list[str] = []
         self.tick_dfs: list[DataFrame] = []
@@ -62,6 +70,9 @@ class StylizedFactsChecker:
         if ohlcv_dfs_save_path is not None:
             if not ohlcv_dfs_save_path.exists():
                 ohlcv_dfs_save_path.mkdir(parents=True)
+        self.transactions_folder_path: Optional[Path] = transactions_folder_path
+        self.session1_transactions_file_name: Optional[str] = session1_transactions_file_name
+        self.session2_transactions_file_name: Optional[str] = session2_transactions_file_name
         if tick_dfs_path is not None:
             self._read_tick_dfs(tick_dfs_path)
             if ohlcv_dfs_path is None:
@@ -87,15 +98,13 @@ class StylizedFactsChecker:
         self,
         csvs_path: Path,
         need_resample: bool,
-        choose_full_size_df: bool = False,
-        index_col: Optional[int] = None,
+        choose_full_size_df: bool = False
     ) -> tuple[list[DataFrame], list[str]]:
         """read all csv files in given folder path.
 
         Args:
             csvs_path (Path): folder path to be searched for target csvs.
             need_resample (bool): whether resampling is needed. If True, all target csvs must be tick data.
-            index_col (Optional[int])
         """
         dfs: list[DataFrame] = []
         csv_names: list[str] = []
@@ -105,10 +114,7 @@ class StylizedFactsChecker:
             if self.specific_name is not None:
                 if self.specific_name not in csv_name:
                     continue
-            if index_col is not None:
-                df: DataFrame = pd.read_csv(csv_path, index_col=index_col)
-            else:
-                df: DataFrame = pd.read_csv(csv_path)
+            df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
                 df = self._resample(df)
                 if len(df) < 302 and choose_full_size_df:
@@ -136,13 +142,13 @@ class StylizedFactsChecker:
     def _resample_real(self, df: DataFrame) -> DataFrame:
         df.index = pd.to_datetime(df.index, format="%H:%M:%S.%f") #09:00:00.357000
         resampled_df: DataFrame = df["market_price"].resample(
-            rule="min", closed="left", label="left"
+            rule=self.resample_rule, closed="left", label="left"
         ).ohlc()
         resampled_df["volume"] = df["event_volume"].resample(
-            rule="min", closed="left", label="left"
+            rule=self.resample_rule, closed="left", label="left"
         ).apply("sum")
         resampled_df["num_events"] = df["event_volume"].resample(
-            rule="min", closed="left", label="left"
+            rule=self.resample_rule, closed="left", label="left"
         ).count()
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill()
@@ -153,21 +159,83 @@ class StylizedFactsChecker:
         return resampled_df
 
     def _resample_art(self, df: DataFrame) -> DataFrame:
-        pass
+        assert "session_id" in df.columns
+        session1_df: DataFrame = df[df["session_id"] == 1]
+        session1_resampled_df: DataFrame = self._resample_art_per_session(
+            session1_df, self.session1_transactions_file_name
+        )
+        session2_df: DataFrame = df[df["session_id"] == 2]
+        session2_resampled_df: DataFrame = self._resample_art_per_session(
+            session2_df, self.session2_transactions_file_name
+        )
+        resampled_df: DataFrame = pd.concat(
+            [session1_resampled_df, session2_resampled_df], axis=0
+        )
+        resampled_df.index = pd.to_datetime(resampled_df.index, format="%H:%M:%S")
+        resampled_df.index = resampled_df.index.time
+        resampled_df["close"] = resampled_df["close"].ffill()
+        return resampled_df
+
+    def _resample_art_per_session(
+        self,
+        df: DataFrame,
+        transactions_file_name: str
+    ) -> DataFrame:
+        transactions_file_path: Path = self.transactions_folder_path / transactions_file_name
+        cumsum_scaled_transactions_df: DataFrame = pd.read_csv(
+            str(transactions_file_path), index_col=0
+        )
+        indexes = cumsum_scaled_transactions_df.index
+        cumsum_scaled_transactions_arr: ndarray = cumsum_scaled_transactions_df[
+            self.prng.choice(cumsum_scaled_transactions_df.columns)
+        ].values
+        cumsum_transactions_arr: ndarray = len(df) * cumsum_scaled_transactions_arr
+        cumsum_transactions: list[int] = list(cumsum_transactions_arr.astype(np.uint8))
+        opens: list[Optional[float | int]] = []
+        highes: list[Optional[float | int]] = []
+        lowes: list[Optional[float | int]] = []
+        closes: list[float | int] = []
+        volumes: list[int] = []
+        num_events: list[int] = []
+        num_pre_transactions: int = 0
+        for num_cur_transactions in cumsum_transactions:
+            cur_df: DataFrame = df.iloc[num_pre_transactions:num_cur_transactions,:]
+            if 0 < len(cur_df):
+                opens.append(cur_df["market_price"][0])
+                highes.append(cur_df["market_price"].max())
+                lowes.append(cur_df["market_price"].min())
+                closes.append(cur_df["market_price"][-1])
+                volumes.append(cur_df["event_volume"].sum())
+                num_events.append(len(cur_df))
+            else:
+                opens.append(None)
+                highes.append(None)
+                lowes.append(None)
+                closes.append(None)
+                volumes.append(0)
+                num_events.append(0)
+            num_pre_transactions = num_cur_transactions
+        session_resampled_df: DataFrame = pd.DataFrame(
+            data={
+                "open": opens, "high": highes, "low": lowes, "close": closes,
+                "volume": volumes, "num_events": num_events
+            },
+            index=indexes
+        )
+        session_resampled_df["close"] = session_resampled_df["close"].ffill()
+        return session_resampled_df
 
     def _read_tick_dfs(self, tick_dfs_path: Path) -> None:
         self.tick_dfs, _ = self._read_csvs(
             tick_dfs_path,
-            need_resample=False,
-            index_col=0
+            need_resample=False
         )
 
     def _read_ohlcv_dfs(self, ohlcv_dfs_path: Path, choose_full_size_df: bool) -> None:
         self.ohlcv_dfs, self.ohlcv_csv_names = self._read_csvs(
             ohlcv_dfs_path,
             need_resample=False,
-            choose_full_size_df=choose_full_size_df,
-            index_col=0
+            choose_full_size_df=choose_full_size_df
         )
 
     def preprocess_ohlcv_df(
@@ -730,23 +798,23 @@ class StylizedFactsChecker:
     ) -> Optional[ndarray]:
         assert self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events")
         if session_name is None:
-            cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_dfs(
+            cumsum_scaled_transactions_arr: ndarray = self._calc_cumsum_transactions_from_dfs(
                 self.ohlcv_dfs, colname="scaled_num_events"
             )
             indexes = self.ohlcv_dfs[0].index
         elif session_name == "session1":
-            cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_dfs(
+            cumsum_scaled_transactions_arr: ndarray = self._calc_cumsum_transactions_from_dfs(
                 self.ohlcv_dfs, colname="session1_scaled_num_events"
             )
-            cumsum_scaled_transactions = cumsum_scaled_transactions[
+            cumsum_scaled_transactions_arr = cumsum_scaled_transactions_arr[
                 :, (self.ohlcv_dfs[0].index <= self.session1_end_time)
             ]
             indexes = self.ohlcv_dfs[0][self.ohlcv_dfs[0].index <= self.session1_end_time].index
         elif session_name == "session2":
-            cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_dfs(
+            cumsum_scaled_transactions_arr: ndarray = self._calc_cumsum_transactions_from_dfs(
                 self.ohlcv_dfs, colname="session2_scaled_num_events"
             )
-            cumsum_scaled_transactions = cumsum_scaled_transactions[
+            cumsum_scaled_transactions_arr = cumsum_scaled_transactions_arr[
                 :, (self.session2_start_time <= self.ohlcv_dfs[0].index)
             ]
             indexes = self.ohlcv_dfs[0][self.session2_start_time <= self.ohlcv_dfs[0].index].index
@@ -754,18 +822,18 @@ class StylizedFactsChecker:
             raise ValueError(
                 f"unknown session_name: {session_name}"
             )
-        cumsum_scaled_transactions = cumsum_scaled_transactions.T
+        cumsum_scaled_transaction_arrs = cumsum_scaled_transactions_arr.T
         cumsum_scaled_transactions_df: DataFrame = pd.DataFrame(
-            data=cumsum_scaled_transactions, index=indexes
+            data=cumsum_scaled_transactions_arr, index=indexes
         )
-        mean_cumsum_scaled_transactions: ndarray = np.mean(
-            cumsum_scaled_transactions, axis=1
+        mean_cumsum_scaled_transactions_arr: ndarray = np.mean(
+            cumsum_scaled_transactions_arr, axis=1
         )
-        cumsum_scaled_transactions_df["mean"] = mean_cumsum_scaled_transactions
+        cumsum_scaled_transactions_df["mean"] = mean_cumsum_scaled_transactions_arr
         if transactions_save_path is not None:
             cumsum_scaled_transactions_df.to_csv(str(transactions_save_path))
         if return_mean:
-            return mean_cumsum_scaled_transactions
+            return mean_cumsum_scaled_transactions_arr
         else:
             return None
 
@@ -808,20 +876,20 @@ class StylizedFactsChecker:
             datetimes = [
                 datetime.datetime.combine(dummy_date, t) for t in ohlcv_df.index
             ]
-            cumsum_scaled_transactions: ndarray = self._calc_cumsum_transactions_from_df(
+            cumsum_scaled_transactions_arr: ndarray = self._calc_cumsum_transactions_from_df(
                 ohlcv_df, colname="scaled_num_events"
             )
             ax.scatter(
-                datetimes, cumsum_scaled_transactions,
+                datetimes, cumsum_scaled_transactions_arr,
                 color=color, s=1
             )
         if self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events"):
             transactions_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions.csv"
-            mean_cumsum_scaled_transactions: ndarray = self.calc_mean_cumulative_transactions(
+            mean_cumsum_scaled_transactions_arr: ndarray = self.calc_mean_cumulative_transactions(
                 return_mean=True
             )
             ax.plot(
-                datetimes, mean_cumsum_scaled_transactions, color="red"
+                datetimes, mean_cumsum_scaled_transactions_arr, color="red"
             )
         else:
             warnings.warn(
