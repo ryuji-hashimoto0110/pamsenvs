@@ -13,10 +13,17 @@ from typing import Optional
 import warnings
 
 class StylizedFactsChecker:
+    """StylizedFactsChecker class.
+
+    StylizedFactsChecker has 2 roles.
+        1. preprocess artificial / real datas to compare them in equal ways.
+        2. check whether the data satisfy various stylized facts.
+    """
     def __init__(
         self,
         ohlcv_dfs_path: Optional[Path] = None,
         tick_dfs_path: Optional[Path] = None,
+        is_real: bool = True,
         ohlcv_dfs_save_path: Optional[Path] = None,
         choose_full_size_df: bool = True,
         specific_name: Optional[str] = None,
@@ -26,12 +33,13 @@ class StylizedFactsChecker:
     ) -> None:
         """initialization.
 
-        load dataframes. There are 2 sessions in Japan's stock market in 1 day.
+        load dataframes.
 
         Args:
             ohlcv_dfs_path (Optional[Path]): path in which ohlcv csv datas are saved. Default to None.
                 ohlcv data consists of 5 columns: open, high, low, close, volume.
             tick_dfs_path (Optional[Path]): path in which tick csv datas are saved. Default to None.
+            is_real (bool): whether df is real_data
             ohlcv_dfs_save_path (Optional[Path]):
             choose_full_size_df
             specific_name (Optional[str]): the specific name in csv file name. Files that contain specific_name
@@ -40,6 +48,7 @@ class StylizedFactsChecker:
             session1_end_time_str (Optional[str]):
             session2_start_time_str (Optional[str]):
         """
+        self.is_real: bool = is_real
         self.ohlcv_dfs: list[DataFrame] = []
         self.ohlcv_csv_names: list[str] = []
         self.tick_dfs: list[DataFrame] = []
@@ -119,6 +128,12 @@ class StylizedFactsChecker:
         """
         assert "market_price" in df.columns
         assert "event_volume" in df.columns
+        if self.is_real:
+            return self._resample_real(df)
+        else:
+            return self._resample_art(df)
+
+    def _resample_real(self, df: DataFrame) -> DataFrame:
         df.index = pd.to_datetime(df.index, format="%H:%M:%S.%f") #09:00:00.357000
         resampled_df: DataFrame = df["market_price"].resample(
             rule="min", closed="left", label="left"
@@ -136,6 +151,9 @@ class StylizedFactsChecker:
             (self.session2_start_time <= resampled_df.index)
         ]
         return resampled_df
+
+    def _resample_art(self, df: DataFrame) -> DataFrame:
+        pass
 
     def _read_tick_dfs(self, tick_dfs_path: Path) -> None:
         self.tick_dfs, _ = self._read_csvs(
@@ -751,6 +769,32 @@ class StylizedFactsChecker:
         else:
             return None
 
+    def calc_cumulative_transactions_per_session(
+        self,
+        transactions_save_folder_path: Path
+    ) -> None:
+        if (
+            self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events") and
+            self._is_stacking_possible(self.ohlcv_dfs, "session1_scaled_num_events") and
+            self._is_stacking_possible(self.ohlcv_dfs, "session2_scaled_num_events")
+        ):
+            transactions_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions.csv"
+            self.calc_mean_cumulative_transactions(
+                transactions_save_path, return_mean=False
+            )
+            transactions_session1_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions_session1.csv"
+            self.calc_mean_cumulative_transactions(
+                transactions_session1_save_path, return_mean=False, session_name="session1"
+            )
+            transactions_session2_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions_session2.csv"
+            self.calc_mean_cumulative_transactions(
+                transactions_session2_save_path, return_mean=False, session_name="session2"
+            )
+        else:
+            raise ValueError(
+                f"failed to stack dataframes."
+            )
+
     def scatter_cumulative_transactions(
         self,
         img_save_name: str,
@@ -774,15 +818,7 @@ class StylizedFactsChecker:
         if self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events"):
             transactions_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions.csv"
             mean_cumsum_scaled_transactions: ndarray = self.calc_mean_cumulative_transactions(
-                transactions_save_path, return_mean=True
-            )
-            transactions_session1_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions_session1.csv"
-            self.calc_mean_cumulative_transactions(
-                transactions_session1_save_path, return_mean=False, session_name="session1"
-            )
-            transactions_session2_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions_session2.csv"
-            self.calc_mean_cumulative_transactions(
-                transactions_session2_save_path, return_mean=False, session_name="session2"
+                return_mean=True
             )
             ax.plot(
                 datetimes, mean_cumsum_scaled_transactions, color="red"

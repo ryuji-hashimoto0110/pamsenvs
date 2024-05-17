@@ -14,6 +14,7 @@ def get_config():
                         help="folder path that target OHLCV datas are stored.")
     parser.add_argument("--tick_folder_path", type=str, default=None,
                         help="folder path that target tick datas are stored.")
+    parser.add_argument("--is_real", action="store_true")
     parser.add_argument("--new_ohlcv_folder_path", type=str, default=None,
                         help="folder path that target csv datas are stored.")
     parser.add_argument("--transactions_save_folder_path", type=str, default=None)
@@ -40,6 +41,7 @@ def main(args):
     ohlcv_dfs_path: Optional[Path] = create_path(ohlcv_folder)
     tick_folder: Optional[str] = all_args.tick_folder_path
     tick_dfs_path: Optional[Path] = create_path(tick_folder)
+    is_real: bool = all_args.is_real
     new_ohlcv_folder: Optional[str] = all_args.new_ohlcv_folder_path
     ohlcv_dfs_save_path: Optional[Path] = create_path(new_ohlcv_folder)
     specific_name: Optional[str] = all_args.specific_name
@@ -51,6 +53,7 @@ def main(args):
     checker = StylizedFactsChecker(
         ohlcv_dfs_path=ohlcv_dfs_path,
         tick_dfs_path=tick_dfs_path,
+        is_real=is_real,
         ohlcv_dfs_save_path=ohlcv_dfs_save_path,
         choose_full_size_df=choose_full_size_df,
         specific_name=specific_name,
