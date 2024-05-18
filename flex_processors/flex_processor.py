@@ -189,7 +189,7 @@ class FlexProcessor:
                         ] = json.loads(line.replace("'", '"'))
                         log_columns: list[str] = self._extract_info_from_log(log_dic)
                     except Exception as e:
-                        (e)
+                        print(e)
                         print(line)
                         continue
                     if len(log_columns) == 0:
