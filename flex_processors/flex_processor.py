@@ -187,11 +187,11 @@ class FlexProcessor:
                         log_dic: dict[
                             str, dict[str, dict[str, list | dict, str]]
                         ] = json.loads(line.replace("'", '"'))
+                        log_columns: list[str] = self._extract_info_from_log(log_dic)
                     except Exception as e:
                         warnings.warn(e)
                         print(line)
                         continue
-                    log_columns: list[str] = self._extract_info_from_log(log_dic)
                     if len(log_columns) == 0:
                         pass
                     elif len(log_columns) == len(self.column_names):
