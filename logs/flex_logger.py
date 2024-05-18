@@ -227,7 +227,7 @@ class FlexSaver(Logger):
         if self.session1_end_time is not None:
             if log_time <= self.session1_end_time:
                 empty_log_dic["Data"]["session_id"] = "1"
-            elif self.session2_start_time == log_time:
+            elif self.session2_start_time <= log_time:
                 empty_log_dic["Data"]["session_id"] = "2"
             else:
                 raise ValueError("cannot identify session.")
