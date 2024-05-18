@@ -41,7 +41,7 @@ def main(args):
         quote_num=quote_num,
         is_execution_only=True
     )
-    processor.download_datas(tickers, start_date, end_date)
+    #processor.download_datas(tickers, start_date, end_date)
     processor.convert_all_txt2csv()
 
 if __name__ == "__main__":

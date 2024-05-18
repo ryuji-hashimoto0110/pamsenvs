@@ -228,7 +228,7 @@ class FlexProcessor:
                 elif self.session2_start_time <= t:
                     session_id: str = "2"
                 else:
-                    raise ValueError("cannot identify session.")
+                    raise ValueError(f"cannot identify session. time={time_str}")
                 log_columns.append(session_id)
             log_columns.extend(execution_infos)
             log_columns.extend(
