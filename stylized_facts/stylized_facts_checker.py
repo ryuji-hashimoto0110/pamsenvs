@@ -79,8 +79,7 @@ class StylizedFactsChecker:
                 self.ohlcv_dfs, self.ohlcv_csv_names = self._read_csvs(
                     tick_dfs_path,
                     need_resample=True,
-                    choose_full_size_df=choose_full_size_df,
-                    index_col=0
+                    choose_full_size_df=choose_full_size_df
                 )
         if ohlcv_dfs_path is not None:
             self._read_ohlcv_dfs(ohlcv_dfs_path, choose_full_size_df)
