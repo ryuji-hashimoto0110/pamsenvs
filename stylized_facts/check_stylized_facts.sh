@@ -12,6 +12,7 @@ python check_stylized_facts.py \
 --new_ohlcv_folder_path ${new_ohlcv_folder_path} \
 --transactions_save_folder_path ${transactions_save_folder_path} \
 --specific_name ${specific_name} \
+--is_real \
 --choose_full_size_df \
 --results_folder ${results_folder} \
 --figs_folder ${figs_folder} \

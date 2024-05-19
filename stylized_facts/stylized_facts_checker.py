@@ -180,6 +180,8 @@ class StylizedFactsChecker:
         df: DataFrame,
         transactions_file_name: str
     ) -> DataFrame:
+        assert self.transactions_folder_path is not None
+        assert transactions_file_name
         transactions_file_path: Path = self.transactions_folder_path / transactions_file_name
         cumsum_scaled_transactions_df: DataFrame = pd.read_csv(
             str(transactions_file_path), index_col=0
