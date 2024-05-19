@@ -824,7 +824,6 @@ class StylizedFactsChecker:
                 f"unknown session_name: {session_name}"
             )
         cumsum_scaled_transactions_arr = cumsum_scaled_transactions_arr.T
-        print(len(indexes), cumsum_scaled_transactions_arr.shape)
         cumsum_scaled_transactions_df: DataFrame = pd.DataFrame(
             data=cumsum_scaled_transactions_arr, index=indexes
         )
