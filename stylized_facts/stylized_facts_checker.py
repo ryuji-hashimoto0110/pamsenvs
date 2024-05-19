@@ -866,7 +866,6 @@ class StylizedFactsChecker:
     def scatter_cumulative_transactions(
         self,
         img_save_name: str,
-        transactions_save_folder_path: Optional[Path] = None,
         color: str = "black",
     ) -> None:
         fig: Figure = plt.figure(figsize=(10,6))
@@ -884,7 +883,6 @@ class StylizedFactsChecker:
                 color=color, s=1
             )
         if self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events"):
-            transactions_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions.csv"
             mean_cumsum_scaled_transactions_arr: ndarray = self.calc_mean_cumulative_transactions(
                 return_mean=True
             )
@@ -893,12 +891,8 @@ class StylizedFactsChecker:
             )
         else:
             warnings.warn(
-                "Could not stack dataframe. Maybe the lengths of dataframes differ."
+                "Could not plot mean cumulative transactions."
             )
-            if transactions_save_path is not None:
-                raise ValueError(
-                    "Could not create cumulative transactions dataframe."
-                )
         ax.set_xlabel("time")
         ax.set_ylabel("cumulative number of transactions")
         ax.set_title("cumulative number of intraday transactions (scaled to 1)")
