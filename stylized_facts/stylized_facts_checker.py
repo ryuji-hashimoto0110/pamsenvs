@@ -549,16 +549,16 @@ class StylizedFactsChecker:
             raise ValueError(
                 "sorted_return_arr must be ascendinglly sorted"
             )
-        sorted_return_arr: ndarray = sorted_return_arr[
+        cut_sorted_return_arr: ndarray = sorted_return_arr[
             :,int(np.floor(sorted_return_arr.shape[1] * (1-cut_off_th))):
         ]
-        if np.sum(sorted_return_arr <= 0) != 0:
+        if np.sum(cut_sorted_return_arr <= 0) != 0:
             raise ValueError(
                 "Non positive elements found in tail area of sorted_return_arr. Maybe you should reduce cut_off_th."
             )
-        k: int = sorted_return_arr.shape[1]
+        k: int = cut_sorted_return_arr.shape[1]
         tail_arr: ndarray = 1 / k * np.sum(
-            np.log(sorted_return_arr[:,1:] / sorted_return_arr[:,0][:,np.newaxis]),
+            np.log(cut_sorted_return_arr[:,1:] / cut_sorted_return_arr[:,k-1][:,np.newaxis]),
             axis=1
         )[:,np.newaxis]
         return tail_arr
