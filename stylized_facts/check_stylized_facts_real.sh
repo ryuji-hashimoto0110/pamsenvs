@@ -11,7 +11,7 @@ results_csv_name="9202.csv"
 python check_stylized_facts.py \
 --tick_folder_path ${tick_folder_path} \
 --new_ohlcv_folder_path ${new_ohlcv_folder_path} \
---resample_rule ${resample_rule}
+--resample_rule ${resample_rule} \
 --transactions_save_folder_path ${transactions_save_folder_path} \
 --specific_name ${specific_name} \
 --is_real \
