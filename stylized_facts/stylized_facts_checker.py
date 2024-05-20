@@ -13,6 +13,12 @@ from scipy.stats import kurtosis, kurtosistest
 from typing import Optional
 import warnings
 
+freq_ohlcv_size_dict: dict[str, int] = {
+    "min": 302,
+    "1min": 302,
+    "5min": 62
+}
+
 class StylizedFactsChecker:
     """StylizedFactsChecker class.
 
@@ -116,7 +122,7 @@ class StylizedFactsChecker:
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
                 df = self._resample(df)
-                if len(df) < 302 and choose_full_size_df:
+                if len(df) < freq_ohlcv_size_dict[self.resample_rule] and choose_full_size_df:
                     store_df = False
                 else:
                     store_df = True
