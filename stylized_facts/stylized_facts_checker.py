@@ -561,7 +561,7 @@ class StylizedFactsChecker:
             )
         k: int = cut_sorted_return_arr.shape[1]
         tail_arr: ndarray = 1 / k * np.sum(
-            np.log(cut_sorted_return_arr[:,1:] / cut_sorted_return_arr[:,k-1][:,np.newaxis]),
+            np.log(cut_sorted_return_arr / cut_sorted_return_arr[:,-1][:,np.newaxis]),
             axis=1
         )[:,np.newaxis]
         tail_arr: ndarray = - 1 / tail_arr
