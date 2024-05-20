@@ -561,10 +561,10 @@ class StylizedFactsChecker:
             )
         k: int = cut_sorted_return_arr.shape[1]
         tail_arr: ndarray = 1 / k * np.sum(
-            np.log(cut_sorted_return_arr / cut_sorted_return_arr[:,-1][:,np.newaxis]),
+            np.log(cut_sorted_return_arr / cut_sorted_return_arr[:,0][:,np.newaxis]),
             axis=1
         )[:,np.newaxis]
-        tail_arr: ndarray = - 1 / tail_arr
+        tail_arr: ndarray = 1 / tail_arr
         return tail_arr
 
     def _calc_both_sides_hill_indices(
