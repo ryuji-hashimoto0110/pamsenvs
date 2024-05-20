@@ -23,8 +23,8 @@ def get_config():
         "--transactions_folder_path", type=str, default=None,
         help="folder path that number of transaction data is stored. These are used to assign calender time to artificial data. Confirm that is_real=False."
     )
-    parser.add_argument("--transactions_save_folder_path", type=str, default=None)
     parser.add_argument(
+        "--transactions_save_folder_path", type=str, default=None,
         help="folder path that number of transaction data will be stored. This is used to save transactions of real data. Confirm that is_real=True."
     )
     parser.add_argument("--specific_name", type=str, default=None,
