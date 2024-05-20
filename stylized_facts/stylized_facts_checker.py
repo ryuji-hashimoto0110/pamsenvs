@@ -470,7 +470,7 @@ class StylizedFactsChecker:
 
     def check_hill_index(
         self,
-        cut_off_th: float = 0.05
+        cut_off_th: float = 0.1
     ) -> tuple[ndarray, ndarray]:
         """check Hill-tail index of given price time series.
 
@@ -552,6 +552,7 @@ class StylizedFactsChecker:
             raise ValueError(
                 "sorted_return_arr must be ascendinglly sorted"
             )
+        print(cut_off_th)
         cut_sorted_return_arr: ndarray = sorted_return_arr[
             :,int(np.floor(sorted_return_arr.shape[1] * (1-cut_off_th))):
         ]
@@ -570,7 +571,7 @@ class StylizedFactsChecker:
     def _calc_both_sides_hill_indices(
         self,
         return_arr: ndarray,
-        cut_off_th: float = 0.1
+        cut_off_th: float = 0.05
     ) -> tuple[ndarray, ndarray]:
         """_summary_
 
