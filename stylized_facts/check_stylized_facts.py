@@ -59,7 +59,7 @@ def main(args):
     choose_full_size_df: bool = all_args.choose_full_size_df
     figs_folder: Optional[str] = all_args.figs_folder_path
     figs_save_path: Optional[Path] = create_path(figs_folder)
-    transactions_folder: Optional[str] = all_args.transactions_folder
+    transactions_folder: Optional[str] = all_args.transactions_folder_path
     transactions_folder_path: Optional[Path] = create_path(transactions_folder)
     session1_end_time_str: Optional[str] = all_args.session1_end_time_str
     session2_start_time_str: Optional[str] = all_args.session2_start_time_str
