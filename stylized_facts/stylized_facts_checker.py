@@ -94,10 +94,10 @@ class StylizedFactsChecker:
             csv_name: str = self.ohlcv_csv_names[i]
             save_path: Path = ohlcv_dfs_save_path / csv_name
             df.to_csv(str(save_path))
-        self.return_arr: Optional[ndarray] = None
         if not figs_save_path.exists():
             figs_save_path.mkdir(parents=True)
         self.figs_save_path: Optional[Path] = figs_save_path
+        self.return_arr: Optional[ndarray] = None
 
     def _read_csvs(
         self,
@@ -358,7 +358,8 @@ class StylizedFactsChecker:
     def _calc_return_arr_from_dfs(
         self,
         ohlcv_dfs: list[DataFrame],
-        colname: str
+        colname: str,
+        is_abs: bool = False
     ) -> ndarray:
         """convert price time series to return time series from dataframes list.
         """
@@ -367,6 +368,8 @@ class StylizedFactsChecker:
         return_arr: ndarray = np.log(
             price_arr[:,1:] / price_arr[:,:-1] + 1e-10
         )
+        if is_abs:
+            return_arr: ndarray = np.abs(return_arr)
         return return_arr
 
     def _calc_cumsum_transactions_from_df(
@@ -501,7 +504,7 @@ class StylizedFactsChecker:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
                     self.ohlcv_dfs, "close"
                 )
-            left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indices(
+            left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_hill_indices(
                 self.return_arr, cut_off_th
             )
         else:
@@ -510,16 +513,19 @@ class StylizedFactsChecker:
             )
             left_tails: list[float] = []
             right_tails: list[float] = []
+            abs_tails: list[float] = []
             for ohlcv_df in self.ohlcv_dfs:
                 return_arr: ndarray = self._calc_return_arr_from_df(ohlcv_df, "close")
-                left_tail_arr, right_tail_arr = self._calc_both_sides_hill_indices(
+                left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_hill_indices(
                     return_arr, cut_off_th
                 )
                 left_tails.append(left_tail_arr.item())
                 right_tails.append(right_tail_arr.item())
+                abs_tails.append(abs_tail_arr.item())
             left_tail_arr: ndarray = np.array(left_tails)[np.newaxis,:]
             right_tail_arr: ndarray = np.array(right_tails)[np.newaxis,:]
-        return left_tail_arr, right_tail_arr
+            abs_tail_arr: ndarray = np.array(abs_tail_arr)[np.newaxis,:]
+        return left_tail_arr, right_tail_arr, abs_tail_arr
 
     def _calc_hill_indices(
         self,
@@ -581,7 +587,13 @@ class StylizedFactsChecker:
         left_tail_arr: ndarray = self._calc_hill_indices(
             sorted_minus_return_arr, cut_off_th
         )
-        return left_tail_arr, right_tail_arr
+        sorted_abs_return_arr: ndarray = np.sort(
+            np.abs(return_arr), axis=1
+        )
+        abs_tail_arr: ndarray = self._calc_hill_indices(
+            sorted_abs_return_arr, cut_off_th
+        )
+        return left_tail_arr, right_tail_arr, abs_tail_arr
 
     def check_autocorrelation(self, lags: list[int]) -> dict[int, ndarray]:
         """_summary_
@@ -710,7 +722,7 @@ class StylizedFactsChecker:
     ) -> None:
         if 0 < len(self.ohlcv_dfs):
             kurtosis_arr, p_values = self.check_kurtosis()
-            left_tail_arr, right_tail_arr = self.check_hill_index()
+            left_tail_arr, right_tail_arr, abs_tail_arr = self.check_hill_index()
             volume_volatility_correlation = self.check_volume_volatility_correlation()
             acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
                 [lag for lag in range(1,31)]
@@ -720,6 +732,7 @@ class StylizedFactsChecker:
                 "kurtosis_p": p_values.flatten(),
                 "tail (left)": left_tail_arr.flatten(),
                 "tail (right)": right_tail_arr.flatten(),
+                "tail (abs)": abs_tail_arr.flatten(),
                 "vv_corr": volume_volatility_correlation.flatten()
             }
             for lag, acorr in acorr_dic.items():
