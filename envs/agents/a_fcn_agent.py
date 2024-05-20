@@ -1,23 +1,12 @@
 from .cara_fcn_agent import CARAFCNAgent
 import math
-import numpy as np
-from numpy import ndarray
-from pams.agents import Agent
 from pams.logs import Logger
 from pams.market import Market
-from pams.order import Cancel
-from pams.order import LIMIT_ORDER
-from pams.order import MARKET_ORDER
-from pams.order import Cancel
-from pams.order import Order
-from pams.order import OrderKind
 from pams.simulator import Simulator
 from pams.utils import JsonRandom
-from scipy import optimize
 from typing import Any, Optional
 from typing import TypeVar
 import random
-import warnings
 
 AgentID = TypeVar("AgentID")
 MarketID = TypeVar("MarketID")
