@@ -1,6 +1,6 @@
 tick_folder_path="../datas/real_datas/flex_csv"
-new_ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv_1min"
-transactions_save_folder_path="../datas/real_datas/intraday/flex_transactions/9202_1min"
+new_ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv/1min/9202"
+transactions_save_folder_path="../datas/real_datas/intraday/flex_transactions/1min/9202"
 resample_rule="1min"
 specific_name="9202"
 figs_folder="../imgs/9202"
