@@ -570,7 +570,7 @@ class StylizedFactsChecker:
     def _calc_both_sides_hill_indices(
         self,
         return_arr: ndarray,
-        cut_off_th: float = 0.05
+        cut_off_th: float = 0.1
     ) -> tuple[ndarray, ndarray]:
         """_summary_
 
