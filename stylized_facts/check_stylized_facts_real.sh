@@ -5,7 +5,7 @@ resample_rule="5min"
 specific_name="9202"
 figs_folder="../imgs/5min/9202"
 session1_end_time_str="11:30:00.000000"
-session2_start_time_str="12:30:00.00000"
+session2_start_time_str="12:30:00.000000"
 results_folder="./results"
 results_csv_name="5min_9202.csv"
 python check_stylized_facts.py \
