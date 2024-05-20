@@ -9,6 +9,8 @@ from pandas import DataFrame
 from pandas import Timestamp
 from pathlib import Path
 import random
+from rich.console import Console
+from rich.table import Table
 from scipy.stats import kurtosis, kurtosistest
 from typing import Optional
 import warnings
@@ -740,7 +742,26 @@ class StylizedFactsChecker:
             for lag, acorr in acorr_dic.items():
                 data_dic[f"acorr lag{lag}"] = acorr.flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
+            self.print_results(stylized_facts_df)
             stylized_facts_df.to_csv(str(save_path))
+
+    def print_results(
+        self,
+        stylized_facts_df: DataFrame
+    ) -> None:
+        table: Table = Table(title="results of stylized facts")
+        table.add_column("Indicator", justify="right", style="cyan")
+        table.add_column("Mean", justify="left", style="magenta")
+        table.add_column("Std", justify="left", style="green")
+        described_df: DataFrame = stylized_facts_df.describe()
+        for column_name in stylized_facts_df.columns:
+            table.add_row(
+                column_name,
+                str(described_df.loc["mean"][column_name]),
+                str(described_df.loc["std"][column_name])
+            )
+        console = Console()
+        console.print(table)
 
     def plot_ccdf(
         self,
