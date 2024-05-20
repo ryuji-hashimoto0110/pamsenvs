@@ -561,6 +561,7 @@ class StylizedFactsChecker:
             np.log(cut_sorted_return_arr[:,1:] / cut_sorted_return_arr[:,k-1][:,np.newaxis]),
             axis=1
         )[:,np.newaxis]
+        tail_arr: ndarray = 1 / tail_arr
         return tail_arr
 
     def _calc_both_sides_hill_indices(
