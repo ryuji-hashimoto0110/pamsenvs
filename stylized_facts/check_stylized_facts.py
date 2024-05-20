@@ -15,6 +15,7 @@ def get_config():
                         help="folder path that target OHLCV datas are stored.")
     parser.add_argument("--tick_folder_path", type=str, default=None,
                         help="folder path that target tick datas are stored.")
+    parser.add_argument("--resample_rule", type=str, default="min")
     parser.add_argument("--is_real", action="store_true")
     parser.add_argument("--new_ohlcv_folder_path", type=str, default=None,
                         help="folder path that target csv datas are stored.")
@@ -46,6 +47,7 @@ def main(args):
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
     seed: int = all_args.seed
+    resample_rule: str = all_args.resample_rule
     ohlcv_folder: Optional[str] = all_args.ohlcv_folder_path
     ohlcv_dfs_path: Optional[Path] = create_path(ohlcv_folder)
     tick_folder: Optional[str] = all_args.tick_folder_path
@@ -65,6 +67,7 @@ def main(args):
         seed=seed,
         ohlcv_dfs_path=ohlcv_dfs_path,
         tick_dfs_path=tick_dfs_path,
+        resample_rule=resample_rule,
         is_real=is_real,
         ohlcv_dfs_save_path=ohlcv_dfs_save_path,
         choose_full_size_df=choose_full_size_df,

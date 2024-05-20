@@ -1,6 +1,7 @@
 tick_folder_path="../datas/real_datas/flex_csv"
-new_ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv"
-transactions_save_folder_path="../datas/real_datas/intraday/flex_transactions/9202"
+new_ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv_1min"
+transactions_save_folder_path="../datas/real_datas/intraday/flex_transactions/9202_1min"
+resample_rule="1min"
 specific_name="9202"
 figs_folder="../imgs/9202"
 session1_end_time_str="11:30:00.000000"
@@ -10,6 +11,7 @@ results_csv_name="9202.csv"
 python check_stylized_facts.py \
 --tick_folder_path ${tick_folder_path} \
 --new_ohlcv_folder_path ${new_ohlcv_folder_path} \
+--resample_rule ${resample_rule}
 --transactions_save_folder_path ${transactions_save_folder_path} \
 --specific_name ${specific_name} \
 --is_real \

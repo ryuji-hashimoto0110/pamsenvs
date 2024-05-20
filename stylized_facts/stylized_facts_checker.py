@@ -25,7 +25,7 @@ class StylizedFactsChecker:
         seed: int = 42,
         ohlcv_dfs_path: Optional[Path] = None,
         tick_dfs_path: Optional[Path] = None,
-        resample_rule: str = "min",
+        resample_rule: str = "1min",
         is_real: bool = True,
         ohlcv_dfs_save_path: Optional[Path] = None,
         choose_full_size_df: bool = True,
