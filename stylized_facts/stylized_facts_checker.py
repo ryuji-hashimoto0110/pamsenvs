@@ -718,7 +718,8 @@ class StylizedFactsChecker:
 
     def check_stylized_facts(
         self,
-        save_path: Path
+        save_path: Path,
+        print_results: bool = True
     ) -> None:
         if 0 < len(self.ohlcv_dfs):
             kurtosis_arr, p_values = self.check_kurtosis()
@@ -741,7 +742,8 @@ class StylizedFactsChecker:
             for lag, acorr in acorr_dic.items():
                 data_dic[f"acorr lag{lag}"] = acorr.flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
-            self.print_results(stylized_facts_df)
+            if print_results:
+                self.print_results(stylized_facts_df)
             stylized_facts_df.to_csv(str(save_path))
 
     def print_results(
