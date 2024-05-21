@@ -12,6 +12,7 @@ import random
 from rich.console import Console
 from rich.table import Table
 from scipy.stats import kurtosis, kurtosistest
+from tqdm import tqdm
 from typing import Optional
 import warnings
 
@@ -116,7 +117,7 @@ class StylizedFactsChecker:
         """
         dfs: list[DataFrame] = []
         csv_names: list[str] = []
-        for csv_path in sorted(csvs_path.rglob("*.csv")):
+        for csv_path in tqdm(sorted(csvs_path.rglob("*.csv"))):
             store_df: bool = True
             csv_name: str = csv_path.name
             if self.specific_name is not None:

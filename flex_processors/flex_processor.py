@@ -7,6 +7,7 @@ from pandas import Timestamp
 import pathlib
 from pathlib import Path
 import subprocess
+from tqdm import tqdm
 from typing import Optional
 import warnings
 
@@ -149,7 +150,7 @@ class FlexProcessor:
         return column_names
 
     def convert_all_txt2csv(self, is_display_path: bool = True) -> None:
-        for txt_path in self.txt_datas_path.rglob("*.txt"):
+        for txt_path in tqdm(self.txt_datas_path.rglob("*.txt")):
             csv_path: Path = \
                 self.csv_datas_path / txt_path.relative_to(
                     self.txt_datas_path
