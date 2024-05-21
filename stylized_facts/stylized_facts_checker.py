@@ -507,9 +507,7 @@ class StylizedFactsChecker:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
                     self.ohlcv_dfs, "close"
                 )
-            print(f"self.return_arr.shape={self.return_arr.shape}")
             return_arr_flatten: ndarray = self.return_arr.flatten()[np.newaxis,:]
-            print(f"return_arr_flatten.shape={return_arr_flatten.shape}")
             left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_hill_indices(
                 return_arr_flatten, cut_off_th
             )
@@ -725,10 +723,7 @@ class StylizedFactsChecker:
         if 0 < len(self.ohlcv_dfs):
             kurtosis_arr, p_values = self.check_kurtosis()
             left_tail_arr, right_tail_arr, abs_tail_arr = self.check_hill_index()
-            print(f"left_tail_arr.shape={left_tail_arr.shape}")
-            print(f"kurtosis_arr.shape={kurtosis_arr.shape}")
             left_tail_arr = np.repeat(left_tail_arr, repeats=kurtosis_arr.shape[0])
-            print(f"left_tail_arr.shape={left_tail_arr.shape}")
             right_tail_arr = np.repeat(right_tail_arr, repeats=kurtosis_arr.shape[0])
             abs_tail_arr = np.repeat(abs_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
