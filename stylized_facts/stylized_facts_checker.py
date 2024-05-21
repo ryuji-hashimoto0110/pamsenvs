@@ -470,7 +470,7 @@ class StylizedFactsChecker:
 
     def check_hill_index(
         self,
-        cut_off_th: float = 0.1
+        cut_off_th: float = 0.05
     ) -> tuple[ndarray, ndarray, ndarray]:
         """check Hill-tail index of given price time series.
 
@@ -727,9 +727,10 @@ class StylizedFactsChecker:
             left_tail_arr, right_tail_arr, abs_tail_arr = self.check_hill_index()
             print(f"left_tail_arr.shape={left_tail_arr.shape}")
             print(f"kurtosis_arr.shape={kurtosis_arr.shape}")
-            left_tail_arr = np.repeat(left_tail_arr, repeats=kurtosis_arr.shape)
-            right_tail_arr = np.repeat(right_tail_arr, repeats=kurtosis_arr.shape)
-            abs_tail_arr = np.repeat(abs_tail_arr, repeats=kurtosis_arr.shape)
+            left_tail_arr = np.repeat(left_tail_arr, repeats=kurtosis_arr.shape[0])
+            print(f"left_tail_arr.shape={left_tail_arr.shape}")
+            right_tail_arr = np.repeat(right_tail_arr, repeats=kurtosis_arr.shape[0])
+            abs_tail_arr = np.repeat(abs_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
             acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
                 [lag for lag in range(1,31)]
