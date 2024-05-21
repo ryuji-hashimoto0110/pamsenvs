@@ -3,14 +3,16 @@ from pams.logs import ExecutionLog
 from pams.logs import ExpirationLog
 from pams.logs import Logger
 from pams.logs import OrderLog
-from pams.logs.base import SimulationBeginLog
+from pams.logs.base import SimulationBeginLog, SimulationEndLog
 from pams.market import Market
 from pams.order_book import OrderBook
 from pams.simulator import Simulator
+from pathlib import Path
 from typing import Optional
 from typing import TypeVar
 
 MarketID = TypeVar("MarketID")
+MarketName = TypeVar("MarketName")
 
 # TODO: add message of orders. (only execution messages now.)
 
@@ -74,7 +76,9 @@ class FlexSaver(Logger):
         significant_figures: int = 1,
         is_execution_only: bool = True,
         session1_end_time: Optional[int] = None,
-        session2_start_time: Optional[int] = None
+        session2_start_time: Optional[int] = None,
+        txt_save_folder_path: Optional[Path] = None,
+        txt_file_name_dic: Optional[dict[MarketName, str]] = None
     ) -> None:
         """initialization
 
@@ -89,6 +93,7 @@ class FlexSaver(Logger):
         super().__init__()
         self.logs_dic: dict[MarketID, list[str]] = {}
         self.market_dic: dict[MarketID, Market] = {}
+        self.market_id2name_dic: dict[MarketID, MarketName] = {}
         self.buy_order_book_dic: dict[MarketID, OrderBook] = {}
         self.sell_order_book_dic: dict[MarketID, OrderBook] = {}
         self.significant_figures: int = significant_figures
@@ -103,6 +108,17 @@ class FlexSaver(Logger):
             ):
                 raise ValueError(
                     "specify both session1_end_time and session2_start_time."
+                )
+        self.txt_save_folder_path: Optional[Path] = txt_save_folder_path
+        self.txt_file_name_dic: Optional[dict[MarketName, str]] = txt_file_name_dic
+        if (
+            self.txt_save_folder_path is not None or self.txt_file_name_dic is not None
+        ):
+            if (
+                self.txt_save_folder_path is None or self.txt_file_name_dic is None
+            ):
+                raise ValueError(
+                    "specify both txt_save_folder_path and txt_file_names."
                 )
 
     def process_simulation_begin_log(self, log: SimulationBeginLog) -> None:
@@ -120,6 +136,17 @@ class FlexSaver(Logger):
             self.market_dic[market_id] = market
             self.buy_order_book_dic[market_id] = market.buy_order_book
             self.sell_order_book_dic[market_id] = market.sell_order_book
+            self.market_id2name_dic = self._add_market_id2name_dic(market)
+            if self.txt_file_name_dic is not None:
+                if market.name not in self.txt_file_name_dic.keys():
+                    raise ValueError(
+                        f"market:{market.name} is not in txt_file_name_dic"
+                    )
+            
+    def _add_market_id2name_dic(self, market: Market) -> dict[MarketID, MarketName]:
+        market_id: MarketID = market.market_id
+        market_name: MarketName = market.name
+        self.market_id2name_dic[market_id] = market_name
 
     def _prepare_log_dic(
         self,
@@ -230,7 +257,7 @@ class FlexSaver(Logger):
             elif self.session2_start_time <= log_time:
                 empty_log_dic["Data"]["session_id"] = "2"
             else:
-                raise ValueError("cannot identify session.")
+                raise ValueError(f"cannot identify session. time={log_time}")
         return empty_log_dic
 
     def _convert_dic2str(
@@ -299,3 +326,18 @@ class FlexSaver(Logger):
         self._write_order_book(
             log_dic, sell_volume_price_dic, is_buy=False
         )
+
+    def process_simulation_end_log(self, log: SimulationEndLog) -> None:
+        if self.txt_save_folder_path is None:
+            return None
+        else:
+            if not self.txt_save_folder_path.exists():
+                self.txt_save_folder_path.mkdir(parents=True)
+        for market_id in self.logs_dic.keys():
+            logs: list[str] = self.logs_dic[market_id]
+            logs_str: str = "\n".join(logs)
+            market_name: MarketName = self.market_id2name_dic[market_id]
+            txt_file_name: str = self.txt_file_name_dic[market_name]
+            txt_save_path: Path = self.txt_save_folder_path / txt_file_name
+            with open(txt_save_path, mode="w") as f:
+                f.write(logs_str)
