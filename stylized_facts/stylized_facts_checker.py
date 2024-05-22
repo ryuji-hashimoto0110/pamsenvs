@@ -173,10 +173,18 @@ class StylizedFactsChecker:
         session1_resampled_df: DataFrame = self._resample_art_per_session(
             session1_df, self.session1_transactions_file_name
         )
+        if self.session1_end_time is None:
+            self.session1_end_time = pd.to_datetime(
+                session1_resampled_df.index[-1]
+            ).time()
         session2_df: DataFrame = df[df["session_id"] == 2]
         session2_resampled_df: DataFrame = self._resample_art_per_session(
             session2_df, self.session2_transactions_file_name
         )
+        if self.session2_start_time is None:
+            self.session1_start_time = pd.to_datetime(
+                session1_resampled_df.index[0]
+            ).time()
         resampled_df: DataFrame = pd.concat(
             [session1_resampled_df, session2_resampled_df], axis=0
         )
@@ -895,11 +903,11 @@ class StylizedFactsChecker:
             self.calc_mean_cumulative_transactions(
                 transactions_save_path, return_mean=False
             )
-            transactions_session1_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions_session1.csv"
+            transactions_session1_save_path: Path = transactions_save_folder_path / self.session1_transactions_file_name
             self.calc_mean_cumulative_transactions(
                 transactions_session1_save_path, return_mean=False, session_name="session1"
             )
-            transactions_session2_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions_session2.csv"
+            transactions_session2_save_path: Path = transactions_save_folder_path / self.session2_transactions_file_name
             self.calc_mean_cumulative_transactions(
                 transactions_session2_save_path, return_mean=False, session_name="session2"
             )
