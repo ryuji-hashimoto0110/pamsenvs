@@ -209,7 +209,7 @@ class CARAFCNAgent(Agent):
         assert 0 <= time_window_size
         assert 0 < risk_aversion_term
         expected_future_price: float = self._calc_expected_future_price(
-            market, fundamental_weight, weights
+            market, weights, time_window_size
         )
         assert self.is_finite(expected_future_price)
         expected_volatility: float = self._calc_expected_volatility(
