@@ -209,7 +209,7 @@ class CARAFCNAgent(Agent):
         assert 0 <= time_window_size
         assert 0 < risk_aversion_term
         expected_future_price: float = self._calc_expected_future_price(
-            market, fundamental_weight, chart_weight, noise_weight, time_window_size
+            market, fundamental_weight, weights
         )
         assert self.is_finite(expected_future_price)
         expected_volatility: float = self._calc_expected_volatility(
@@ -296,9 +296,7 @@ class CARAFCNAgent(Agent):
     def _calc_expected_future_price(
         self,
         market: Market,
-        fundamental_weight: float,
-        chart_weight: float,
-        noise_weight: float,
+        weights: list[float],
         time_window_size: int
     ) -> float:
         """calculate expected future price by FCN rule.
@@ -306,6 +304,9 @@ class CARAFCNAgent(Agent):
         ..seealso:
             - :func: `pams.agents.FCNAgent.submit_orders_by_market'
         """
+        fundamental_weight: float = weights[0]
+        chart_weight: float = weights[1]
+        noise_weight: float = weights[2]
         time: int = market.get_time()
         market_price: float = market.get_market_price()
         fundamental_price: float = market.get_fundamental_price()
