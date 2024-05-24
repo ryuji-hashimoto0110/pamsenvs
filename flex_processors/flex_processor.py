@@ -9,7 +9,6 @@ from pathlib import Path
 import subprocess
 from tqdm import tqdm
 from typing import Optional
-import warnings
 
 class FlexProcessor:
     """FlexProcessor class.
@@ -171,11 +170,6 @@ class FlexProcessor:
     ) -> None:
         assert txt_path.suffix == ".txt"
         assert csv_path.suffix == ".csv"
-        if csv_path.exists():
-            warnings.warn(
-                f"file: {str(csv_path)} already exists. " +
-                "the content of the file will be overwritten."
-            )
         with open(txt_path, mode="r") as f:
             with open(csv_path, mode="w") as g:
                 writer = csv.writer(g)
