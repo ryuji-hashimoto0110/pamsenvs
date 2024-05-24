@@ -17,6 +17,8 @@ from typing import Optional
 import warnings
 
 freq_ohlcv_size_dict: dict[str, int] = {
+    "1s": 18002,
+    "30s": 602,
     "min": 302,
     "1min": 302,
     "5min": 62
