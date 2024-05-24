@@ -136,14 +136,14 @@ class FlexSaver(Logger):
             self.market_dic[market_id] = market
             self.buy_order_book_dic[market_id] = market.buy_order_book
             self.sell_order_book_dic[market_id] = market.sell_order_book
-            self.market_id2name_dic = self._add_market_id2name_dic(market)
+            self._add_market_id2name_dic(market)
             if self.txt_file_name_dic is not None:
                 if market.name not in self.txt_file_name_dic.keys():
                     raise ValueError(
                         f"market:{market.name} is not in txt_file_name_dic"
                     )
             
-    def _add_market_id2name_dic(self, market: Market) -> dict[MarketID, MarketName]:
+    def _add_market_id2name_dic(self, market: Market) -> None:
         market_id: MarketID = market.market_id
         market_name: MarketName = market.name
         self.market_id2name_dic[market_id] = market_name
