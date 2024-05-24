@@ -50,8 +50,8 @@
 		"class": "CARAFCNAgent",
 		"numAgents": 200,
 		"markets": ["Market"],
-        "assetVolume": {"expon": [100]},
-		"cashAmount": {"expon": [30000]},
+        "assetVolume": {"expon": [1]},
+		"cashAmount": {"expon": [1]},
         "paretoVariables": {
             "assetVolume": {"alpha": 16.67, "beta": 1.5},
             "cashAmount": {"alpha": 5000, "beta": 1.5}
