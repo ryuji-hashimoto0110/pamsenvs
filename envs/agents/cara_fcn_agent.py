@@ -395,12 +395,15 @@ class CARAFCNAgent(Agent):
                 expected_volatility, asset_volume)
         )
         max_sell_price: float = expected_future_price
-        min_buy_price: float = optimize.brentq(
-            self._calc_remaining_cash,
-            a=lower_bound, b=satisfaction_price,
-            args=(expected_future_price, risk_aversion_term,
-                expected_volatility, asset_volume, cash_amount)
-        )
+        try:
+            min_buy_price: float = optimize.brentq(
+                self._calc_remaining_cash,
+                a=lower_bound, b=satisfaction_price,
+                args=(expected_future_price, risk_aversion_term,
+                    expected_volatility, asset_volume, max(0, cash_amount))
+            )
+        except Exception as _:
+            min_buy_price: float = satisfaction_price
         assert min_buy_price <= satisfaction_price
         assert satisfaction_price <= max_sell_price
         price: Optional[float] = self.prng.uniform(min_buy_price, max_sell_price)
