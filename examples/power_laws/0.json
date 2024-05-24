@@ -14,7 +14,7 @@
 			},
 			{	
 				"sessionName": "1",
-				"iterationSteps": 1500,
+				"iterationSteps": 3000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -31,7 +31,7 @@
 			},
             {	
 				"sessionName": "2",
-				"iterationSteps": 1500,
+				"iterationSteps": 3000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -42,7 +42,9 @@
 	"Market": {
 		"class": "Market",
 		"tickSize": 0.1,
-		"marketPrice": 300.0
+		"marketPrice": 300.0,
+		"fundamentalDrift": 0.0,
+		"fundamentalVolatility": 0.0001
 	},
 	"CARAFCNAgent": {
 		"class": "CARAFCNAgent",
@@ -51,7 +53,7 @@
 		"assetVolume": {"uniform": [0, 50]},
 		"cashAmount": {"uniform": [0, 15000]},
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.2]},
+		"chartWeight": {"expon": [0.0]},
 		"noiseWeight": {"expon": [1.0]},
 		"noiseScale": 0.0001,
 		"timeWindowSize": 200,
