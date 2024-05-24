@@ -1,3 +1,9 @@
+import pathlib
+from pathlib import Path
+curr_path: Path = pathlib.Path(__file__).resolve()
+root_path: Path = curr_path.parents[1]
+print(root_path)
+from envs.markets import MoodAwareMarket
 from pams.logs import CancelLog
 from pams.logs import ExecutionLog
 from pams.logs import ExpirationLog
@@ -7,7 +13,6 @@ from pams.logs.base import SimulationBeginLog, SimulationEndLog
 from pams.market import Market
 from pams.order_book import OrderBook
 from pams.simulator import Simulator
-from pathlib import Path
 from typing import Optional
 from typing import TypeVar
 
@@ -280,18 +285,18 @@ class FlexSaver(Logger):
         log_dic: dict[str, dict[str, list | dict, str]],
         market: Market
     ) -> None:
+        if isinstance(market, MoodAwareMarket):
+            mood: float = market.get_market_mood()
+            mood_str: str = f"{mood:.{self.significant_figures}f}"
+            log_dic["Data"]["mood"] = mood_str
         market_price: Optional[float | str] = market.get_last_executed_price()
-        log_dic["Data"]["market_price"] = \
-            f"{self._convert_price2str(market_price)}"
+        log_dic["Data"]["market_price"] = self._convert_price2str(market_price)
         best_buy_price: Optional[float | str] = market.get_best_buy_price()
-        log_dic["Data"]["best_bid"] = \
-            f"{self._convert_price2str(best_buy_price)}"
+        log_dic["Data"]["best_bid"] = self._convert_price2str(best_buy_price)
         best_sell_price: Optional[float | str] = market.get_best_sell_price()
-        log_dic["Data"]["best_ask"] = \
-            f"{self._convert_price2str(best_sell_price)}"
+        log_dic["Data"]["best_ask"] = self._convert_price2str(best_sell_price)
         mid_price: Optional[float | str] = market.get_mid_price()
-        log_dic["Data"]["mid_price"] = \
-            f"{self._convert_price2str(mid_price)}"
+        log_dic["Data"]["mid_price"] = self._convert_price2str(mid_price)
         return mid_price
 
     def _write_order_book(
