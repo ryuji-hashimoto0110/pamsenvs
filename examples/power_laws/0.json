@@ -40,7 +40,7 @@
 		]
 	},
 	"Market": {
-		"class": "Market",
+		"class": "TotalTimeAwareMarket",
 		"tickSize": 0.1,
 		"marketPrice": 300.0,
 		"fundamentalDrift": 0.0,
