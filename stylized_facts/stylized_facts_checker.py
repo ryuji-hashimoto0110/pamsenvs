@@ -220,10 +220,10 @@ class StylizedFactsChecker:
         for num_cur_transactions in cumsum_transactions:
             cur_df: DataFrame = df.iloc[num_pre_transactions:num_cur_transactions,:]
             if 0 < len(cur_df):
-                opens.append(cur_df["market_price"][0])
-                highes.append(cur_df["market_price"].max())
-                lowes.append(cur_df["market_price"].min())
-                closes.append(cur_df["market_price"][-1])
+                opens.append(cur_df["event_price (avg)"].iloc[0])
+                highes.append(cur_df["event_price (avg)"].max())
+                lowes.append(cur_df["event_price (avg)"].min())
+                closes.append(cur_df["event_price (avg)"].iloc[-1])
                 volumes.append(cur_df["event_volume"].sum())
                 num_events.append(len(cur_df))
             else:
