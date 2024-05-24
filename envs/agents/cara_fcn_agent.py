@@ -1,3 +1,4 @@
+from ..markets import TotalTimeAwareMarket
 import math
 import numpy as np
 from numpy import ndarray
@@ -200,7 +201,7 @@ class CARAFCNAgent(Agent):
         assert 0 <= chart_weight
         assert 0 <= noise_weight
         time_window_size: int = self._calc_temporal_time_window_size(
-            time, fundamental_weight, chart_weight
+            time, fundamental_weight, chart_weight, market
         )
         risk_aversion_term: float = self._calc_temporal_risk_aversion_term(
             fundamental_weight, chart_weight
@@ -244,6 +245,7 @@ class CARAFCNAgent(Agent):
         time: int,
         fundamental_weight: float,
         chart_weight: float,
+        market: Market,
         **kwargs
     ) -> int:
         """calculate temporal time window size.
@@ -265,6 +267,11 @@ class CARAFCNAgent(Agent):
             time,
             int(self.time_window_size * (1 + fundamental_weight) / (1 + chart_weight))
         )
+        if isinstance(market, TotalTimeAwareMarket):
+            time_window_size = min(
+                market.get_remaining_time(),
+                time_window_size
+            )
         return time_window_size
 
     def _calc_temporal_risk_aversion_term(
@@ -402,7 +409,7 @@ class CARAFCNAgent(Agent):
                 args=(expected_future_price, risk_aversion_term,
                     expected_volatility, asset_volume, max(0, cash_amount))
             )
-        except Exception as _:
+        except Exception as e:
             min_buy_price: float = satisfaction_price
         assert min_buy_price <= satisfaction_price
         assert satisfaction_price <= max_sell_price
