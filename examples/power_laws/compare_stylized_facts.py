@@ -172,9 +172,13 @@ def main(args):
             )
             runner.class_register(CARAFCNAgent)
             runner._setup()
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                runner._run()
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    runner._run()
+            except Exception as e:
+                print(e)
+                pass
         print()
         print("[green]==start processing==[green]")
         tick_dfs_folder_path: Path = tick_dfs_folder_paths[i]
