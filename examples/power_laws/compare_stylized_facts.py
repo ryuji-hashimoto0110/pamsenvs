@@ -6,6 +6,8 @@ root_path: Path = curr_path.parents[1]
 import sys
 sys.path.append(str(root_path))
 from envs.agents import CARAFCNAgent
+from envs.agents import MoodAwareCARAFCNAgent
+from envs.markets import MoodAwareMarket
 from envs.markets import TotalTimeAwareMarket
 from flex_processors import FlexProcessor
 import json
@@ -173,6 +175,8 @@ def main(args):
                 logger=saver
             )
             runner.class_register(CARAFCNAgent)
+            runner.class_register(MoodAwareCARAFCNAgent)
+            runner.class_register(MoodAwareMarket)
             runner.class_register(TotalTimeAwareMarket)
             runner._setup()
             try:
