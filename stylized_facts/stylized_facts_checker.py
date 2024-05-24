@@ -85,16 +85,20 @@ class StylizedFactsChecker:
         self.session1_transactions_file_name: Optional[str] = session1_transactions_file_name
         self.session2_transactions_file_name: Optional[str] = session2_transactions_file_name
         if tick_dfs_path is not None:
+            print("read tick dfs")
             self._read_tick_dfs(tick_dfs_path)
             if ohlcv_dfs_path is None:
+                print("read tick dfs, resampling")
                 self.ohlcv_dfs, self.ohlcv_csv_names = self._read_csvs(
                     tick_dfs_path,
                     need_resample=True,
                     choose_full_size_df=choose_full_size_df
                 )
         if ohlcv_dfs_path is not None:
+            print("read OHLCV dfs")
             self._read_ohlcv_dfs(ohlcv_dfs_path, choose_full_size_df)
-        for i, df in enumerate(self.ohlcv_dfs):
+        print("preprocess dfs")
+        for i, df in tqdm(enumerate(self.ohlcv_dfs)):
             self.preprocess_ohlcv_df(df)
             csv_name: str = self.ohlcv_csv_names[i]
             save_path: Path = ohlcv_dfs_save_path / csv_name
