@@ -28,6 +28,8 @@ def get_config():
         "--transactions_save_folder_path", type=str, default=None,
         help="folder path that number of transaction data will be stored. This is used to save transactions of real data. Confirm that is_real=True."
     )
+    parser.add_argument("--session1_transactions_file_name", type=str)
+    parser.add_argument("--session2_transactions_file_name", type=str)
     parser.add_argument("--specific_name", type=str, default=None,
                         help="the specific name contained in target csv file name in common.")
     parser.add_argument("--choose_full_size_df", action="store_true")
@@ -66,6 +68,8 @@ def main(args):
     figs_save_path: Optional[Path] = create_path(figs_folder)
     transactions_folder: Optional[str] = all_args.transactions_folder_path
     transactions_folder_path: Optional[Path] = create_path(transactions_folder)
+    session1_transactions_file_name: str = all_args.session1_transactions_file_name
+    session2_transactions_file_name: str = all_args.session2_transactions_file_name
     print(f"figs_save_path: {figs_save_path} transactions_folder_path: {transactions_folder_path}")
     session1_end_time_str: Optional[str] = all_args.session1_end_time_str
     session2_start_time_str: Optional[str] = all_args.session2_start_time_str
@@ -83,7 +87,9 @@ def main(args):
         figs_save_path=figs_save_path,
         transactions_folder_path=transactions_folder_path,
         session1_end_time_str=session1_end_time_str,
-        session2_start_time_str=session2_start_time_str
+        session2_start_time_str=session2_start_time_str,
+        session1_transactions_file_name=session1_transactions_file_name,
+        session2_transactions_file_name=session2_transactions_file_name,
     )
     print(f"done! number of ohlcv dfs: {len(checker.ohlcv_dfs)} number of tick dfs: {len(checker.tick_dfs)}")
     print()
