@@ -1,16 +1,21 @@
 initial_seed=42
 configs_folder_path="."
-config_names="0.json"
-txt_save_folder_paths="../../datas/artificial_datas/flex_txt/0"
+config_names="0.json 1.json"
+txt_save_folder_paths="../../datas/artificial_datas/flex_txt/0 "\
+"../../datas/artificial_datas/flex_txt/1"
 num_simulations=1000
 resample_rule="1min"
-tick_dfs_folder_paths="../../datas/artificial_datas/flex_csv/0"
-ohlcv_dfs_folder_paths="../../datas/artificial_datas/intraday/flex_ohlcv/1min/0"
+tick_dfs_folder_paths="../../datas/artificial_datas/flex_csv/0 "\
+"../../datas/artificial_datas/flex_csv/1"
+ohlcv_dfs_folder_paths="../../datas/artificial_datas/intraday/flex_ohlcv/1min/0 "\
+"../../datas/artificial_datas/intraday/flex_ohlcv/1min/1"
 transactions_folder_path="../../datas/real_datas/intraday/flex_transactions/1min/9202"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
-figs_save_paths="../../imgs/compare_stylized_facts/0"
-results_save_paths="../../stylized_facts/results/0.csv"
+figs_save_paths="../../imgs/compare_stylized_facts/0 "\
+"../../imgs/compare_stylized_facts/1"
+results_save_paths="../../stylized_facts/results/0.csv "\
+"../../stylized_facts/results/1.csv"
 python compare_stylized_facts.py \
 --initial_seed ${initial_seed} \
 --configs_folder_path ${configs_folder_path} \
