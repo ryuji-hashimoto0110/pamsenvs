@@ -566,8 +566,8 @@ class StylizedFactsChecker:
         cut_sorted_return_arr: ndarray = sorted_return_arr[
             :,int(np.floor(sorted_return_arr.shape[1] * (1-cut_off_th))):
         ]
-        print(cut_sorted_return_arr)
-        print(cut_sorted_return_arr.shape)
+        if 1000 < cut_sorted_return_arr.shape[1]:
+            cut_sorted_return_arr[-1000:]
         if np.sum(cut_sorted_return_arr <= 0) != 0:
             raise ValueError(
                 "Non positive elements found in tail area of sorted_return_arr. Maybe you should reduce cut_off_th."
