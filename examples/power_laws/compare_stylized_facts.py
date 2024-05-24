@@ -6,6 +6,7 @@ root_path: Path = curr_path.parents[1]
 import sys
 sys.path.append(str(root_path))
 from envs.agents import CARAFCNAgent
+from envs.markets import TotalTimeAwareMarket
 from flex_processors import FlexProcessor
 import json
 from logs import FlexSaver
@@ -171,6 +172,7 @@ def main(args):
                 logger=saver
             )
             runner.class_register(CARAFCNAgent)
+            runner.class_register(TotalTimeAwareMarket)
             runner._setup()
             try:
                 with warnings.catch_warnings():
