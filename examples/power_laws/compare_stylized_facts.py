@@ -38,6 +38,7 @@ def get_config():
         "Ex: '../../datas/artificial_datas/flex_txt/0 ../../datas/artificial_datas/flex_txt/1'"
     )
     parser.add_argument("--num_simulations", type=int, default=1000)
+    parser.add_argument("--resample_rule", type=str)
     parser.add_argument(
         "--tick_dfs_folder_paths", type=str, nargs="*",
         help="Names of folder paths to store structured simulation results with csv. " +
@@ -148,6 +149,7 @@ def main(args):
     print("[green]==get file paths to save results by StylizedFactsChecker with csv.==[green]")
     results_save_paths: list[Path] = convert_strs2paths(all_args.results_save_paths)
     num_simulations: int = all_args.num_simulations
+    resample_rule: str = all_args.resample_rule
     for i, config_path in enumerate(config_paths):
         print("[green]==start simulations==[green]")
         txt_save_folder_path: Path = txt_save_folder_paths[i]
@@ -192,6 +194,7 @@ def main(args):
             tick_dfs_path=tick_dfs_folder_path,
             ohlcv_dfs_save_path=ohlcv_dfs_folder_path,
             figs_save_path=figs_save_path,
+            resample_rule=resample_rule,
             is_real=False,
             transactions_folder_path=transactions_folder_path,
             session1_transactions_file_name=session1_transactions_file_name,
