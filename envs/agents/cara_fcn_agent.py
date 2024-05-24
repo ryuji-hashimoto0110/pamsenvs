@@ -145,7 +145,7 @@ class CARAFCNAgent(Agent):
                 raise ValueError(
                     f"inappropriate distribution type to convert to pareto: {settings[pareto_variable]}"
                 )
-            lam: float = settings[pareto_variable]["expon"]
+            lam: float = settings[pareto_variable]["expon"][0]
             alpha: float = param_dic["alpha"]
             beta: float = param_dic["beta"]
             if pareto_variable == "cashAmount":
@@ -154,8 +154,8 @@ class CARAFCNAgent(Agent):
                 self.set_cash_amount(cash_amount)
             elif pareto_variable == "assetVolume":
                 for market_id in self.asset_volumes.keys():
-                    asset_volume = lam * self.asset_volumes[market_id]
-                    asset_volume = alpha * np.exp(asset_volume / beta)
+                    asset_volume: float = lam * self.asset_volumes[market_id]
+                    asset_volume: int = int(alpha * np.exp(asset_volume / beta))
                     self.set_asset_volume(market_id, asset_volume)
             else:
                 raise NotImplementedError
