@@ -19,6 +19,7 @@ from tqdm import tqdm
 from typing import Any
 from typing import Optional
 from typing import TypeVar
+import warnings
 
 MarketName = TypeVar("MarketName")
 
@@ -47,6 +48,9 @@ def get_config():
         help="Names of folder paths to store preprocessed simulation results with OHLCV csv data. " +
         "Ex: '../../datas/artificial_datas/intraday/flex_ohlcv/1min/0 ../../datas/artificial_datas/intraday/flex_ohlcv/1min/1'"
     )
+    parser.add_argument("--transactions_folder_path", type=str)
+    parser.add_argument("--session1_transactions_file_name", type=str)
+    parser.add_argument("--session2_transactions_file_name", type=str)
     parser.add_argument(
         "--figs_save_paths", type=str, nargs="*",
         help="Names of folder paths to store figures drawn by StylizedFactsChecker. " +
@@ -57,7 +61,6 @@ def get_config():
         help="Names of file paths to store results by StylizedFactsChecker with csv format. " + 
         "Ex '../../stylized_facts/results/0.csv ../../stylized_facts/results/1.csv'"
     )
-    parser.add_argument("--resample_rule", type=str)
     return parser
 
 def get_config_paths(
@@ -83,12 +86,12 @@ def convert_strs2paths(names: list[str]) -> list[Path]:
         pathlib.Path(name).resolve() for name in names
     ]
     for path in paths:
-        print(str(path))
+        print(f"[white]{str(path)}[white]")
     print()
     return paths
 
 def get_session_boundary(config: dict[str, Any]) -> tuple[int, int]:
-    session_configs: list[dict[str, Any]] = config["sessions"]
+    session_configs: list[dict[str, Any]] = config["simulation"]["sessions"]
     session1_end_time: Optional[int] = None
     session2_start_time: Optional[int] = None
     total_times: int = 0
@@ -108,7 +111,7 @@ def get_session_boundary(config: dict[str, Any]) -> tuple[int, int]:
     return session1_end_time, session2_start_time
 
 def get_txt_file_name_dic(config: dict[str, Any], simulation_id: int) -> dict[MarketName, str]:
-    market_names: list[MarketName] = config["markets"]
+    market_names: list[MarketName] = config["simulation"]["markets"]
     txt_file_name_dic: dict[MarketName, str] = {}
     for market_name in market_names:
         txt_file_name_dic[market_name] = f"{market_name}_{simulation_id}.txt"
@@ -121,35 +124,35 @@ def main(args):
     prng: random.Random = random.Random(initial_seed)
     print(f"initial_seed: {initial_seed}")
     print()
-    print("[red]==get configuration paths==[red]")
+    print("[green]==get configuration paths==[green]")
     configs_folder_path: Path = pathlib.Path(all_args.configs_folder_path).resolve()
     config_names: list[str] = all_args.config_names
     config_paths: Path = get_config_paths(configs_folder_path, config_names)
-    print("[red]==get folder paths to save txt data with FLEX format==[red]")
+    print("[green]==get folder paths to save txt data with FLEX format==[green]")
     txt_save_folder_paths: list[Path] = convert_strs2paths(all_args.txt_save_folder_paths)
-    print("[red]==get folder paths to save csv data recorded for each event==[red]")
+    print("[green]==get folder paths to save csv data recorded for each event==[green]")
     tick_dfs_folder_paths: list[Path] = convert_strs2paths(all_args.tick_dfs_folder_paths)
-    print("[red]==get folder paths to save csv data with OHLCV format==[red]")
+    print("[green]==get folder paths to save csv data with OHLCV format==[green]")
     ohlcv_dfs_folder_paths: list[Path] = convert_strs2paths(all_args.ohlcv_dfs_folder_paths)
-    print("[red]==get paths to refer to for transactions records per session==[red]")
+    print("[green]==get paths to refer to for transactions records per session==[green]")
     transactions_folder_path: Path = pathlib.Path(all_args.transactions_folder_path).resolve()
-    tree: Tree = str(transactions_folder_path)
+    tree: Tree = Tree(str(transactions_folder_path))
     session1_transactions_file_name: str = all_args.session1_transactions_file_name
     tree.add(session1_transactions_file_name)
     session2_transactions_file_name: str = all_args.session2_transactions_file_name
     tree.add(session2_transactions_file_name)
     print(tree)
     print()
-    print("[red]==get folder paths to save figures by StylizedFactsChecker==[red]")
+    print("[green]==get folder paths to save figures by StylizedFactsChecker==[green]")
     figs_save_paths: list[Path] = convert_strs2paths(all_args.figs_save_paths)
-    print("[red]==get file paths to save results by StylizedFactsChecker with csv.==[red]")
+    print("[green]==get file paths to save results by StylizedFactsChecker with csv.==[green]")
     results_save_paths: list[Path] = convert_strs2paths(all_args.results_save_paths)
     num_simulations: int = all_args.num_simulations
-    resample_rule: str = all_args.resample_rule
     for i, config_path in enumerate(config_paths):
-        print("[red]==start simulations==[red]")
+        print("[green]==start simulations==[green]")
         txt_save_folder_path: Path = txt_save_folder_paths[i]
-        print(f"config{i+1}: {str(config_path)} results will be saved to >> {str(txt_save_folder_path)}")
+        print(f"[white]config{i+1}: {str(config_path)}[white]")
+        print(f"[white]results will be saved to >> {str(txt_save_folder_path)}[white]")
         config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
         session1_end_time, session2_start_time = get_session_boundary(config)
         for simulation_id in tqdm(range(num_simulations)):
@@ -166,9 +169,12 @@ def main(args):
                 logger=saver
             )
             runner.class_register(CARAFCNAgent)
-            runner.main()
+            runner._setup()
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                runner._run()
         print()
-        print("[red]==start processing==[red]")
+        print("[green]==start processing==[green]")
         tick_dfs_folder_path: Path = tick_dfs_folder_paths[i]
         print(f"results will be saved to >> {str(tick_dfs_folder_path)}")
         processor = FlexProcessor(
@@ -177,16 +183,16 @@ def main(args):
         )
         processor.convert_all_txt2csv(is_display_path=False)
         print()
-        print("[red]==start checking stylized facts==[red]")
+        print("[green]==start checking stylized facts==[green]")
         ohlcv_dfs_folder_path: Path = ohlcv_dfs_folder_paths[i]
         figs_save_path: Path = figs_save_paths[i]
         results_save_path: Path = results_save_paths[i]
         checker = StylizedFactsChecker(
             seed=initial_seed,
             tick_dfs_path=tick_dfs_folder_path,
-            resample_rule=resample_rule,
             ohlcv_dfs_save_path=ohlcv_dfs_folder_path,
             figs_save_path=figs_save_path,
+            is_real=False,
             transactions_folder_path=transactions_folder_path,
             session1_transactions_file_name=session1_transactions_file_name,
             session2_transactions_file_name=session2_transactions_file_name
