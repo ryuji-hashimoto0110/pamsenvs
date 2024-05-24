@@ -158,7 +158,7 @@ def main(args):
         print(f"[white]results will be saved to >> {str(txt_save_folder_path)}[white]")
         config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
         session1_end_time, session2_start_time = get_session_boundary(config)
-        exceptins_dic: dict[int, str]
+        exceptins_dic: dict[int, str] = {}
         for simulation_id in tqdm(range(num_simulations)):
             txt_file_name_dic: dict[MarketName, str] = get_txt_file_name_dic(config, simulation_id)
             saver = FlexSaver(
