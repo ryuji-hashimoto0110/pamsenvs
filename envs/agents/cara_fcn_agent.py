@@ -192,7 +192,7 @@ class CARAFCNAgent(Agent):
             return orders
         orders.extend(self._cancel_orders())
         time: int = market.get_time()
-        weights: list[float] = self._calc_temporal_weights(market, time_window_size)
+        weights: list[float] = self._calc_temporal_weights(market, self.time_window_size)
         fundamental_weight: float = weights[0]
         chart_weight: float = weights[1]
         noise_weight: float = weights[2]
