@@ -193,16 +193,16 @@ class CARAFCNAgent(Agent):
             return orders
         orders.extend(self._cancel_orders())
         time: int = market.get_time()
-        weights: list[float] = self._calc_temporal_weights(market, self.time_window_size)
+        time_window_size: int = self._calc_temporal_time_window_size(
+            time, self.w_n, self.w_c, market
+        )
+        weights: list[float] = self._calc_temporal_weights(market, time_window_size)
         fundamental_weight: float = weights[0]
         chart_weight: float = weights[1]
         noise_weight: float = weights[2]
         assert 0 <= fundamental_weight
         assert 0 <= chart_weight
         assert 0 <= noise_weight
-        time_window_size: int = self._calc_temporal_time_window_size(
-            time, fundamental_weight, chart_weight, market
-        )
         risk_aversion_term: float = self._calc_temporal_risk_aversion_term(
             fundamental_weight, chart_weight
         )
