@@ -71,7 +71,6 @@ def main(args):
     session2_start_time_str: Optional[str] = all_args.session2_start_time_str
     print(f"session1_end_time: {session1_end_time_str} session2_start_time: {session2_start_time_str}")
     print()
-    print("start reading files...")
     checker = StylizedFactsChecker(
         seed=seed,
         ohlcv_dfs_path=ohlcv_dfs_path,
