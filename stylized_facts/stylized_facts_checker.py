@@ -182,8 +182,8 @@ class StylizedFactsChecker:
             session2_df, self.session2_transactions_file_name
         )
         if self.session2_start_time is None:
-            self.session1_start_time = pd.to_datetime(
-                session1_resampled_df.index[0]
+            self.session2_start_time = pd.to_datetime(
+                session2_resampled_df.index[0]
             ).time()
         resampled_df: DataFrame = pd.concat(
             [session1_resampled_df, session2_resampled_df], axis=0
