@@ -9,6 +9,7 @@ from pathlib import Path
 import subprocess
 from tqdm import tqdm
 from typing import Optional
+import warnings
 
 class FlexProcessor:
     """FlexProcessor class.
@@ -80,6 +81,7 @@ class FlexProcessor:
         flex_downloader_path: Optional[Path] = None,
         quote_num: int = 10,
         is_execution_only: bool = True,
+        is_mood_aware: bool = False,
         session1_end_time_str: str = "11:30:00.000000",
         session2_start_time_str: str = "12:30:00.000000"
     ) -> None:
@@ -103,6 +105,7 @@ class FlexProcessor:
         self.flex_downloader_path: Optional[Path] = flex_downloader_path
         self.quote_num: int = quote_num
         self.is_execution_only: bool = is_execution_only
+        self.is_mood_aware: bool = is_mood_aware
         self.column_names: list[str] = self._create_columns()
         self.session1_end_time: Timestamp = pd.to_datetime(session1_end_time_str).time()
         self.session2_start_time: Timestamp = pd.to_datetime(session2_start_time_str).time()
@@ -146,6 +149,8 @@ class FlexProcessor:
             (column_names.append(f"sell{i+1}_price"), column_names.append(f"sell{i+1}_volume")) \
                 for i in range(self.quote_num)
         ]
+        if self.is_mood_aware:
+            column_names.append("mood")
         return column_names
 
     def convert_all_txt2csv(self, is_display_path: bool = True) -> None:
@@ -183,6 +188,7 @@ class FlexProcessor:
                             str, dict[str, dict[str, list | dict, str]]
                         ] = json.loads(line.replace("'", '"'))
                         log_columns: list[str] = self._extract_info_from_log(log_dic)
+                        log_columns = self._add_mood(log_dic, log_columns)
                     except Exception as e:
                         print(e)
                         print(line)
@@ -304,3 +310,18 @@ class FlexProcessor:
             price_volumes.append(None)
         assert len(price_volumes) == 2*self.quote_num
         return price_volumes
+    
+    def _add_mood(
+        self,
+        log_dic: dict[str, dict[str, dict[str, list | dict, str]]],
+        log_columns: list[str]
+    ) -> list[str]:
+        if self.is_mood_aware:
+            mood: float = float(log_dic["Data"]["mood"])
+            log_columns.append(mood)
+        else:
+            if "mood" in log_dic["Data"]:
+                warnings.warn(
+                    "set not to write mood even though mood is recorded in simulation log."
+                )
+        return log_columns
