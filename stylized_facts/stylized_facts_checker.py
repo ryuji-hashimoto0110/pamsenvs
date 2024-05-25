@@ -108,8 +108,9 @@ class StylizedFactsChecker:
             if ohlcv_dfs_save_path is not None:
                 save_path: Path = ohlcv_dfs_save_path / csv_name
                 df.to_csv(str(save_path))
-        if not figs_save_path.exists():
-            figs_save_path.mkdir(parents=True)
+        if figs_save_path is not None:
+            if not figs_save_path.exists():
+                figs_save_path.mkdir(parents=True)
         self.figs_save_path: Optional[Path] = figs_save_path
         self.return_arr: Optional[ndarray] = None
         self.abs_hill_index: Optional[float] = None
