@@ -137,10 +137,10 @@ class StylizedFactsChecker:
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
                 df = self._resample(df)
-                if len(df) < freq_ohlcv_size_dict[self.resample_rule] and choose_full_size_df:
-                    store_df = False
-                else:
-                    store_df = True
+            if len(df) < freq_ohlcv_size_dict[self.resample_rule] and choose_full_size_df:
+                store_df = False
+            else:
+                store_df = True
             if store_df:
                 csv_names.append(csv_name)
                 dfs.append(df)
