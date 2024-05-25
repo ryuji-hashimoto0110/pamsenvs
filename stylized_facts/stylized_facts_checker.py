@@ -103,9 +103,8 @@ class StylizedFactsChecker:
             print("read OHLCV dfs")
             self._read_ohlcv_dfs(ohlcv_dfs_path, choose_full_size_df)
         print("preprocess dfs")
-        for i, df in tqdm(enumerate(self.ohlcv_dfs)):
+        for df, csv_name in tqdm(zip(self.ohlcv_dfs, self.ohlcv_csv_names)):
             self.preprocess_ohlcv_df(df)
-            csv_name: str = self.ohlcv_csv_names[i]
             save_path: Path = ohlcv_dfs_save_path / csv_name
             df.to_csv(str(save_path))
         if not figs_save_path.exists():
