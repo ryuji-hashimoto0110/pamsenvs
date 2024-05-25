@@ -69,6 +69,10 @@ class StylizedFactsChecker:
         self.prng = random.Random(seed)
         self.is_real: bool = is_real
         self.resample_rule: str = resample_rule
+        if self.resample_rule in freq_ohlcv_size_dict:
+            raise ValueError(
+                f"rule:{self.resample_rule} is not allowed."
+            )
         self.ohlcv_dfs: list[DataFrame] = []
         self.ohlcv_csv_names: list[str] = []
         self.tick_dfs: list[DataFrame] = []
