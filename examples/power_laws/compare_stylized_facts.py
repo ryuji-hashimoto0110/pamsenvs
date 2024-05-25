@@ -40,6 +40,7 @@ def get_config():
         help="Names of folder paths to store simulation results with FLEX format. " +
         "Ex: '../../datas/artificial_datas/flex_txt/0 ../../datas/artificial_datas/flex_txt/1'"
     )
+    parser.add_argument("--skip_simulations", action="store_true")
     parser.add_argument("--num_simulations", type=int, default=1000)
     parser.add_argument("--resample_rule", type=str)
     parser.add_argument(
@@ -126,7 +127,8 @@ def main(args):
     all_args = parser.parse_known_args(args)[0]
     initial_seed: int = all_args.initial_seed
     prng: random.Random = random.Random(initial_seed)
-    print(f"initial_seed: {initial_seed}")
+    skip_simulations: bool = all_args.skip_simulations
+    print(f"initial_seed: {initial_seed} skip_simulations: {skip_simulations}")
     print()
     print("[green]==get configuration paths==[green]")
     configs_folder_path: Path = pathlib.Path(all_args.configs_folder_path).resolve()
@@ -157,46 +159,60 @@ def main(args):
         print("[green]==start simulations==[green]")
         txt_save_folder_path: Path = txt_save_folder_paths[i]
         print(f"[white]config{i+1}: {str(config_path)}[white]")
-        print(f"[white]results will be saved to >> {str(txt_save_folder_path)}[white]")
         config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
         session1_end_time, session2_start_time = get_session_boundary(config)
         exceptins_dic: dict[int, str] = {}
-        for simulation_id in tqdm(range(num_simulations)):
-            txt_file_name_dic: dict[MarketName, str] = get_txt_file_name_dic(config, simulation_id)
-            saver = FlexSaver(
-                session1_end_time=session1_end_time,
-                session2_start_time=session2_start_time,
-                txt_save_folder_path=txt_save_folder_path,
-                txt_file_name_dic=txt_file_name_dic
-            )
-            runner: Runner = SequentialRunner(
-                settings=config,
-                prng=random.Random(initial_seed+simulation_id),
-                logger=saver
-            )
-            runner.class_register(CARAFCNAgent)
-            runner.class_register(MoodAwareCARAFCNAgent)
-            runner.class_register(MoodAwareMarket)
-            runner.class_register(TotalTimeAwareMarket)
-            runner._setup()
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    runner._run()
-            except Exception as e:
-                exceptins_dic[simulation_id] = e
-                pass
-        print("exceptions:")
-        print(exceptins_dic)
+        if (
+            txt_save_folder_path.exists() and
+            skip_simulations
+        ):
+            print("skip simulations!")
+        else:
+            print(f"[white]results will be saved to >> {str(txt_save_folder_path)}[white]")
+            for simulation_id in tqdm(range(num_simulations)):
+                txt_file_name_dic: dict[MarketName, str] = get_txt_file_name_dic(
+                    config, simulation_id
+                )
+                saver = FlexSaver(
+                    session1_end_time=session1_end_time,
+                    session2_start_time=session2_start_time,
+                    txt_save_folder_path=txt_save_folder_path,
+                    txt_file_name_dic=txt_file_name_dic
+                )
+                runner: Runner = SequentialRunner(
+                    settings=config,
+                    prng=random.Random(initial_seed+simulation_id),
+                    logger=saver
+                )
+                runner.class_register(CARAFCNAgent)
+                runner.class_register(MoodAwareCARAFCNAgent)
+                runner.class_register(MoodAwareMarket)
+                runner.class_register(TotalTimeAwareMarket)
+                runner._setup()
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        runner._run()
+                except Exception as e:
+                    exceptins_dic[simulation_id] = e
+                    pass
+            print("exceptions:")
+            print(exceptins_dic)
         print()
         print("[green]==start processing==[green]")
         tick_dfs_folder_path: Path = tick_dfs_folder_paths[i]
-        print(f"results will be saved to >> {str(tick_dfs_folder_path)}")
-        processor = FlexProcessor(
-            txt_datas_path=txt_save_folder_path,
-            csv_datas_path=tick_dfs_folder_path
-        )
-        processor.convert_all_txt2csv(is_display_path=False)
+        if (
+            tick_dfs_folder_path.exists() and
+            skip_simulations
+        ):
+            print("skip processing!")
+        else:
+            print(f"results will be saved to >> {str(tick_dfs_folder_path)}")
+            processor = FlexProcessor(
+                txt_datas_path=txt_save_folder_path,
+                csv_datas_path=tick_dfs_folder_path
+            )
+            processor.convert_all_txt2csv(is_display_path=False)
         print()
         print("[green]==start checking stylized facts==[green]")
         ohlcv_dfs_folder_path: Path = ohlcv_dfs_folder_paths[i]
