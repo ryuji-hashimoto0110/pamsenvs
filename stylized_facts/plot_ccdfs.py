@@ -17,7 +17,7 @@ def get_config():
     parser.add_argument("--resample_rules", type=str, nargs="*")
     parser.add_argument("--labels", type=str, nargs="*")
     parser.add_argument("--colors", type=str, nargs="*")
-    parser.add_argument("--fig_save_path", str)
+    parser.add_argument("--fig_save_path", type=str)
     return parser
 
 def convert_strs2paths(names: list[str]) -> list[Path]:
