@@ -16,7 +16,7 @@ from tqdm import tqdm
 from typing import Optional
 import warnings
 
-freq_ohlcv_size_dict: dict[str, int] = {
+freq_ohlcv_size_dic: dict[str, int] = {
     "1s": 18002,
     "10s": 1802,
     "30s": 602,
@@ -69,7 +69,7 @@ class StylizedFactsChecker:
         self.prng = random.Random(seed)
         self.is_real: bool = is_real
         self.resample_rule: str = resample_rule
-        if self.resample_rule in freq_ohlcv_size_dict:
+        if self.resample_rule in freq_ohlcv_size_dic.keys():
             raise ValueError(
                 f"rule:{self.resample_rule} is not allowed."
             )
@@ -136,7 +136,7 @@ class StylizedFactsChecker:
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
                 df = self._resample(df)
-            if len(df) < freq_ohlcv_size_dict[self.resample_rule] and choose_full_size_df:
+            if len(df) < freq_ohlcv_size_dic[self.resample_rule] and choose_full_size_df:
                 store_df = False
             else:
                 store_df = True
