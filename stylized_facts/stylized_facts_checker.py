@@ -105,8 +105,9 @@ class StylizedFactsChecker:
         print("preprocess dfs")
         for df, csv_name in tqdm(zip(self.ohlcv_dfs, self.ohlcv_csv_names)):
             self.preprocess_ohlcv_df(df)
-            save_path: Path = ohlcv_dfs_save_path / csv_name
-            df.to_csv(str(save_path))
+            if ohlcv_dfs_save_path is not None:
+                save_path: Path = ohlcv_dfs_save_path / csv_name
+                df.to_csv(str(save_path))
         if not figs_save_path.exists():
             figs_save_path.mkdir(parents=True)
         self.figs_save_path: Optional[Path] = figs_save_path
