@@ -287,7 +287,7 @@ class FlexSaver(Logger):
     ) -> None:
         if isinstance(market, MoodAwareMarket):
             mood: float = market.get_market_mood()
-            mood_str: str = f"{mood:.{self.significant_figures}f}"
+            mood_str: str = f"{mood:.3f}"
             log_dic["Data"]["mood"] = mood_str
         market_price: Optional[float | str] = market.get_last_executed_price()
         log_dic["Data"]["market_price"] = self._convert_price2str(market_price)

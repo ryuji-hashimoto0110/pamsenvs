@@ -158,8 +158,14 @@ def main(args):
     for i, config_path in enumerate(config_paths):
         print("[green]==start simulations==[green]")
         txt_save_folder_path: Path = txt_save_folder_paths[i]
+        is_mood_aware: bool = False
         print(f"[white]config{i+1}: {str(config_path)}[white]")
         config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
+        if config["Market"]["class"] == "MoodAwareMarket":
+            is_mood_aware = True
+        else:
+            is_mood_aware = False
+        print(f"is_mood_aware: {is_mood_aware}")
         session1_end_time, session2_start_time = get_session_boundary(config)
         exceptins_dic: dict[int, str] = {}
         if (
@@ -210,7 +216,8 @@ def main(args):
             print(f"results will be saved to >> {str(tick_dfs_folder_path)}")
             processor = FlexProcessor(
                 txt_datas_path=txt_save_folder_path,
-                csv_datas_path=tick_dfs_folder_path
+                csv_datas_path=tick_dfs_folder_path,
+                is_mood_aware=is_mood_aware
             )
             processor.convert_all_txt2csv(is_display_path=False)
         print()

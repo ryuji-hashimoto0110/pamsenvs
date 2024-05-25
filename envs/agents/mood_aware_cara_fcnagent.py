@@ -3,7 +3,7 @@ from random import Random
 from pams.logs import Logger
 from pams.market import Market
 from pams.simulator import Simulator
-from pams.utils import json_random
+from pams.utils import JsonRandom
 from .cara_fcn_agent import CARAFCNAgent
 from typing import Any, Literal
 from typing import TypeVar
@@ -42,6 +42,7 @@ class MoodAwareCARAFCNAgent(CARAFCNAgent):
         **kwargs: Any
     ) -> None:
         super().setup(settings, accessible_markets_ids, *args, **kwargs)
+        json_random: JsonRandom = JsonRandom(prng=self.prng)
         self.w_m: float = json_random.random(json_value=settings["moodWeight"])
         if "moodSensitivity" not in settings:
             raise ValueError(
@@ -66,7 +67,6 @@ class MoodAwareCARAFCNAgent(CARAFCNAgent):
         weights: list[float],
         time_window_size: int
     ) -> float:
-        self._change_mood(market)
         fundamental_weight: float = weights[0]
         chart_weight: float = weights[1]
         noise_weight: float = weights[2]
@@ -104,21 +104,19 @@ class MoodAwareCARAFCNAgent(CARAFCNAgent):
         )
         return expected_future_price
 
-    def _change_mood(self, market: Market) -> None:
+    def change_mood(self, market: Market) -> None:
         market_mood: float = market.get_market_mood()
         agent_mood: Literal[0,1] = self.get_agent_mood()
         if agent_mood == 0:
             change_prob: float = self.mood_sensitivity * market_mood
-            self.mood = self.prng.choice(
-                [0,1],
-                p=[1-change_prob, change_prob]
-            )
+            self.mood = self.prng.choices(
+                [0,1], k=1, weights=[1-change_prob, change_prob]
+            )[0]
         elif agent_mood == 1:
             change_prob: float = self.mood_sensitivity * (1 - market_mood)
-            self.mood = self.prng.choce(
-                [0,1],
-                [change_prob, 1-change_prob]
-            )
+            self.mood = self.prng.choices(
+                [0,1], k=1, weights=[change_prob, 1-change_prob],
+            )[0]
         else:
             raise ValueError(
                 f"agent_mood must be either 0 or 1, but found {agent_mood}."
