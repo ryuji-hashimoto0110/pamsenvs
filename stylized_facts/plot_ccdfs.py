@@ -5,10 +5,10 @@ from matplotlib.pyplot import Figure
 import pathlib
 from pathlib import Path
 curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
-root_path: Path = curr_path.parents[1]
-import sys
-sys.path.append(str(root_path))
+parent_path: Path = curr_path.parents[0]
 from rich import print
+import sys
+sys.path.append(str(parent_path))
 from stylized_facts import StylizedFactsChecker
 
 def get_config():
