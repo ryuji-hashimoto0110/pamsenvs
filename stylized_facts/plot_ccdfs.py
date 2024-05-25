@@ -51,6 +51,7 @@ def main(args):
         checker.plot_ccdf(
             ax=ax, label=label, color=color
         )
+    ax.legend()
     fig_save_path: Path =  pathlib.Path(all_args.fig_save_path).resolve()
     print(f"[white]fig_save_path: {fig_save_path}[white]")
     plt.savefig(str(fig_save_path))
