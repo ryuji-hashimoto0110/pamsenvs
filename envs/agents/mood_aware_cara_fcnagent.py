@@ -1,3 +1,4 @@
+import math
 from random import Random
 from pams.logs import Logger
 from pams.market import Market
@@ -31,7 +32,7 @@ class MoodAwareCARAFCNAgent(CARAFCNAgent):
             name=name,
             logger=logger
         )
-        self.mood: Literal[0,1] = prng.choice([0,1])
+        self.mood: Literal[0,1] = self.prng.choice([0,1])
 
     def setup(
         self,
@@ -56,7 +57,8 @@ class MoodAwareCARAFCNAgent(CARAFCNAgent):
         market: Market,
         time_window_size: int
     ) -> list[float]:
-        pass
+        weights: list[float] = [self.w_f, self.w_c, self.w_n, self.w_m]
+        return weights
 
     def _calc_expected_future_price(
         self,
@@ -64,7 +66,60 @@ class MoodAwareCARAFCNAgent(CARAFCNAgent):
         weights: list[float],
         time_window_size: int
     ) -> float:
-        pass
+        self._change_mood(market)
+        fundamental_weight: float = weights[0]
+        chart_weight: float = weights[1]
+        noise_weight: float = weights[2]
+        mood_weight: float = weights[3]
+        time: int = market.get_time()
+        market_price: float = market.get_market_price()
+        fundamental_price: float = market.get_fundamental_price()
+        fundamental_scale: float = 1.0 / max(self.mean_reversion_time, 1)
+        fundamental_log_return: float = fundamental_scale * math.log(
+            fundamental_price / market_price
+        )
+        assert self.is_finite(fundamental_log_return)
+        chart_scale: float = 1.0 / max(time_window_size, 1)
+        chart_log_return: float = chart_scale * math.log(
+            market_price / market.get_market_price(time - time_window_size)
+        )
+        assert self.is_finite(chart_log_return)
+        noise_log_return: float = self.noise_scale * self.prng.gauss(mu=0.0, sigma=1.0)
+        assert self.is_finite(noise_log_return)
+        agent_mood: Literal[0,1] = self.get_agent_mood()
+        mood_log_return: float = (
+            (agent_mood == 1) - (agent_mood == 0)
+        )
+        expected_log_return: float = (
+            1.0 / (fundamental_weight + chart_weight + noise_weight + mood_weight)
+        ) * (
+            fundamental_weight * fundamental_log_return
+            + chart_weight * chart_log_return * (1 if self.is_chart_following else -1)
+            + noise_weight * noise_log_return
+            + mood_weight * mood_log_return
+        )
+        assert self.is_finite(expected_log_return)
+        expected_future_price: float = market_price * math.exp(
+            expected_log_return * self.time_window_size
+        )
+        return expected_future_price
 
     def _change_mood(self, market: Market) -> None:
-        pass
+        market_mood: float = market.get_market_mood()
+        agent_mood: Literal[0,1] = self.get_agent_mood()
+        if agent_mood == 0:
+            change_prob: float = self.mood_sensitivity * market_mood
+            self.mood = self.prng.choice(
+                [0,1],
+                p=[1-change_prob, change_prob]
+            )
+        elif agent_mood == 1:
+            change_prob: float = self.mood_sensitivity * (1 - market_mood)
+            self.mood = self.prng.choce(
+                [0,1],
+                [change_prob, 1-change_prob]
+            )
+        else:
+            raise ValueError(
+                f"agent_mood must be either 0 or 1, but found {agent_mood}."
+            )
