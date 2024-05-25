@@ -368,7 +368,8 @@ class StylizedFactsChecker:
     def _calc_return_arr_from_df(
         self,
         ohlcv_df: DataFrame,
-        colname: str
+        colname: str,
+        norm: bool
     ) -> ndarray:
         """convert price time series to return time series from 1 dataframe.
         """
@@ -377,13 +378,18 @@ class StylizedFactsChecker:
         return_arr: ndarray = np.log(
             price_arr[1:] / price_arr[:-1] + 1e-10
         )[np.newaxis,:]
+        if norm:
+            return_arr: ndarray = (
+                return_arr - np.mean(return_arr, axis=1)
+            ) / (np.std(return_arr, axis=1) + 1e-10)
         return return_arr
 
     def _calc_return_arr_from_dfs(
         self,
         ohlcv_dfs: list[DataFrame],
         colname: str,
-        is_abs: bool = False
+        is_abs: bool = False,
+        norm: bool = True
     ) -> ndarray:
         """convert price time series to return time series from dataframes list.
         """
@@ -392,6 +398,10 @@ class StylizedFactsChecker:
         return_arr: ndarray = np.log(
             price_arr[:,1:] / price_arr[:,:-1] + 1e-10
         )
+        if norm:
+            return_arr: ndarray = (
+                return_arr - np.mean(return_arr, axis=1)
+            ) / (np.std(return_arr, axis=1) + 1e-10)
         if is_abs:
             return_arr: ndarray = np.abs(return_arr)
         return return_arr
@@ -443,7 +453,7 @@ class StylizedFactsChecker:
                 kurtosis_arr, pvalue_arr = self._calc_kurtosis(self.return_arr)
             else:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                    self.ohlcv_dfs, "close"
+                    self.ohlcv_dfs, "close", norm=True
                 )
                 kurtosis_arr, pvalue_arr = self._calc_kurtosis(self.return_arr)
         else:
@@ -453,7 +463,9 @@ class StylizedFactsChecker:
             kurtosises: list[float] = []
             pvalues: list[float] = []
             for ohlcv_df in self.ohlcv_dfs:
-                return_arr: ndarray = self._calc_return_arr_from_df(ohlcv_df, "close")
+                return_arr: ndarray = self._calc_return_arr_from_df(
+                    ohlcv_df, "close", norm=True
+                )
                 kurtosis, pvalue = self._calc_kurtosis(return_arr)
                 kurtosises.append(kurtosis.item())
                 pvalues.append(pvalue.item())
@@ -526,7 +538,7 @@ class StylizedFactsChecker:
         if self._is_stacking_possible(self.ohlcv_dfs, "close"):
             if self.return_arr is None:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                    self.ohlcv_dfs, "close"
+                    self.ohlcv_dfs, "close", norm=True
                 )
             return_arr_flatten: ndarray = self.return_arr.flatten()[np.newaxis,:]
             left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_hill_indices(
@@ -539,7 +551,12 @@ class StylizedFactsChecker:
             return_arr_flatten: ndarray = np.array([], dtype=np.float32)
             for ohlcv_df in self.ohlcv_dfs:
                 return_arr_flatten: ndarray = np.concatenate(
-                    [return_arr_flatten, self._calc_return_arr_from_df(ohlcv_df, "close").flatten()]
+                    [
+                        return_arr_flatten,
+                        self._calc_return_arr_from_df(
+                            ohlcv_df, "close", norm=True
+                        ).flatten()
+                    ]
                 )
             return_arr_flatten = return_arr_flatten[np.newaxis,:]
             left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_hill_indices(
@@ -629,7 +646,7 @@ class StylizedFactsChecker:
         if self._is_stacking_possible(self.ohlcv_dfs, "close"):
             if self.return_arr is None:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                    self.ohlcv_dfs, "close"
+                    self.ohlcv_dfs, "close", norm=True
                 )
             acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
                 np.abs(self.return_arr), lags
@@ -640,7 +657,9 @@ class StylizedFactsChecker:
             )
             acorr_l_dic: dict[int, list[float]] = {lag: [] for lag in lags}
             for ohlcv_df in self.ohlcv_dfs:
-                return_arr: ndarray = self._calc_return_arr_from_df(ohlcv_df, "close")
+                return_arr: ndarray = self._calc_return_arr_from_df(
+                    ohlcv_df, "close", norm=True
+                )
                 acorr_dic_: dict[int, float] = self._calc_autocorrelation(
                     np.abs(return_arr), lags
                 )
@@ -684,7 +703,7 @@ class StylizedFactsChecker:
             volume_arr = volume_arr[:,1:]
             if self.return_arr is None:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                    self.ohlcv_dfs, "close"
+                    self.ohlcv_dfs, "close", norm=True
                 )
             corr_arr: ndarray = self._calc_volume_volatility_correlation(
                 np.abs(self.return_arr), volume_arr
@@ -695,7 +714,9 @@ class StylizedFactsChecker:
             )
             corrs: list[float] = []
             for ohlcv_df in self.ohlcv_dfs:
-                return_arr: ndarray = self._calc_return_arr_from_df(ohlcv_df, "close")
+                return_arr: ndarray = self._calc_return_arr_from_df(
+                    ohlcv_df, "close", norm=True
+                )
                 volume_arr: ndarray = ohlcv_df["volume"].values[np.newaxis,1:]
                 corrs.append(
                     self._calc_volume_volatility_correlation(
@@ -816,7 +837,7 @@ class StylizedFactsChecker:
             if self._is_stacking_possible(self.ohlcv_dfs, "close"):
                 if self.return_arr is None:
                     self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                        self.ohlcv_dfs, "close"
+                        self.ohlcv_dfs, "close", norm=True
                     )
                 return_arr: ndarray = self.return_arr.flatten()
             else:
@@ -827,12 +848,14 @@ class StylizedFactsChecker:
                 return_arrs: list[ndarray] = []
                 for ohlcv_df in self.ohlcv_dfs:
                     return_arrs.append(
-                        self._calc_return_arr_from_df(ohlcv_df, "close").flatten()
+                        self._calc_return_arr_from_df(
+                            ohlcv_df, "close", norm=True
+                        ).flatten()
                     )
                 return_arr: ndarray = np.concatenate(return_arrs)
         else:
             return_arr: ndarray = self._calc_return_arr_from_df(
-                self.ohlcv_dfs[draw_idx], "close"
+                self.ohlcv_dfs[draw_idx], "close", norm=True
             ).flatten()
         assert len(return_arr.shape) == 1
         sorted_abs_return_arr: ndarray = np.sort(np.abs(return_arr))
