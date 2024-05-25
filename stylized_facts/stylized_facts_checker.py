@@ -18,6 +18,7 @@ import warnings
 
 freq_ohlcv_size_dict: dict[str, int] = {
     "1s": 18002,
+    "10s": 1802,
     "30s": 602,
     "1min": 302,
     "5min": 62,
