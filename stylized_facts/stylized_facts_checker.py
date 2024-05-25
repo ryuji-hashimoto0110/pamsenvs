@@ -380,8 +380,8 @@ class StylizedFactsChecker:
         )[np.newaxis,:]
         if norm:
             return_arr: ndarray = (
-                return_arr - np.mean(return_arr, axis=1)
-            ) / (np.std(return_arr, axis=1) + 1e-10)
+                return_arr - np.mean(return_arr, axis=1, keepdims=True)
+            ) / (np.std(return_arr, axis=1, keepdims=True) + 1e-10)
         return return_arr
 
     def _calc_return_arr_from_dfs(
@@ -400,8 +400,8 @@ class StylizedFactsChecker:
         )
         if norm:
             return_arr: ndarray = (
-                return_arr - np.mean(return_arr, axis=1)
-            ) / (np.std(return_arr, axis=1) + 1e-10)
+                return_arr - np.mean(return_arr, axis=1, keepdims=True)
+            ) / (np.std(return_arr, axis=1, keepdims=True) + 1e-10)
         if is_abs:
             return_arr: ndarray = np.abs(return_arr)
         return return_arr
