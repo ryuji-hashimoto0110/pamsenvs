@@ -196,6 +196,7 @@ class CARAFCNAgent(Agent):
         time_window_size: int = self._calc_temporal_time_window_size(
             time, self.w_n, self.w_c, market
         )
+        self.mean_reversion_time = time_window_size
         weights: list[float] = self._calc_temporal_weights(market, time_window_size)
         fundamental_weight: float = weights[0]
         chart_weight: float = weights[1]
