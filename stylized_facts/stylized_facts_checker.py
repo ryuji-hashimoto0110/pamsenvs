@@ -217,11 +217,13 @@ class StylizedFactsChecker:
             str(transactions_file_path), index_col=0
         )
         indexes = cumsum_scaled_transactions_df.index
-        cumsum_scaled_transactions_arr: ndarray = cumsum_scaled_transactions_df[
-            self.prng.choice(cumsum_scaled_transactions_df.columns)
-        ].values
+        sampled_column: str = self.prng.choice(cumsum_scaled_transactions_df.columns)
+        print(f"sampled_column: {sampled_column}")
+        cumsum_scaled_transactions_arr: ndarray = cumsum_scaled_transactions_df[sampled_column].values
+        print(cumsum_scaled_transactions_arr)
         cumsum_transactions_arr: ndarray = len(df) * cumsum_scaled_transactions_arr
         cumsum_transactions: list[int] = list(cumsum_transactions_arr.astype(np.uint8))
+        print(cumsum_transactions)
         opens: list[Optional[float | int]] = []
         highes: list[Optional[float | int]] = []
         lowes: list[Optional[float | int]] = []
@@ -231,6 +233,7 @@ class StylizedFactsChecker:
         num_pre_transactions: int = 0
         for num_cur_transactions in cumsum_transactions:
             cur_df: DataFrame = df.iloc[num_pre_transactions:num_cur_transactions,:]
+            print(cur_df)
             if 0 < len(cur_df):
                 opens.append(cur_df["event_price (avg)"].iloc[0])
                 highes.append(cur_df["event_price (avg)"].max())
