@@ -29,6 +29,7 @@ MarketName = TypeVar("MarketName")
 def get_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("--initial_seed", type=int, default=42)
+    parser.add_argument("--significant_figures", type=int, default=4)
     parser.add_argument("--configs_folder_path", type=str)
     parser.add_argument(
         "--config_names", type=str, nargs="*",
@@ -128,7 +129,8 @@ def main(args):
     initial_seed: int = all_args.initial_seed
     prng: random.Random = random.Random(initial_seed)
     skip_simulations: bool = all_args.skip_simulations
-    print(f"initial_seed: {initial_seed} skip_simulations: {skip_simulations}")
+    significant_figures: int = all_args.significant_figures
+    print(f"initial_seed: {initial_seed} skip_simulations: {skip_simulations} significant_figures: {significant_figures}")
     print()
     print("[green]==get configuration paths==[green]")
     configs_folder_path: Path = pathlib.Path(all_args.configs_folder_path).resolve()
@@ -180,6 +182,7 @@ def main(args):
                     config, simulation_id
                 )
                 saver = FlexSaver(
+                    significant_figures=significant_figures,
                     session1_end_time=session1_end_time,
                     session2_start_time=session2_start_time,
                     txt_save_folder_path=txt_save_folder_path,
