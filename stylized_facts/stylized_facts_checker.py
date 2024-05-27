@@ -218,12 +218,9 @@ class StylizedFactsChecker:
         )
         indexes = cumsum_scaled_transactions_df.index
         sampled_column: str = self.prng.choice(cumsum_scaled_transactions_df.columns)
-        print(f"sampled_column: {sampled_column}")
         cumsum_scaled_transactions_arr: ndarray = cumsum_scaled_transactions_df[sampled_column].values
-        print(cumsum_scaled_transactions_arr)
         cumsum_transactions_arr: ndarray = len(df) * cumsum_scaled_transactions_arr
         cumsum_transactions: list[int] = list(cumsum_transactions_arr.astype(np.uint8))
-        print(cumsum_transactions)
         opens: list[Optional[float | int]] = []
         highes: list[Optional[float | int]] = []
         lowes: list[Optional[float | int]] = []
