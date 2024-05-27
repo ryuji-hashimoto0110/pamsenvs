@@ -956,10 +956,12 @@ class StylizedFactsChecker:
         self,
         img_save_name: str,
         color: str = "black",
+        max_plot_num: int = 1000
     ) -> None:
         fig: Figure = plt.figure(figsize=(10,6))
         ax: Axes = fig.add_subplot(1,1,1)
         dummy_date = datetime.date(1990, 1, 1)
+        current_plot_num: int = 0
         for ohlcv_df in self.ohlcv_dfs:
             datetimes = [
                 datetime.datetime.combine(dummy_date, t) for t in ohlcv_df.index
@@ -971,6 +973,9 @@ class StylizedFactsChecker:
                 datetimes, cumsum_scaled_transactions_arr,
                 color=color, s=1
             )
+            current_plot_num += 1
+            if max_plot_num <= current_plot_num:
+                break
         if self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events"):
             mean_cumsum_scaled_transactions_arr: ndarray = self.calc_mean_cumulative_transactions(
                 return_mean=True
