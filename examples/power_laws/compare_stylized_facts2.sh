@@ -17,7 +17,6 @@ python compare_stylized_facts.py \
 --config_names ${config_names} \
 --resample_rule ${resample_rule} \
 --txt_save_folder_paths ${txt_save_folder_paths} \
---skip_simulations \
 --num_simulations ${num_simulations} \
 --tick_dfs_folder_paths ${tick_dfs_folder_paths} \
 --ohlcv_dfs_folder_paths ${ohlcv_dfs_folder_paths} \
