@@ -230,7 +230,6 @@ class StylizedFactsChecker:
         num_pre_transactions: int = 0
         for num_cur_transactions in cumsum_transactions:
             cur_df: DataFrame = df.iloc[num_pre_transactions:num_cur_transactions,:]
-            print(cur_df)
             if 0 < len(cur_df):
                 opens.append(cur_df["event_price (avg)"].iloc[0])
                 highes.append(cur_df["event_price (avg)"].max())
