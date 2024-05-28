@@ -22,7 +22,7 @@
 			},
             {	
 				"sessionName": "00",
-				"iterationSteps": 50,
+				"iterationSteps": 100,
 				"withOrderPlacement": true,
 				"withOrderExecution": false,
 				"withPrint": true,
