@@ -105,10 +105,10 @@ class StylizedFactsChecker:
         print("preprocess dfs")
         for df, csv_name in tqdm(zip(self.ohlcv_dfs, self.ohlcv_csv_names)):
             if 0 < df["volume"].isnull().sum():
-                print(csv_name, df["volume"].isunull().sum())
+                print(csv_name, df["volume"].isnull().sum())
             self.preprocess_ohlcv_df(df)
             if 0 < df["volume"].isnull().sum():
-                print(csv_name, df["volume"].isunull().sum())
+                print(csv_name, df["volume"].isnull().sum())
             if ohlcv_dfs_save_path is not None:
                 save_path: Path = ohlcv_dfs_save_path / csv_name
                 df.to_csv(str(save_path))
