@@ -104,10 +104,10 @@ class StylizedFactsChecker:
             self._read_ohlcv_dfs(ohlcv_dfs_path, choose_full_size_df)
         print("preprocess dfs")
         for df, csv_name in tqdm(zip(self.ohlcv_dfs, self.ohlcv_csv_names)):
-            if 0 < df["volume"].isnull().sum():
+            if 0 < df["close"].isnull().sum():
                 print(csv_name, df["volume"].isnull().sum())
             self.preprocess_ohlcv_df(df)
-            if 0 < df["volume"].isnull().sum():
+            if 0 < df["close"].isnull().sum():
                 print(csv_name, df["volume"].isnull().sum())
             if ohlcv_dfs_save_path is not None:
                 save_path: Path = ohlcv_dfs_save_path / csv_name
@@ -142,6 +142,10 @@ class StylizedFactsChecker:
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
                 df = self._resample(df)
+            if "close" in df.columns:
+                if 0 < df["close"].isnull().sum():
+                    print(csv_path)
+                    print(df)
             if (
                 len(df) < freq_ohlcv_size_dic[self.resample_rule] and choose_full_size_df
             ):
