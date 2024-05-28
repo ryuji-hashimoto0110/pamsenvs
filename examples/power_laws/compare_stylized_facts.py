@@ -231,8 +231,8 @@ def main(args):
         checker = StylizedFactsChecker(
             seed=initial_seed,
             tick_dfs_path=tick_dfs_folder_path,
-            ohlcv_dfs_path=ohlcv_dfs_folder_path,
-            #ohlcv_dfs_save_path=ohlcv_dfs_folder_path,
+            #ohlcv_dfs_path=ohlcv_dfs_folder_path,
+            ohlcv_dfs_save_path=ohlcv_dfs_folder_path,
             figs_save_path=figs_save_path,
             resample_rule=resample_rule,
             is_real=False,
