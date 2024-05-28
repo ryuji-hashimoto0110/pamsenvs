@@ -257,6 +257,7 @@ class StylizedFactsChecker:
             index=indexes
         )
         session_resampled_df["close"] = session_resampled_df["close"].ffill()
+        session_resampled_df["close"] = session_resampled_df["close"].bfill()
         return session_resampled_df
 
     def _read_tick_dfs(self, tick_dfs_path: Path) -> None:
