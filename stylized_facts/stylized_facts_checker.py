@@ -105,9 +105,6 @@ class StylizedFactsChecker:
         print("preprocess dfs")
         for df, csv_name in tqdm(zip(self.ohlcv_dfs, self.ohlcv_csv_names)):
             self.preprocess_ohlcv_df(df)
-            if 0 < df["close"].isnull().sum():
-                print(csv_name)
-                print(df)
             if ohlcv_dfs_save_path is not None:
                 save_path: Path = ohlcv_dfs_save_path / csv_name
                 df.to_csv(str(save_path))
@@ -340,14 +337,12 @@ class StylizedFactsChecker:
             dfs (list[DataFrame]): list whose elements are dataframe. Ex: self.ohlcv_dfs
             colname (str): column name to check if stacking is possible.
         """
-        print(colname)
         for df in dfs:
             if colname not in df.columns:
                 return False
         if [len(df) for df in dfs].count(len(dfs[0])) != len(dfs):
             return False
         if [df[colname].isnull().sum() for df in dfs].count(dfs[0][colname].isnull().sum()) != len(dfs):
-            print("called")
             return False
         return True
 
