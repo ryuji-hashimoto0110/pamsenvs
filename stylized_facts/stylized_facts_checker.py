@@ -138,6 +138,8 @@ class StylizedFactsChecker:
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
                 df = self._resample(df)
+            if 0 < df["volume"].isnull().sum():
+                print(csv_path)
             if (
                 len(df) < freq_ohlcv_size_dic[self.resample_rule] and choose_full_size_df
             ):
