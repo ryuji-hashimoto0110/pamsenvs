@@ -105,6 +105,9 @@ class StylizedFactsChecker:
         print("preprocess dfs")
         for df, csv_name in tqdm(zip(self.ohlcv_dfs, self.ohlcv_csv_names)):
             self.preprocess_ohlcv_df(df)
+            if 0 < df["close"].isnull().sum():
+                print(csv_name)
+                print(df)
             if ohlcv_dfs_save_path is not None:
                 save_path: Path = ohlcv_dfs_save_path / csv_name
                 df.to_csv(str(save_path))
@@ -174,8 +177,7 @@ class StylizedFactsChecker:
             rule=self.resample_rule, closed="left", label="left"
         ).count()
         resampled_df.index = resampled_df.index.time
-        resampled_df["close"] = resampled_df["close"].ffill()
-        resampled_df["close"] = resampled_df["close"].bfill()
+        resampled_df["close"] = resampled_df["close"].ffill().bfill()
         resampled_df = resampled_df[
             (resampled_df.index <= self.session1_end_time) | \
             (self.session2_start_time <= resampled_df.index)
@@ -205,8 +207,7 @@ class StylizedFactsChecker:
         )
         resampled_df.index = pd.to_datetime(resampled_df.index, format="%H:%M:%S")
         resampled_df.index = resampled_df.index.time
-        resampled_df["close"] = resampled_df["close"].ffill()
-        resampled_df["close"] = resampled_df["close"].bfill()
+        resampled_df["close"] = resampled_df["close"].ffill().bfill()
         return resampled_df
 
     def _resample_art_per_session(
@@ -256,8 +257,7 @@ class StylizedFactsChecker:
             },
             index=indexes
         )
-        session_resampled_df["close"] = session_resampled_df["close"].ffill()
-        session_resampled_df["close"] = session_resampled_df["close"].bfill()
+        session_resampled_df["close"] = session_resampled_df["close"].ffill().bfill()
         return session_resampled_df
 
     def _read_tick_dfs(self, tick_dfs_path: Path) -> None:
@@ -340,12 +340,14 @@ class StylizedFactsChecker:
             dfs (list[DataFrame]): list whose elements are dataframe. Ex: self.ohlcv_dfs
             colname (str): column name to check if stacking is possible.
         """
+        print(colname)
         for df in dfs:
             if colname not in df.columns:
                 return False
         if [len(df) for df in dfs].count(len(dfs[0])) != len(dfs):
             return False
         if [df[colname].isnull().sum() for df in dfs].count(dfs[0][colname].isnull().sum()) != len(dfs):
+            print("called")
             return False
         return True
 
