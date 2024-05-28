@@ -138,7 +138,9 @@ class StylizedFactsChecker:
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
                 df = self._resample(df)
-            if len(df) < freq_ohlcv_size_dic[self.resample_rule] and choose_full_size_df:
+            if (
+                len(df) < freq_ohlcv_size_dic[self.resample_rule] and choose_full_size_df
+            ):
                 store_df = False
             else:
                 store_df = True
@@ -335,15 +337,12 @@ class StylizedFactsChecker:
             dfs (list[DataFrame]): list whose elements are dataframe. Ex: self.ohlcv_dfs
             colname (str): column name to check if stacking is possible.
         """
-        print(colname)
         for df in dfs:
             if colname not in df.columns:
                 return False
         if [len(df) for df in dfs].count(len(dfs[0])) != len(dfs):
             return False
         if [df[colname].isnull().sum() for df in dfs].count(dfs[0][colname].isnull().sum()) != len(dfs):
-            print(max([df[colname].isnull().sum() for df in dfs]))
-            print(min([df[colname].isnull().sum() for df in dfs]))
             return False
         return True
 
