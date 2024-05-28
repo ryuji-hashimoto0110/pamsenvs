@@ -14,7 +14,7 @@
 			},
 			{	
 				"sessionName": "1",
-				"iterationSteps": 3000,
+				"iterationSteps": 10000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -22,7 +22,7 @@
 			},
             {	
 				"sessionName": "00",
-				"iterationSteps": 50,
+				"iterationSteps": 100,
 				"withOrderPlacement": true,
 				"withOrderExecution": false,
 				"withPrint": true,
@@ -31,7 +31,7 @@
 			},
             {	
 				"sessionName": "2",
-				"iterationSteps": 3000,
+				"iterationSteps": 10000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
