@@ -138,7 +138,7 @@ def main(args):
     config_paths: Path = get_config_paths(configs_folder_path, config_names)
     print("[green]==get folder paths to save txt data with FLEX format==[green]")
     txt_save_folder_paths: list[Path] = convert_strs2paths(all_args.txt_save_folder_paths)
-    print("[green]==get folder paths to save csv data recorded for each event==[green]")
+    print("[green]==get folder paths to save csv data recorded by each event==[green]")
     tick_dfs_folder_paths: list[Path] = convert_strs2paths(all_args.tick_dfs_folder_paths)
     print("[green]==get folder paths to save csv data with OHLCV format==[green]")
     ohlcv_dfs_folder_paths: list[Path] = convert_strs2paths(all_args.ohlcv_dfs_folder_paths)
