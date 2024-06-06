@@ -551,7 +551,7 @@ class StylizedFactsChecker:
                 )
             #return_arr_flatten: ndarray = self.return_arr.flatten()[np.newaxis,:]
             left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_hill_indices(
-                return_arr, cut_off_th
+                self.return_arr, cut_off_th
             )
         else:
             warnings.warn(
