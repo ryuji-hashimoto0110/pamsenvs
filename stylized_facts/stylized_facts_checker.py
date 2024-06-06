@@ -229,6 +229,7 @@ class StylizedFactsChecker:
         closes: list[float | int] = []
         volumes: list[int] = []
         num_events: list[int] = []
+        moods: list[float] = []
         num_pre_transactions: int = 0
         for num_cur_transactions in cumsum_transactions:
             cur_df: DataFrame = df.iloc[num_pre_transactions:num_cur_transactions,:]
@@ -239,6 +240,8 @@ class StylizedFactsChecker:
                 closes.append(cur_df["event_price (avg)"].iloc[-1])
                 volumes.append(cur_df["event_volume"].sum())
                 num_events.append(len(cur_df))
+                if "mood" in cur_df.columns:
+                    moods.append(cur_df["mood"].mean())
             else:
                 opens.append(None)
                 highes.append(None)
@@ -246,6 +249,8 @@ class StylizedFactsChecker:
                 closes.append(None)
                 volumes.append(0)
                 num_events.append(0)
+                if "mood" in cur_df.columns:
+                    moods.append(None)
             num_pre_transactions = num_cur_transactions
         session_resampled_df: DataFrame = pd.DataFrame(
             data={
@@ -255,6 +260,9 @@ class StylizedFactsChecker:
             index=indexes
         )
         session_resampled_df["close"] = session_resampled_df["close"].ffill().bfill()
+        if len(session_resampled_df) == len(moods):
+            session_resampled_df["mood"] = moods
+            session_resampled_df["mood"] = session_resampled_df["mood"].ffill().bfill()
         return session_resampled_df
 
     def _read_tick_dfs(self, tick_dfs_path: Path) -> None:
