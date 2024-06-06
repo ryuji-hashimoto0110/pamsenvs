@@ -549,30 +549,28 @@ class StylizedFactsChecker:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
                     self.ohlcv_dfs, "close", norm=True
                 )
-            #return_arr_flatten: ndarray = self.return_arr.flatten()[np.newaxis,:]
+            return_arr_flatten: ndarray = self.return_arr.flatten()[np.newaxis,:]
             left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_hill_indices(
-                self.return_arr, cut_off_th
+                return_arr_flatten, cut_off_th
             )
         else:
             warnings.warn(
                 "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
             )
-            left_tails: list[float] = []
-            right_tails: list[float] = []
-            abs_tails: list[float] = []
+            return_arr_flatten: ndarray = np.array([], dtype=np.float32)
             for ohlcv_df in self.ohlcv_dfs:
-                return_arr: ndarray = self._calc_return_arr_from_df(
-                    ohlcv_df, "close", norm=True
+                return_arr_flatten: ndarray = np.concatenate(
+                    [
+                        return_arr_flatten,
+                        self._calc_return_arr_from_df(
+                            ohlcv_df, "close", norm=True
+                        ).flatten()
+                    ]
                 )
-                left_tail_arr_, right_tail_arr_, abs_tail_arr_ = self._calc_both_sides_hill_indices(
-                    return_arr, cut_off_th
-                )
-                left_tails.append(left_tail_arr_.item())
-                right_tails.append(right_tail_arr_.item())
-                abs_tails.append(abs_tail_arr_.item())
-            left_tail_arr: ndarray = np.array(left_tails)[:,np.newaxis]
-            right_tail_arr: ndarray = np.array(right_tails)[:,np.newaxis]
-            abs_tail_arr: ndarray = np.array(abs_tails)[:,np.newaxis]
+            return_arr_flatten = return_arr_flatten[np.newaxis,:]
+            left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_hill_indices(
+                return_arr_flatten, cut_off_th
+            )
         return left_tail_arr, right_tail_arr, abs_tail_arr
 
     def _calc_hill_indices(
@@ -610,13 +608,14 @@ class StylizedFactsChecker:
             axis=1
         )[:,np.newaxis]
         tail_arr: ndarray = 1 / tail_arr
+        print(float(tail_arr) / np.sqrt(k))
         return tail_arr
 
     def _calc_both_sides_hill_indices(
         self,
         return_arr: ndarray,
         cut_off_th: float = 0.05
-    ) -> tuple[ndarray, ndarray, ndarray]:
+    ) -> tuple[ndarray, ndarray]:
         """_summary_
 
         Args:
@@ -628,17 +627,20 @@ class StylizedFactsChecker:
             right_tail_arr (ndarray): _description_
         """
         sorted_return_arr: ndarray = np.sort(return_arr, axis=1)
+        print("calculate right tail index. asymptotic standard error: ")
         right_tail_arr: ndarray = self._calc_hill_indices(
             sorted_return_arr, cut_off_th
         )
         minus_return_arr: ndarray = - 1 * return_arr
         sorted_minus_return_arr: ndarray = np.sort(minus_return_arr, axis=1)
+        print("calculate left tail index. asymptotic standard error: ")
         left_tail_arr: ndarray = self._calc_hill_indices(
             sorted_minus_return_arr, cut_off_th
         )
         sorted_abs_return_arr: ndarray = np.sort(
             np.abs(return_arr), axis=1
         )
+        print("calculate abs tail index. asymptotic standard error: ")
         abs_tail_arr: ndarray = self._calc_hill_indices(
             sorted_abs_return_arr, cut_off_th
         )
@@ -777,6 +779,9 @@ class StylizedFactsChecker:
         if 0 < len(self.ohlcv_dfs):
             kurtosis_arr, p_values = self.check_kurtosis()
             left_tail_arr, right_tail_arr, abs_tail_arr = self.check_hill_index()
+            left_tail_arr = np.repeat(left_tail_arr, repeats=kurtosis_arr.shape[0])
+            right_tail_arr = np.repeat(right_tail_arr, repeats=kurtosis_arr.shape[0])
+            abs_tail_arr = np.repeat(abs_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
             acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
                 [lag for lag in range(1,31)]
