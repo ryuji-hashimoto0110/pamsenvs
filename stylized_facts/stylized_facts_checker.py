@@ -608,6 +608,7 @@ class StylizedFactsChecker:
             axis=1
         )[:,np.newaxis]
         tail_arr: ndarray = 1 / tail_arr
+        print(float(tail_arr) / np.sqrt(k))
         return tail_arr
 
     def _calc_both_sides_hill_indices(
@@ -626,6 +627,7 @@ class StylizedFactsChecker:
             right_tail_arr (ndarray): _description_
         """
         sorted_return_arr: ndarray = np.sort(return_arr, axis=1)
+        print("calculate right tail index. asymptotic standard error: ")
         right_tail_arr: ndarray = self._calc_hill_indices(
             sorted_return_arr, cut_off_th
         )
