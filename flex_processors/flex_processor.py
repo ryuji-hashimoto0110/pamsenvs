@@ -130,7 +130,7 @@ class FlexProcessor:
             try:
                 _ = subprocess.run(download_command, shell=True)
                 for data_path in datas_path.iterdir():
-                    if data_path.suffix == "txt":
+                    if data_path.suffix == ".txt":
                         destination_folder_path: Path = self.txt_datas_path / str(current_date)
                         if not destination_folder_path.exists():
                             destination_folder_path.mkdir(parents=True)
