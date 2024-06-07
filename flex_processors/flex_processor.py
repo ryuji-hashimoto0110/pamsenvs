@@ -125,12 +125,14 @@ class FlexProcessor:
         end_datetime = datetime.strptime(str(end_date), "%Y%m%d")
         while current_datetime <= end_datetime:
             current_date = int(current_datetime.strftime("%Y%m%d"))
-            data_path: Path = pathlib.Path(__file__).resolve().parents[0] / str(current_date)
+            datas_path: Path = pathlib.Path(__file__).resolve().parents[0] / str(current_date)
             download_command: str = f"ruby {str(self.flex_downloader_path)} {current_date} {tickers}"
             try:
                 _ = subprocess.run(download_command, shell=True)
-                move_command: str = f"mv {str(data_path)} {str(self.txt_datas_path)}"
-                _ = subprocess.run(move_command, shell=True)
+                for data_path in datas_path.iterdir():
+                    destination_path: Path = self.txt_datas_path / data_path.name
+                    move_command: str = f"mv {str(data_path)} {str(destination_path)}"
+                    _ = subprocess.run(move_command, shell=True)
             except Exception as e:
                 print(e)
                 pass
