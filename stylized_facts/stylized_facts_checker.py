@@ -1,7 +1,8 @@
 import datetime
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import Axes, Figure
+from matplotlib.pyplot import Axes
+from matplotlib.pyplot import Figure
 import numpy as np
 from numpy import ndarray
 import pandas as pd
@@ -1156,5 +1157,55 @@ class StylizedFactsChecker:
         img_save_name: str,
         draw_idx: int
     ) -> None:
-        pass
+        print(f"plot prices of {self.ohlcv_csv_names[draw_idx]}")
+        ohlcv_df: DataFrame = self.ohlcv_dfs[draw_idx]
+        dummy_date = datetime.date(1990, 1, 1)
+        datetimes = [
+                datetime.datetime.combine(dummy_date, t) for t in ohlcv_df.index
+        ]
+        price_arr: ndarray = ohlcv_df["close"].values
+        volume_arr: ndarray = ohlcv_df["volume"].values
+        if "mood" in ohlcv_df.columns:
+            mood_arr: ndarray = ohlcv_df["mood"]
+            fig = plt.figure(figsize=(20,20), dpi=50, facecolor="w")
+            ax1: Axes = fig.add_subplot(2,1,1)
+            ax2: Axes = fig.add_subplot(2,1,2)
+            ax2.plot(datetimes, mood_arr, color="black")
+            ax2.set_xlabel("time")
+            ax2.set_ylabel("mood")
+            ax2.set_title("change of mood (proportion of optimistic agents)")
+            ax2.xaxis.set_major_locator(
+                mdates.MinuteLocator(range(60), 60)
+            )
+            ax2.xaxis.set_major_formatter(
+                mdates.DateFormatter("%H:%M")
+            )
+        else:
+            fig = plt.figure(figsize=(20,9), dpi=50, facecolor="w")
+            ax1: Axes = fig.add_subplot(1,1,1)
+        ax1_: Axes = ax1.twinx()
+        ax1.plot(datetimes, price_arr, color="black", label="market price")
+        ax1.set_ylim(200,400)
+        ax1.set_yticks([200,250,300,350,400])
+        ax1.set_ylabel("price")
+        ax1.set_xlabel("time")
+        ax1.xaxis.set_major_locator(
+            mdates.MinuteLocator(range(60), 60)
+        )
+        ax1.xaxis.set_major_formatter(
+            mdates.DateFormatter("%H:%M")
+        )
+        ax1.set_title("executed volumes and change of market prices")
+        ax1_.bar(
+            datetimes, volume_arr,
+            align="center", width=1.0, color="blue", label="volume", alpha=0.5
+        )
+        ax1_.set_ylim([0,10000])
+        ax1_.set_ylabel("volume")
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines1_, labels1_ = ax1_.get_legend_handles_labels()
+        ax1.legend(lines1+lines1_, labels1+labels1_, loc="upper left")
+        plt.tight_layout()
+        save_path: Path = self.figs_save_path / img_save_name
+        plt.savefig(str(save_path))
         

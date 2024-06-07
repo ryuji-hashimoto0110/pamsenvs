@@ -245,6 +245,10 @@ def main(args):
         checker.scatter_cumulative_transactions(
             img_save_name="transactions_time_series.pdf"
         )
+        checker.plot_time_series(
+            img_save_name="market_prices.pdf",
+            draw_idx=42
+        )
 
 if __name__ == "__main__":
     main(sys.argv[1:])
