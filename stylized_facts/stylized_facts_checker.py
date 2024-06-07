@@ -908,7 +908,7 @@ class StylizedFactsChecker:
         if 0 < len(self.ohlcv_dfs):
             kurtosis_arr, p_values = self.check_kurtosis()
             left_hill_tail_arr, right_hill_tail_arr, abs_hill_tail_arr = self.check_hill_index()
-            left_lrls_tail_arr, right_lrls_tail_arr, abs_lrls_tail_arr = self.check_lrls_coefficien()
+            left_lrls_tail_arr, right_lrls_tail_arr, abs_lrls_tail_arr = self.check_lrls_coefficient()
             left_hill_tail_arr = np.repeat(left_hill_tail_arr, repeats=kurtosis_arr.shape[0])
             right_hill_tail_arr = np.repeat(right_hill_tail_arr, repeats=kurtosis_arr.shape[0])
             abs_hill_tail_arr = np.repeat(abs_hill_tail_arr, repeats=kurtosis_arr.shape[0])
