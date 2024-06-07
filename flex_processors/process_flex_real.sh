@@ -1,7 +1,7 @@
 txt_folder_path="../datas/real_datas/flex_txt"
 csv_folder_path="../datas/real_datas/flex_csv"
 flex_downloader_path="~/flex_full_processed_downloader/downloader.rb"
-tickers="3407 4188 4568 5020 6502"
+tickers="3407 4188 4568 5020 6502 9202"
 start_date="20150101"
 end_date="20211231"
 quote_num=10
