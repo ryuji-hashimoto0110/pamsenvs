@@ -143,7 +143,7 @@ class FlexProcessor:
                 print(e)
                 pass
             current_datetime += timedelta(days=1)
-            if current_datetime.date == 1:
+            if current_datetime.day == 1:
                 self.convert_all_txt2csv()
         self.txt_datas_path.unlink()
 
