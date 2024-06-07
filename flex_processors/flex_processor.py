@@ -133,7 +133,7 @@ class FlexProcessor:
                     destination_path: Path = self.txt_datas_path / data_path.name
                     move_command: str = f"mv {str(data_path)} {str(destination_path)}"
                     _ = subprocess.run(move_command, shell=True)
-                remove_command: str = f"rm -rf {datas_path}"
+                remove_command: str = f"rm -rf {str(datas_path)}"
                 _ = subprocess.run(remove_command)
             except Exception as e:
                 print(e)
