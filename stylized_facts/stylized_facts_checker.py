@@ -738,15 +738,16 @@ class StylizedFactsChecker:
         ob_variables: ndarray = np.log(np.arange(1,k+1)[::-1])
         tails: list[float] = []
         for cut_sorted_return_arr_flatten in cut_sorted_return_arr:
-            ex_variables: ndarray = cut_sorted_return_arr_flatten.flatten()
+            ex_variables: ndarray = np.log(cut_sorted_return_arr_flatten.flatten())
             if np.sum(ex_variables != np.sort(ex_variables)) != 0:
                 raise ValueError(
                     "ex_variables must be ascendinglly sorted"
                 )
             lr = linregress(ex_variables, ob_variables)
-            tails.append(lr.slope)
+            tail: float = - lr.slope
+            tails.append(tail)
             print(f"stderr: {lr.stderr}")
-            print(f"asymptotic stderror: {tails[-1]/np.sqrt(k/2)}")
+            print(f"asymptotic stderror: {tail/np.sqrt(k/2)}")
         tail_arr: ndarray = np.array(tails)[:,np.newaxis]
         return tail_arr
         
