@@ -14,7 +14,7 @@ def get_config():
     parser.add_argument("--csv_folder_path", type=str, default=None,
                         help="folder path that target txt datas are stored.")
     parser.add_argument("--flex_downloader_path", type=str, default=None)
-    parser.add_argument("--tickers", type=str)
+    parser.add_argument("--tickers", type=str, nargs="*")
     parser.add_argument("--start_date", type=int)
     parser.add_argument("--end_date", type=int)
     parser.add_argument("--quote_num", type=int)
@@ -32,7 +32,10 @@ def main(args):
     flex_downloader_path: Path = pathlib.Path(all_args.flex_downloader_path)
     start_date: int = all_args.start_date
     end_date: int = all_args.end_date
-    tickers: str = all_args.tickers
+    tickers_: list[str] = all_args.tickers
+    tickers: str = ""
+    for ticker in tickers_:
+        tickers += f"{ticker} "
     quote_num: int = all_args.quote_num
     processor = FlexProcessor(
         txt_datas_path=txt_datas_path,

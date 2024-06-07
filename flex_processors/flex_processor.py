@@ -127,6 +127,7 @@ class FlexProcessor:
             current_date = int(current_datetime.strftime("%Y%m%d"))
             datas_path: Path = pathlib.Path(__file__).resolve().parents[0] / str(current_date)
             download_command: str = f"ruby {str(self.flex_downloader_path)} {current_date} {tickers}"
+            print(download_command)
             try:
                 _ = subprocess.run(download_command, shell=True)
                 for data_path in datas_path.iterdir():
