@@ -648,6 +648,7 @@ class StylizedFactsChecker:
         abs_tail_arr: ndarray = self._calc_hill_indices(
             sorted_abs_return_arr, cut_off_th
         )
+        print()
         return left_tail_arr, right_tail_arr, abs_tail_arr
        
     def check_lrls_coefficient(
@@ -774,6 +775,7 @@ class StylizedFactsChecker:
         abs_tail_arr: ndarray = self._calc_lrls_coefficient(
             sorted_abs_return_arr, cut_off_th
         )
+        print()
         return left_tail_arr, right_tail_arr, abs_tail_arr
 
     def check_autocorrelation(self, lags: list[int]) -> dict[int, ndarray]:
@@ -1184,7 +1186,6 @@ class StylizedFactsChecker:
         else:
             fig = plt.figure(figsize=(20,9), dpi=50, facecolor="w")
             ax1: Axes = fig.add_subplot(1,1,1)
-        ax1_: Axes = ax1.twinx()
         ax1.plot(datetimes, price_arr, color="black", label="market price")
         ax1.set_ylim(200,400)
         ax1.set_yticks([200,250,300,350,400])
@@ -1197,10 +1198,12 @@ class StylizedFactsChecker:
             mdates.DateFormatter("%H:%M")
         )
         ax1.set_title("executed volumes and change of market prices")
+        ax1_: Axes = ax1.twinx()
         ax1_.bar(
             datetimes, volume_arr,
             align="center", width=1.0, color="blue", label="volume", alpha=0.5
         )
+        print(datetimes, volume_arr)
         ax1_.set_ylim([0,10000])
         ax1_.set_ylabel("volume")
         lines1, labels1 = ax1.get_legend_handles_labels()
