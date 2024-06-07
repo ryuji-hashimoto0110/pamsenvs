@@ -11,7 +11,9 @@ from pathlib import Path
 import random
 from rich.console import Console
 from rich.table import Table
-from scipy.stats import kurtosis, kurtosistest
+from scipy.stats import linregress
+from scipy.stats import kurtosis
+from scipy.stats import kurtosistest
 from tqdm import tqdm
 from typing import Optional
 import warnings
@@ -542,6 +544,7 @@ class StylizedFactsChecker:
         Returns:
             left_tail_arr (ndarray): tail indices of left side of samples.
             right_tail_arr (ndarray): tail indices of right side of samples.
+            abs_tail_arr (ndarray): tail indices of absolute returns.
         """
         assert 0 < cut_off_th and cut_off_th < 1
         if self._is_stacking_possible(self.ohlcv_dfs, "close"):
@@ -608,7 +611,7 @@ class StylizedFactsChecker:
             axis=1
         )[:,np.newaxis]
         tail_arr: ndarray = 1 / tail_arr
-        print(float(tail_arr) / np.sqrt(k))
+        print(float(tail_arr) ** 2 / np.sqrt(k))
         return tail_arr
 
     def _calc_both_sides_hill_indices(
@@ -627,21 +630,146 @@ class StylizedFactsChecker:
             right_tail_arr (ndarray): _description_
         """
         sorted_return_arr: ndarray = np.sort(return_arr, axis=1)
-        print("calculate right tail index. asymptotic standard error: ")
+        print("calculate right Hill tail index. asymptotic standard error: ")
         right_tail_arr: ndarray = self._calc_hill_indices(
             sorted_return_arr, cut_off_th
         )
         minus_return_arr: ndarray = - 1 * return_arr
         sorted_minus_return_arr: ndarray = np.sort(minus_return_arr, axis=1)
-        print("calculate left tail index. asymptotic standard error: ")
+        print("calculate left Hill tail index. asymptotic standard error: ")
         left_tail_arr: ndarray = self._calc_hill_indices(
             sorted_minus_return_arr, cut_off_th
         )
         sorted_abs_return_arr: ndarray = np.sort(
             np.abs(return_arr), axis=1
         )
-        print("calculate abs tail index. asymptotic standard error: ")
+        print("calculate abs Hill tail index. asymptotic standard error: ")
         abs_tail_arr: ndarray = self._calc_hill_indices(
+            sorted_abs_return_arr, cut_off_th
+        )
+        return left_tail_arr, right_tail_arr, abs_tail_arr
+       
+    def check_lrls_coefficient(
+        self,
+        cut_off_th: float = 0.05
+    ) -> tuple[ndarray, ndarray, ndarray]:
+        """check OLS coefficient of log rank log size regression of given price time series.
+
+        The stock return distribution is generally said to be fat-tail.
+        According to some empirical researches, the tail index is normally around or below 3
+        in real markets (universal cubic law).
+        Also, the skewness of the returns is negative. In other words,
+        tail due to negative returns is fatter than that due to positive returns.
+
+        The second methodology besides Hill index is calculating OLS coefficient on return_i in the
+        regression of log of the rank i on the log size:
+        log i = const - coef * log return_i + noise.
+
+        Args:
+            cut_off_th (float): threshold to cut-off samples inside tail of the distributions.
+                Default to 0.05.
+
+        Returns:
+            left_tail_arr (ndarray): tail indices of left side of samples.
+            right_tail_arr (ndarray): tail indices of right side of samples.
+            abs_tail_arr (ndarray): tail indices of absolute returns.
+        """
+        assert 0 < cut_off_th and cut_off_th < 1
+        if self._is_stacking_possible(self.ohlcv_dfs, "close"):
+            if self.return_arr is None:
+                self.return_arr: ndarray = self._calc_return_arr_from_dfs(
+                    self.ohlcv_dfs, "close", norm=True
+                )
+            return_arr_flatten: ndarray = self.return_arr.flatten()[np.newaxis,:]
+            left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_lrls_coefficient(
+                return_arr_flatten, cut_off_th
+            )
+        else:
+            warnings.warn(
+                "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
+            )
+            return_arr_flatten: ndarray = np.array([], dtype=np.float32)
+            for ohlcv_df in self.ohlcv_dfs:
+                return_arr_flatten: ndarray = np.concatenate(
+                    [
+                        return_arr_flatten,
+                        self._calc_return_arr_from_df(
+                            ohlcv_df, "close", norm=True
+                        ).flatten()
+                    ]
+                )
+            return_arr_flatten = return_arr_flatten[np.newaxis,:]
+            left_tail_arr, right_tail_arr, abs_tail_arr = self._calc_both_sides_lrls_coefficient(
+                return_arr_flatten, cut_off_th
+            )
+        return left_tail_arr, right_tail_arr, abs_tail_arr
+    
+    def _calc_lrls_coefficient(
+        self,
+        sorted_return_arr: ndarray,
+        cut_off_th: float = 0.05
+    ) -> ndarray:
+        """calculate OLS estimater of tail index of ascendinglly sorted return array.
+
+        Args:
+            sorted_return_arr (ndarray): return array whose shape is
+                (number of data, length of time series).
+                This array must be ascendinglly sorted.
+            cut_off_th (float): threshold to cut-off samples inside tail of the distributions.
+                Default to 0.05.
+
+        Returns:
+            tail_arr (ndarray): tail indices. (number of data, 1)
+        """
+        assert len(sorted_return_arr.shape) == 2
+        if np.sum(sorted_return_arr != np.sort(sorted_return_arr, axis=1)) != 0:
+            raise ValueError(
+                "sorted_return_arr must be ascendinglly sorted"
+            )
+        cut_sorted_return_arr: ndarray = sorted_return_arr[
+            :,int(np.floor(sorted_return_arr.shape[1] * (1-cut_off_th))):
+        ]
+        if np.sum(cut_sorted_return_arr <= 0) != 0:
+            raise ValueError(
+                "Non positive elements found in tail area of sorted_return_arr. Maybe you should reduce cut_off_th."
+            )
+        k: int = cut_sorted_return_arr.shape[1]
+        ob_variables: ndarray = np.log(np.arange(1,k+1)[::-1])
+        tails: list[float] = []
+        for cut_sorted_return_arr_flatten in cut_sorted_return_arr:
+            ex_variables: ndarray = cut_sorted_return_arr_flatten.flatten()
+            if np.sum(ex_variables != np.sort(ex_variables)) != 0:
+                raise ValueError(
+                    "ex_variables must be ascendinglly sorted"
+                )
+            lr = linregress(ex_variables, ob_variables)
+            tails.append(lr.slope)
+            print(f"stderr: {lr.stderr}")
+            print(f"asymptotic stderror: {tails[-1]/np.sqrt(k/2)}")
+        tail_arr: ndarray = np.array(tails)[:,np.newaxis]
+        return tail_arr
+        
+    def _calc_both_sides_lrls_coefficient(
+        self,
+        return_arr: ndarray,
+        cut_off_th: float = 0.05
+    ) -> tuple[ndarray, ndarray]:
+        sorted_return_arr: ndarray = np.sort(return_arr, axis=1)
+        print("calculate right OLS tail index. summarization: ")
+        right_tail_arr: ndarray = self._calc_lrls_coefficient(
+            sorted_return_arr, cut_off_th
+        )
+        minus_return_arr: ndarray = - 1 * return_arr
+        sorted_minus_return_arr: ndarray = np.sort(minus_return_arr, axis=1)
+        print("calculate left OLS tail index. summarization: ")
+        left_tail_arr: ndarray = self._calc_lrls_coefficient(
+            sorted_minus_return_arr, cut_off_th
+        )
+        sorted_abs_return_arr: ndarray = np.sort(
+            np.abs(return_arr), axis=1
+        )
+        print("calculate abs OLS tail index. summarization: ")
+        abs_tail_arr: ndarray = self._calc_lrls_coefficient(
             sorted_abs_return_arr, cut_off_th
         )
         return left_tail_arr, right_tail_arr, abs_tail_arr
@@ -778,10 +906,14 @@ class StylizedFactsChecker:
     ) -> None:
         if 0 < len(self.ohlcv_dfs):
             kurtosis_arr, p_values = self.check_kurtosis()
-            left_tail_arr, right_tail_arr, abs_tail_arr = self.check_hill_index()
-            left_tail_arr = np.repeat(left_tail_arr, repeats=kurtosis_arr.shape[0])
-            right_tail_arr = np.repeat(right_tail_arr, repeats=kurtosis_arr.shape[0])
-            abs_tail_arr = np.repeat(abs_tail_arr, repeats=kurtosis_arr.shape[0])
+            left_hill_tail_arr, right_hill_tail_arr, abs_hill_tail_arr = self.check_hill_index()
+            left_lrls_tail_arr, right_lrls_tail_arr, abs_lrls_tail_arr = self.check_lrls_coefficien()
+            left_hill_tail_arr = np.repeat(left_hill_tail_arr, repeats=kurtosis_arr.shape[0])
+            right_hill_tail_arr = np.repeat(right_hill_tail_arr, repeats=kurtosis_arr.shape[0])
+            abs_hill_tail_arr = np.repeat(abs_hill_tail_arr, repeats=kurtosis_arr.shape[0])
+            left_lrls_tail_arr = np.repeat(left_lrls_tail_arr, repeats=kurtosis_arr.shape[0])
+            right_lrls_tail_arr = np.repeat(right_lrls_tail_arr, repeats=kurtosis_arr.shape[0])
+            abs_lrls_tail_arr = np.repeat(abs_lrls_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
             acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
                 [lag for lag in range(1,31)]
@@ -789,9 +921,12 @@ class StylizedFactsChecker:
             data_dic: dict[str, ndarray]= {
                 "kurtosis": kurtosis_arr.flatten(),
                 "kurtosis_p": p_values.flatten(),
-                "tail (left)": left_tail_arr.flatten(),
-                "tail (right)": right_tail_arr.flatten(),
-                "tail (abs)": abs_tail_arr.flatten(),
+                "hill tail (left)": left_hill_tail_arr.flatten(),
+                "hill tail (right)": right_hill_tail_arr.flatten(),
+                "hill tail (abs)": abs_hill_tail_arr.flatten(),
+                "lrls tail (left)": left_lrls_tail_arr.flatten(),
+                "lrls tail (right)": right_lrls_tail_arr.flatten(),
+                "lrls tail (abs)": abs_lrls_tail_arr.flatten(),
                 "vv_corr": volume_volatility_correlation.flatten()
             }
             for lag, acorr in acorr_dic.items():
