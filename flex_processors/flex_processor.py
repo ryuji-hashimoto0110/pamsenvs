@@ -141,7 +141,6 @@ class FlexProcessor:
                 _ = subprocess.run(remove_command, shell=True)
             except Exception as e:
                 print(e)
-                pass
             current_datetime += timedelta(days=1)
             if current_datetime.day == 1:
                 self.convert_all_txt2csv()
