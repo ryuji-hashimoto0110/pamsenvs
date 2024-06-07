@@ -143,6 +143,9 @@ class FlexProcessor:
                 print(e)
                 pass
             current_datetime += timedelta(days=1)
+            if current_datetime.date == 1:
+                self.convert_all_txt2csv()
+        self.txt_datas_path.unlink()
 
     def _create_columns(self) -> list[str]:
         column_names: list[str] = [
@@ -174,6 +177,7 @@ class FlexProcessor:
                 txt_path, csv_path,
                 is_display_path
             )
+            txt_path.unlink()
 
     def convert_txt2csv(
         self,
