@@ -130,11 +130,11 @@ class FlexProcessor:
             try:
                 _ = subprocess.run(download_command, shell=True)
                 for data_path in datas_path.iterdir():
-                    destination_path: Path = self.txt_datas_path / data_path.name
+                    destination_path: Path = self.txt_datas_path / str(current_date) / data_path.name
                     move_command: str = f"mv {str(data_path)} {str(destination_path)}"
                     _ = subprocess.run(move_command, shell=True)
                 remove_command: str = f"rm -rf {str(datas_path)}"
-                _ = subprocess.run(remove_command)
+                _ = subprocess.run(remove_command, shell=True)
             except Exception as e:
                 print(e)
                 pass
