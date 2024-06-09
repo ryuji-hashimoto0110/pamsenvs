@@ -142,8 +142,7 @@ class FlexProcessor:
             except Exception as e:
                 print(e)
             current_datetime += timedelta(days=1)
-            if current_datetime.day == 1:
-                self.convert_all_txt2csv()
+            self.convert_all_txt2csv(is_display_path=False)
         self.txt_datas_path.unlink()
 
     def _create_columns(self) -> list[str]:
