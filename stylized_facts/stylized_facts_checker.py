@@ -1187,8 +1187,7 @@ class StylizedFactsChecker:
             fig = plt.figure(figsize=(20,9), dpi=50, facecolor="w")
             ax1: Axes = fig.add_subplot(1,1,1)
         ax1.plot(datetimes, price_arr, color="black", label="market price")
-        ax1.set_ylim(250,350)
-        ax1.set_yticks([250,275,300,325,350])
+        ax1.set_ylim(0.99*min(price_arr),1.01*max(price_arr))
         ax1.set_ylabel("price")
         ax1.set_xlabel("time")
         ax1.xaxis.set_major_locator(
@@ -1203,7 +1202,7 @@ class StylizedFactsChecker:
             datetimes, volume_arr,
             align="center", width=1/3600, color="blue", label="volume", alpha=1.0
         )
-        ax1_.set_ylim([0,10000])
+        ax1_.set_ylim([0,10*max(volume_arr)])
         ax1_.set_ylabel("volume")
         lines1, labels1 = ax1.get_legend_handles_labels()
         lines1_, labels1_ = ax1_.get_legend_handles_labels()
