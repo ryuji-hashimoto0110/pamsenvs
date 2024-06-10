@@ -1202,7 +1202,7 @@ class StylizedFactsChecker:
             datetimes, volume_arr,
             align="center", width=1/3600, color="blue", label="volume", alpha=1.0
         )
-        ax1_.set_ylim([0,10*max(volume_arr)])
+        ax1_.set_ylim([0,max(volume_arr)])
         ax1_.set_ylabel("volume")
         lines1, labels1 = ax1.get_legend_handles_labels()
         lines1_, labels1_ = ax1_.get_legend_handles_labels()
