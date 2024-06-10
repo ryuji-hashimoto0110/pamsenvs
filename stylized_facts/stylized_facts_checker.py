@@ -845,6 +845,7 @@ class StylizedFactsChecker:
             )
             var: ndarray = np.var(abs_return_arr, axis=1, keepdims=True)
             acorr_dic[lag] = acov / (var + 1e-10)
+            print(f"calculate tail index lag {lag}. asymptotic standard error: ")
             hill_indice_dic[lag] = self._calc_hill_indices(
                 np.sort(
                     (
@@ -853,6 +854,7 @@ class StylizedFactsChecker:
                     axis=1
                 )
             )
+        print()
         return acorr_dic, hill_indice_dic
 
     def check_volume_volatility_correlation(self) -> ndarray:
