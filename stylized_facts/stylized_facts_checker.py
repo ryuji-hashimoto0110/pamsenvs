@@ -847,7 +847,9 @@ class StylizedFactsChecker:
             acorr_dic[lag] = acov / (var + 1e-10)
             hill_indice_dic[lag] = self._calc_hill_indices(
                 np.sort(
-                    abs_return_arr[:,lag:]*abs_return_arr[:,:-lag],
+                    (
+                        abs_return_arr[:,lag:]*abs_return_arr[:,:-lag]
+                    ).flatten()[np.newaxis,:],
                     axis=1
                 )
             )
