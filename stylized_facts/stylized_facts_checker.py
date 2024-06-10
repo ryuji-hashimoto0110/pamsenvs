@@ -1187,8 +1187,8 @@ class StylizedFactsChecker:
             fig = plt.figure(figsize=(20,9), dpi=50, facecolor="w")
             ax1: Axes = fig.add_subplot(1,1,1)
         ax1.plot(datetimes, price_arr, color="black", label="market price")
-        ax1.set_ylim(200,400)
-        ax1.set_yticks([200,250,300,350,400])
+        ax1.set_ylim(250,350)
+        ax1.set_yticks([250,275,300,325,350])
         ax1.set_ylabel("price")
         ax1.set_xlabel("time")
         ax1.xaxis.set_major_locator(
@@ -1201,7 +1201,7 @@ class StylizedFactsChecker:
         ax1_: Axes = ax1.twinx()
         ax1_.bar(
             datetimes, volume_arr,
-            align="center", width=1.0, color="blue", label="volume", alpha=0.5
+            align="center", width=1/3600, color="blue", label="volume", alpha=1.0
         )
         ax1_.set_ylim([0,10000])
         ax1_.set_ylabel("volume")
