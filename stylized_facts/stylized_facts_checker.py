@@ -221,6 +221,7 @@ class StylizedFactsChecker:
         cumsum_scaled_transactions_df: DataFrame = pd.read_csv(
             str(transactions_file_path), index_col=0
         )
+        cumsum_scaled_transactions_df = cumsum_scaled_transactions_df.ffill().bfill()
         indexes = cumsum_scaled_transactions_df.index
         sampled_column: str = self.prng.choice(cumsum_scaled_transactions_df.columns)
         cumsum_scaled_transactions_arr: ndarray = cumsum_scaled_transactions_df[sampled_column].values
