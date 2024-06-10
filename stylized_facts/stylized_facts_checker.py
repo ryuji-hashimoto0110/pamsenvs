@@ -778,9 +778,7 @@ class StylizedFactsChecker:
         print()
         return left_tail_arr, right_tail_arr, abs_tail_arr
 
-    def check_autocorrelation(
-        self, lags: list[int]
-    ) -> tuple[dict[int, ndarray], dict[int, ndarray]]:
+    def check_autocorrelation(self, lags: list[int]) -> dict[int, ndarray]:
         """_summary_
 
         Args:
@@ -793,7 +791,7 @@ class StylizedFactsChecker:
                 self.return_arr: ndarray = self._calc_return_arr_from_dfs(
                     self.ohlcv_dfs, "close", norm=True
                 )
-            acorr_dic, hill_indice_dic = self._calc_autocorrelation(
+            acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
                 np.abs(self.return_arr), lags
             )
         else:
@@ -801,31 +799,25 @@ class StylizedFactsChecker:
                 "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
             )
             acorr_l_dic: dict[int, list[float]] = {lag: [] for lag in lags}
-            hill_l_dic: dict[int, list[float]] = {lag: [] for lag in lags}
             for ohlcv_df in self.ohlcv_dfs:
                 return_arr: ndarray = self._calc_return_arr_from_df(
                     ohlcv_df, "close", norm=True
                 )
-                acorr_dic_, hill_indice_dic_ = self._calc_autocorrelation(
+                acorr_dic_: dict[int, float] = self._calc_autocorrelation(
                     np.abs(return_arr), lags
                 )
                 for lag in lags:
                     acorr_l_dic[lag].append(acorr_dic_[lag].item())
-                    hill_l_dic[lag].append(hill_indice_dic_[lag].item())
             acorr_dic: dict[int, ndarray] = {}
-            hill_indice_dic: dict[int, ndarray] = {}
-            for lag in acorr_l_dic.keys():
-                acorrs: list[float] = acorr_l_dic[lag]
-                hill_indice: list[float] = hill_l_dic[lag]
+            for lag, acorrs in acorr_l_dic.items():
                 acorr_dic[lag] = np.array(acorrs)[:,np.newaxis]
-                hill_indice_dic[lag] = np.array(hill_indice)[:,np.newaxis]
-        return acorr_dic, hill_indice_dic
+        return acorr_dic
 
     def _calc_autocorrelation(
         self,
         abs_return_arr: ndarray,
         lags: list[int]
-    ) -> tuple[dict[int, ndarray], dict[int, ndarray]]:
+    ) -> dict[int, ndarray]:
         """_summary_
 
         Args:
@@ -835,8 +827,7 @@ class StylizedFactsChecker:
         Returns:
             dict[int, ndarray]: _description_
         """
-        acorr_dic: dict[int, ndarray] = {}
-        hill_indice_dic: dict[int, ndarray] = {}
+        acorr_dic: list[int, ndarray] = {}
         for lag in lags:
             abs_mean: ndarray = np.mean(abs_return_arr, axis=1, keepdims=True)
             acov: ndarray = np.mean(
@@ -845,17 +836,7 @@ class StylizedFactsChecker:
             )
             var: ndarray = np.var(abs_return_arr, axis=1, keepdims=True)
             acorr_dic[lag] = acov / (var + 1e-10)
-            print(f"calculate tail index lag {lag}. asymptotic standard error: ")
-            hill_indice_dic[lag] = self._calc_hill_indices(
-                np.sort(
-                    (
-                        abs_return_arr[:,lag:]*abs_return_arr[:,:-lag]
-                    ).flatten()[np.newaxis,:],
-                    axis=1
-                )
-            )
-        print()
-        return acorr_dic, hill_indice_dic
+        return acorr_dic
 
     def check_volume_volatility_correlation(self) -> ndarray:
         if self._is_stacking_possible(self.ohlcv_dfs, "close"):
@@ -938,7 +919,7 @@ class StylizedFactsChecker:
             right_lrls_tail_arr = np.repeat(right_lrls_tail_arr, repeats=kurtosis_arr.shape[0])
             abs_lrls_tail_arr = np.repeat(abs_lrls_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
-            acorr_dic, hill_indice_dic = self.check_autocorrelation(
+            acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
                 [lag for lag in range(1,31)]
             )
             data_dic: dict[str, ndarray]= {
@@ -952,13 +933,8 @@ class StylizedFactsChecker:
                 "lrls tail (abs)": abs_lrls_tail_arr.flatten(),
                 "vv_corr": volume_volatility_correlation.flatten()
             }
-            for lag in acorr_dic.keys():
-                acorr: ndarray = acorr_dic[lag]
-                hill_indice_arr: ndarray = hill_indice_dic[lag]
+            for lag, acorr in acorr_dic.items():
                 data_dic[f"acorr lag{lag}"] = acorr.flatten()
-                data_dic[f"hill tail lag{lag} (abs)"] = np.repeat(
-                    hill_indice_arr, repeats=kurtosis_arr.shape[0]
-                ).flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
             if print_results:
                 self.print_results(stylized_facts_df)
