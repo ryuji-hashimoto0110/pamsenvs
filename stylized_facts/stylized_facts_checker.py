@@ -836,7 +836,7 @@ class StylizedFactsChecker:
             dict[int, ndarray]: _description_
         """
         acorr_dic: dict[int, ndarray] = {}
-        hill_indice_dic: dict[int, ndarray]
+        hill_indice_dic: dict[int, ndarray] = {}
         for lag in lags:
             abs_mean: ndarray = np.mean(abs_return_arr, axis=1, keepdims=True)
             acov: ndarray = np.mean(
