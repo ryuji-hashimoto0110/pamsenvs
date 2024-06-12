@@ -1,0 +1,65 @@
+{
+	"simulation": {
+		"markets": ["Market"],
+		"agents": ["CARAFCNAgent"],
+		"sessions": [
+			{	
+				"sessionName": "0",
+				"iterationSteps": 100,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0
+			},
+			{	
+				"sessionName": "1",
+				"iterationSteps": 5000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0
+			},
+            {	
+				"sessionName": "00",
+				"iterationSteps": 100,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0
+			},
+            {	
+				"sessionName": "2",
+				"iterationSteps": 5000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0
+			}
+		]
+	},
+	"Market": {
+		"class": "TotalTimeAwareMarket",
+		"tickSize": 0.0001,
+		"marketPrice": 300.0
+	},
+	"CARAFCNAgent": {
+		"class": "CARAFCNAgent",
+		"numAgents": 200,
+		"markets": ["Market"],
+        "assetVolume": {"expon": [1]},
+		"cashAmount": {"expon": [1]},
+        "paretoVariables": {
+            "assetVolume": {"alpha": 16.67, "beta": 1.5},
+            "cashAmount": {"alpha": 5000, "beta": 1.5}
+        },
+		"fundamentalWeight": {"expon": [10.0]},
+		"chartWeight": {"expon": [1.2]},
+		"noiseWeight": {"expon": [1.8]},
+		"noiseScale": 0.0001,
+		"timeWindowSize": 200,
+		"chartFollowRate": 1,
+		"riskAversionTerm": 0.1
+	}
+}
