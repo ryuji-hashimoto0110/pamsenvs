@@ -54,7 +54,7 @@
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [0.0]},
 		"noiseWeight": {"expon": [1.0]},
-        "moodWeight": {"uniform": [0, 0.0012]},
+        "moodWeight": {"uniform": [0, 0.00012]},
         "moodSensitivity": 0.5,
 		"noiseScale": 0.0001,
 		"timeWindowSize": 200,
