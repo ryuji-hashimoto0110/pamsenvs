@@ -51,7 +51,7 @@
         "assetVolume": {"uniform": [0,100]},
 		"cashAmount": {"uniform": [0,30000]},
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.8]},
+		"chartWeight": {"expon": [1.1]},
 		"noiseWeight": {"expon": [1.0]},
 		"noiseScale": 0.0001,
 		"timeWindowSize": 200,

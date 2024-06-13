@@ -1,16 +1,16 @@
 initial_seed=42
 configs_folder_path="."
-config_names="2_16.json" 
-txt_save_folder_paths="../../datas/artificial_datas/flex_txt/2_16"
+config_names="2_07.json" 
+txt_save_folder_paths="../../datas/artificial_datas/flex_txt/2_07"
 num_simulations=2000
 resample_rule="1min"
-tick_dfs_folder_paths="../../datas/artificial_datas/flex_csv/2_16"
-ohlcv_dfs_folder_paths="../../datas/artificial_datas/intraday/flex_ohlcv/1min/2_16"
+tick_dfs_folder_paths="../../datas/artificial_datas/flex_csv/2_07"
+ohlcv_dfs_folder_paths="../../datas/artificial_datas/intraday/flex_ohlcv/1min/2_07"
 transactions_folder_path="../../datas/real_datas/intraday/flex_transactions/1min/all"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
-figs_save_paths="../../imgs/compare_stylized_facts/2_16"
-results_save_paths="../../stylized_facts/results/2_16.csv"
+figs_save_paths="../../imgs/compare_stylized_facts/2_07"
+results_save_paths="../../stylized_facts/results/2_07.csv"
 python compare_stylized_facts.py \
 --initial_seed ${initial_seed} \
 --configs_folder_path ${configs_folder_path} \
