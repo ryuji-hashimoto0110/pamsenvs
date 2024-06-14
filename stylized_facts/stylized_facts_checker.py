@@ -613,7 +613,7 @@ class StylizedFactsChecker:
             axis=1
         )[:,np.newaxis]
         tail_arr: ndarray = 1 / tail_arr
-        print(float(tail_arr) ** 2 / np.sqrt(k))
+        print(f"number of sub-samples: {k} asymptotic standard deviation: {float(tail_arr) ** 2 / np.sqrt(k)}")
         return tail_arr
 
     def _calc_both_sides_hill_indices(
@@ -631,21 +631,21 @@ class StylizedFactsChecker:
             left_tail_arr (ndarray): _description_
             right_tail_arr (ndarray): _description_
         """
-        sorted_return_arr: ndarray = np.sort(return_arr, axis=1)
-        print("calculate right Hill tail index. asymptotic standard error: ")
-        right_tail_arr: ndarray = self._calc_hill_indices(
-            sorted_return_arr, cut_off_th
-        )
+        print("calculate left Hill tail index. summary: ")
         minus_return_arr: ndarray = - 1 * return_arr
         sorted_minus_return_arr: ndarray = np.sort(minus_return_arr, axis=1)
-        print("calculate left Hill tail index. asymptotic standard error: ")
         left_tail_arr: ndarray = self._calc_hill_indices(
             sorted_minus_return_arr, cut_off_th
         )
+        print("calculate right Hill tail index. summary: ")
+        sorted_return_arr: ndarray = np.sort(return_arr, axis=1)
+        right_tail_arr: ndarray = self._calc_hill_indices(
+            sorted_return_arr, cut_off_th
+        )
+        print("calculate abs Hill tail index. summary: ")
         sorted_abs_return_arr: ndarray = np.sort(
             np.abs(return_arr), axis=1
         )
-        print("calculate abs Hill tail index. asymptotic standard error: ")
         abs_tail_arr: ndarray = self._calc_hill_indices(
             sorted_abs_return_arr, cut_off_th
         )
