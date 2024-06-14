@@ -1030,7 +1030,7 @@ class StylizedFactsChecker:
                     "specify directory: self.figs_save_path"
                 )
             save_path: Path = self.figs_save_path / img_save_name
-            plt.savefig(str(save_path))
+            plt.savefig(str(save_path), dpi=200)
 
     def calc_mean_cumulative_transactions(
         self,
@@ -1124,7 +1124,7 @@ class StylizedFactsChecker:
             )
             ax.scatter(
                 datetimes, cumsum_scaled_transactions_arr,
-                color=color, s=1
+                color=color, s=1, rasterized=True
             )
             current_plot_num += 1
             if max_plot_num <= current_plot_num:
@@ -1154,7 +1154,7 @@ class StylizedFactsChecker:
                 "specify directory: self.figs_save_path"
             )
         save_path: Path = self.figs_save_path / img_save_name
-        plt.savefig(str(save_path))
+        plt.savefig(str(save_path), dpi=200)
 
     def plot_time_series(
         self,
@@ -1210,7 +1210,7 @@ class StylizedFactsChecker:
         ax1.legend(lines1+lines1_, labels1+labels1_, loc="upper left")
         plt.tight_layout()
         save_path: Path = self.figs_save_path / img_save_name
-        plt.savefig(str(save_path))
+        plt.savefig(str(save_path), dpi=200)
 
     def hist_features(
         self,
@@ -1261,4 +1261,6 @@ class StylizedFactsChecker:
         ax2.set_xlabel("volume (scaled)")
         ax2.set_ylabel("freq")
         ax2.set_ylim([0,1])
+        save_path: Path = self.figs_save_path / img_save_name
+        plt.savefig(str(save_path), dpi=200)
         
