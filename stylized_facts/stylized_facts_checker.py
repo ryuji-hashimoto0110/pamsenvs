@@ -1238,7 +1238,7 @@ class StylizedFactsChecker:
             volume_arr: ndarray = self._stack_dfs(
                 self.ohlcv_dfs, "volume"
             )
-            volume_arr = (volume_arr / volume_arr.sum(axis=1)[np.newaxis,:]).flatten()
+            volume_arr = (volume_arr / volume_arr.sum(axis=1)[:,np.newaxis]).flatten()
         else:
             warnings.warn(
                 "Could not stack dataframe. Maybe the lengths of dataframes differ." + \
