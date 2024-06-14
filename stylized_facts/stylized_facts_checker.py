@@ -1260,7 +1260,7 @@ class StylizedFactsChecker:
         ax2.hist(volume_arr)
         ax2.set_xlabel("volume (scaled)")
         ax2.set_ylabel("freq")
-        ax2.set_ylim([0,1])
+        ax2.set_xlim([0,1])
         save_path: Path = self.figs_save_path / img_save_name
         plt.savefig(str(save_path), dpi=200)
         
