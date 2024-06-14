@@ -1021,7 +1021,7 @@ class StylizedFactsChecker:
         ax.set_yscale("log")
         ax.set_xlabel("return")
         ax.set_ylabel("CCDF")
-        ax.set_title("Complementary Cumulative Distribution Function (CCDF) of absolute price returns")
+        #ax.set_title("Complementary Cumulative Distribution Function (CCDF) of absolute price returns")
         ax.set_xlim([1, 100])
         ax.set_ylim([1e-07, 1])
         if img_save_name is not None:
@@ -1142,7 +1142,7 @@ class StylizedFactsChecker:
             )
         ax.set_xlabel("time")
         ax.set_ylabel("cumulative number of transactions")
-        ax.set_title("cumulative number of intraday transactions (scaled to 1)")
+        #ax.set_title("cumulative number of intraday transactions (scaled to 1)")
         ax.xaxis.set_major_locator(
             mdates.MinuteLocator(range(60), 60)
         )
@@ -1177,7 +1177,7 @@ class StylizedFactsChecker:
             ax2.plot(datetimes, mood_arr, color="black")
             ax2.set_xlabel("time")
             ax2.set_ylabel("mood")
-            ax2.set_title("change of mood (proportion of optimistic agents)")
+            #ax2.set_title("change of mood (proportion of optimistic agents)")
             ax2.xaxis.set_major_locator(
                 mdates.MinuteLocator(range(60), 60)
             )
@@ -1197,7 +1197,7 @@ class StylizedFactsChecker:
         ax1.xaxis.set_major_formatter(
             mdates.DateFormatter("%H:%M")
         )
-        ax1.set_title("executed volumes and change of market prices")
+        #ax1.set_title("executed volumes and change of market prices")
         ax1_: Axes = ax1.twinx()
         ax1_.bar(
             datetimes, volume_arr,
@@ -1211,4 +1211,54 @@ class StylizedFactsChecker:
         plt.tight_layout()
         save_path: Path = self.figs_save_path / img_save_name
         plt.savefig(str(save_path))
+
+    def hist_features(
+        self,
+        img_save_name: str
+    ) -> None:
+        print("plot features")
+        if self._is_stacking_possible(self.ohlcv_dfs, "close"):
+            return_arr: ndarray = self._calc_return_arr_from_dfs(
+                self.ohlcv_dfs, "close", norm=False
+            ).flatten()
+        else:
+            warnings.warn(
+                "Could not stack dataframe. Maybe the lengths of dataframes differ." + \
+                "Following procedure may takes time..."
+            )
+            return_arrs: list[ndarray] = []
+            for ohlcv_df in self.ohlcv_dfs:
+                return_arrs.append(
+                    self._calc_return_arr_from_df(
+                        ohlcv_df, "close", norm=False
+                    ).flatten()
+                )
+            return_arr: ndarray = np.concatenate(return_arrs)
+        if self._is_stacking_possible(self.ohlcv_dfs, "volume"):
+            volume_arr: ndarray = self._stack_dfs(
+                self.ohlcv_dfs, "volume"
+            )
+            volume_arr = (volume_arr / volume_arr.sum(axis=1)[np.newaxis,:]).flatten()
+        else:
+            warnings.warn(
+                "Could not stack dataframe. Maybe the lengths of dataframes differ." + \
+                "Following procedure may takes time..."
+            )
+            volume_arrs: list[ndarray] = []
+            for ohlcv_df in self.ohlcv_dfs:
+                volume_arr = ohlcv_df["volume"].values
+                volume_arrs.append(
+                    (volume_arr / volume_arr.sum()).flatten()
+                )
+            volume_arr: ndarray = np.concatenate(volume_arrs)
+        fig = plt.figure(figsize=(20,20), dpi=50, facecolor="w")
+        ax1: Axes = fig.add_subplot(2,1,1)
+        ax2: Axes = fig.add_subplot(2,1,2)
+        ax1.hist(return_arr, bins=30)
+        ax1.set_xlabel("return")
+        ax2.set_ylabel("freq")
+        ax2.hist(volume_arr)
+        ax2.set_xlabel("volume (scaled)")
+        ax2.set_ylabel("freq")
+        ax2.set_ylim([0,1])
         

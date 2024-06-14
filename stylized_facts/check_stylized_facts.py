@@ -123,6 +123,9 @@ def main(args):
             img_save_name="market_prices.pdf",
             draw_idx=42
         )
+        checker.hist_features(
+            img_save_name="features.pdf"
+        )
         print("done!")
 
 if __name__ == "__main__":
