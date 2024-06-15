@@ -92,6 +92,7 @@ class StylizedFactsChecker:
         self.transactions_folder_path: Optional[Path] = transactions_folder_path
         self.session1_transactions_file_name: Optional[str] = session1_transactions_file_name
         self.session2_transactions_file_name: Optional[str] = session2_transactions_file_name
+        self.min_executions: int = 3000
         if tick_dfs_path is not None:
             print("read tick dfs")
             self._read_tick_dfs(tick_dfs_path)
@@ -141,12 +142,14 @@ class StylizedFactsChecker:
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
                 df = self._resample(df)
-            if (
-                len(df) < freq_ohlcv_size_dic[self.resample_rule] and choose_full_size_df
-            ):
-                store_df = False
-            else:
-                store_df = True
+            if choose_full_size_df:
+                if len(df) < freq_ohlcv_size_dic[self.resample_rule]:
+                    store_df = False
+                elif "num_events" in df.columns:
+                    if df["num_events"].sum() < self.min_executions:
+                        store_df = False
+                else:
+                    store_df = True
             if store_df:
                 csv_names.append(csv_name)
                 dfs.append(df)
