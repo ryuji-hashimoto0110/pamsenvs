@@ -147,6 +147,7 @@ class StylizedFactsChecker:
                     store_df = False
                 elif "num_events" in df.columns:
                     if df["num_events"].sum() < self.min_executions:
+                        print(f"dataframe discarded. len(df): {df["num_events"].sum()}")
                         store_df = False
                 else:
                     store_df = True
