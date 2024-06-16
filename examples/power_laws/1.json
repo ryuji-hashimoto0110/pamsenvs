@@ -51,9 +51,9 @@
         "assetVolume": {"expon": [1]},
 		"cashAmount": {"expon": [1]},
         "paretoVariables": {
-            "assetVolume": {"alpha": 4.5, "beta": 1.1},
-            "cashAmount": {"alpha": 1363.6, "beta": 1.1}
-        },
+			"assetVolume": {"alpha": 16.67, "beta": 1.5},
+			"cashAmount": {"alpha": 5000, "beta": 1.5}
+		},
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [0.0]},
 		"noiseWeight": {"expon": [1.0]},
