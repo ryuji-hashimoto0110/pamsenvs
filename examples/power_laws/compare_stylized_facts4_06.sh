@@ -1,8 +1,8 @@
-initial_seed=42
+initial_seed=1042
 configs_folder_path="."
 config_names="4_06.json" 
 txt_save_folder_paths="../../datas/artificial_datas/flex_txt/4_06"
-num_simulations=1000
+num_simulations=4000
 resample_rule="1min"
 tick_dfs_folder_paths="../../datas/artificial_datas/flex_csv/4_06"
 ohlcv_dfs_folder_paths="../../datas/artificial_datas/intraday/flex_ohlcv/1min/4_06"
