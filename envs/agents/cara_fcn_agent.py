@@ -145,7 +145,7 @@ class CARAFCNAgent(Agent):
                 raise ValueError(
                     f"inappropriate distribution type to convert to pareto: {settings[pareto_variable]}"
                 )
-            lam: float = settings[pareto_variable]["expon"][0]
+            lam: float = 1 / settings[pareto_variable]["expon"][0]
             alpha: float = param_dic["alpha"]
             beta: float = param_dic["beta"]
             if pareto_variable == "cashAmount":
