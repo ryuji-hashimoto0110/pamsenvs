@@ -1,6 +1,6 @@
 install.packages(
   c(
-    Dict, data.table, e1071, freqdom, RcppProgress, ggplot2, ASV
+    "Dict", "data.table", "e1071", "freqdom", "RcppProgress", "ggplot2", "ASV"
   )
 )
 library(Dict)
