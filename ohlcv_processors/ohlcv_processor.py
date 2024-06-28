@@ -38,9 +38,11 @@ class OHLCVProcessor:
         """
         assert self.all_time_ohlcv_dfs_path is not None
         for ticker in self.tickers:
+            start_date_str: str = self.start_date.strftime(format='%Y%m%d')
+            end_date_str: str = self.end_date.strftime(format='%Y%m%d')
             all_time_ohlcv_df_path: Path = (
                 self.all_time_ohlcv_dfs_path
-                / f"{ticker}_{self.start_date.strftime(format='%Y%m%d')}_{self.end_date.strftime(format='%Y%m%d')}.csv"
+                / f"{ticker}_{start_date_str}_{end_date_str}.csv"
             )
             _ = self.concat_ohlcv_dfs(
                 self.daily_ohlcv_dfs_path,
