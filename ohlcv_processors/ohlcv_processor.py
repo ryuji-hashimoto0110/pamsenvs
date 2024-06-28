@@ -97,6 +97,7 @@ class OHLCVProcessor:
                     file_name: str = today_df_path.name
                     if specific_name in file_name:
                         today_df: DataFrame = pd.read_csv(today_df_path, index_col=0)
+                        today_df.index = pd.to_datetime(today_df.index, format="%H:%M:%S.%f")
                         all_time_df: DataFrame = self._concat_ohlcv_dfs(
                             today_df, today_date=today_date, all_time_df=all_time_df
                         )
