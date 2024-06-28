@@ -11,7 +11,7 @@ from ohlcv_processors import OHLCVProcessor
 
 def get_config():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tickers", type=int, nargs="*")
+    parser.add_argument("--tickers", type=str, nargs="*")
     parser.add_argument("--daily_ohlcv_folder_path", type=str)
     parser.add_argument("--all_time_ohlcv_folder_path", type=str)
     parser.add_argument("--start_year", type=int)
