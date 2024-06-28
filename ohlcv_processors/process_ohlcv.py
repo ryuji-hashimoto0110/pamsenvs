@@ -29,9 +29,15 @@ def main(args):
     daily_ohlcv_folder_path: Path = pathlib.Path(
         all_args.daily_ohlcv_folder_path
     ).resolve()
+    if not daily_ohlcv_folder_path.exists():
+        raise ValueError(
+            f"{str(daily_ohlcv_folder_path)} not found."
+        )
     all_time_ohlcv_folder_path: Path = pathlib.Path(
         all_args.all_time_ohlcv_folder_path
     ).resolve()
+    if not all_time_ohlcv_folder_path.exists():
+        all_time_ohlcv_folder_path.mkdir(parents=True)
     start_year: int = all_args.start_year
     start_month: int = all_args.start_month
     start_day: int = all_args.start_day
