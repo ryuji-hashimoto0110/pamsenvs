@@ -54,10 +54,10 @@ report_asv_mcmc <- function(
 }
 
 ohlcv_df <- fread(ohlcv_file_path)
-vclose_name <- c("close", "Close", "CLOSE")
-print(vclose_name)
-print(names(ohlcv_df))
-vclose_name <- vclose_name[! vclose_name %in% names(ohlcv_df)]
+candidate_vclose_name <- c("close", "Close", "CLOSE")
+vclose_name <- candidate_vclose_name[
+  ! candidate_vclose_name %in% names(ohlcv_df)
+]
 vprice <- ohlcv_df[, vclose_name]
 ohlcv_size <- freq_ohlcv_size_dic[obs_freq]
 vlog_return <- calc_return(vprice, obs_num)
