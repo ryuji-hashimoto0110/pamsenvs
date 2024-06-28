@@ -25,7 +25,7 @@ class OHLCVProcessor:
         self.start_date: date = start_date
         self.end_date: date = end_date
 
-    def concat_all_ohlcv_dfs(self) -> None:
+    def concat_all_ohlcv_dfs(self, ticker_first: bool = True) -> None:
         """concat all OHLCV dataframes of given tickers.
 
         concat all dataframes within daily_ohlcv_dfs_path to files as same number as number of tickers.
@@ -44,8 +44,12 @@ class OHLCVProcessor:
                 self.all_time_ohlcv_dfs_path
                 / f"{ticker}_{start_date_str}_{end_date_str}.csv"
             )
+            if ticker_first:
+                daily_ohlcv_dfs_path: Path = self.daily_ohlcv_dfs_path / ticker
+            else:
+                daily_ohlcv_dfs_path: Path = self.daily_ohlcv_dfs_path
             _ = self.concat_ohlcv_dfs(
-                self.daily_ohlcv_dfs_path,
+                daily_ohlcv_dfs_path,
                 specific_name=ticker,
                 all_time_ohlcv_df_path=all_time_ohlcv_df_path,
                 start_date=self.start_date,
@@ -67,13 +71,9 @@ class OHLCVProcessor:
 
         daily_ohlcv_dfs_path
             |- 20150107
-            |   |- Full6502_20160107.csv
             |   |- Full9202_20160107.csv
-            |   |- ...
             |- 20150108
-            |   |- Full6502_20160108.csv
             |   |- Full9202_20160108.csv
-            |   |- ...
             |- ...
 
         This method sequencially searchs dataframe at date between start_date and end_date.
