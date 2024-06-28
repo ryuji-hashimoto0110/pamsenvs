@@ -49,7 +49,9 @@ report_asv_mcmc <- function(
     vsigma_eta <- asv_results[[3]]
     vrho <- asv_results[[4]]
     ReportMCMC(
-      cbind(vmu, vphi, vsigma_eta, vrho)
+      cbind(vmu, vphi, vsigma_eta, vrho),
+      vname = c(expression(mu), expression(phi),
+                expression(sigma[eta]), expression(rho))
     )
   }
 }
