@@ -13,6 +13,7 @@ library(ASV)
 args <- commandArgs(trailingOnly = TRUE)
 ohlcv_file_path <- args[1]
 obs_freq <- args[2]
+close_name <- args[3]
 
 freq_ohlcv_size_dic <- Dict$new(
   "1s" = 18002,
@@ -54,10 +55,7 @@ report_asv_mcmc <- function(
 }
 
 ohlcv_df <- fread(ohlcv_file_path)
-vclose_name <- c("close", "Close", "CLOSE")
-vclose_name <- vclose_name[!vclose_name %in% names(ohlcv_df)]
-print(vclose_name)
-vprice <- ohlcv_df[, vclose_name]
+vprice <- ohlcv_df[, close_name]
 ohlcv_size <- freq_ohlcv_size_dic[obs_freq]
 vlog_return <- calc_return(vprice, obs_num)
 report_mcmc(vlog_return)
