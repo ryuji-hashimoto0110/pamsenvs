@@ -58,4 +58,4 @@ ohlcv_df <- fread(ohlcv_file_path)
 vprice <- as.vector(ohlcv_df$close)
 ohlcv_size <- freq_ohlcv_size_dic[obs_freq]
 vlog_return <- calc_return(vprice, ohlcv_size)
-report_mcmc(vlog_return)
+report_asv_mcmc(vlog_return)
