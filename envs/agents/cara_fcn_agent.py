@@ -1,4 +1,5 @@
 from ..markets import TotalTimeAwareMarket
+from ..markets import YesterdayAwareMarket
 import math
 import numpy as np
 from numpy import ndarray
@@ -77,6 +78,8 @@ class CARAFCNAgent(Agent):
                 - riskAversionTerm: reference level of risk aversion.
                     The precise relative risk aversion coefficient is calculated
                     by using fundamental/chart weights.
+                - yesterdayAware: whether the agent know yesterday market prices.
+                    If yesterdayAware is set true, accessible market must be YesterdayAwareMarket.
                 and can include
                 - chartFollowRate: probability that the agent is chart-follower.
             accessible_market_ids (list[MarketID]): _description_
@@ -108,6 +111,7 @@ class CARAFCNAgent(Agent):
             )
         else:
             self.mean_reversion_time: int = self.time_window_size
+        self.is_yesterday_aware: bool = settings["yesterdayAware"]
         if "chartFollowRate" in settings:
             p: float = settings["chartFollowRate"]
             if p < 0 or 1 < p:
@@ -263,16 +267,13 @@ class CARAFCNAgent(Agent):
         Returns:
             temporal_time_window_size (int): calculated the agent's temporal time horizon.
         """
-        time_window_size: int = min(
-            time,
-            int(self.time_window_size * (1 + fundamental_weight) / (1 + chart_weight))
+        time_window_size: int = int(
+            self.time_window_size * (1 + fundamental_weight) / (1 + chart_weight)
         )
-        if isinstance(market, TotalTimeAwareMarket):
-            time_window_size = min(
-                market.get_remaining_time(),
-                time_window_size
-            )
-        return time_window_size
+        if self.is_yesterday_aware:
+            return time_window_size
+        else:
+            return min(time, time_window_size)
 
     def _calc_temporal_risk_aversion_term(
         self,
