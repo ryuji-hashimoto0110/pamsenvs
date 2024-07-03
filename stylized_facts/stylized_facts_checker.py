@@ -92,7 +92,7 @@ class StylizedFactsChecker:
         self.transactions_folder_path: Optional[Path] = transactions_folder_path
         self.session1_transactions_file_name: Optional[str] = session1_transactions_file_name
         self.session2_transactions_file_name: Optional[str] = session2_transactions_file_name
-        self.min_executions: int = 3000
+        self.min_executions: int = 0
         if tick_dfs_path is not None:
             print("read tick dfs")
             self._read_tick_dfs(tick_dfs_path)
