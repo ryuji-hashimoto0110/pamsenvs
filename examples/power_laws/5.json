@@ -47,6 +47,7 @@
 	},
 	"CARAFCNAgent": {
 		"class": "MoodAwareCARAFCNAgent",
+		"isCARA": true,
 		"numAgents": 200,
 		"markets": ["Market"],
         "assetVolume": {"expon": [1]},
