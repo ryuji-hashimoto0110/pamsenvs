@@ -81,6 +81,7 @@ class CARAFCNAgent(Agent):
                     The precise relative risk aversion coefficient is calculated
                     by using fundamental/chart weights.
                 and can include
+                - orderMargin: must be set if isCARA is set false.
                 - chartFollowRate: probability that the agent is chart-follower.
                 - yesterdayAware: whether the agent know yesterday market prices.
                     If yesterdayAware is set true, accessible market must be YesterdayAwareMarket.
@@ -105,6 +106,14 @@ class CARAFCNAgent(Agent):
             json_random.random(json_value=settings["timeWindowSize"])
         )
         self.is_cara: bool = settings["isCARA"]
+        if self.is_cara is False:
+            if "orderMargin" not in settings:
+                raise ValueError(
+                    "orderMargin must be set when isCARA is false."
+                )
+            self.order_margin: float = json_random.random(
+                json_value=settings["orderMargin"]
+            )
         if "riskAversionTerm" in settings:
             self.risk_aversion_term: float = json_random.random(
                 json_value=settings["riskAversionTerm"]
@@ -594,3 +603,42 @@ class CARAFCNAgent(Agent):
         if len(cancels) == 0:
             self.unexecuted_orders = []
         return cancels
+    
+    def _create_order_wo_cara(
+        self,
+        market: Market,
+        expected_future_price: float
+    ) -> list[Order | Cancel]:
+        """create new orders w/o CARA utility.
+
+        This method create new order according to only the expected future price.
+
+        Args:
+            market (Market): market to order.
+            expected_future_price (float): expected future price.
+
+        Returns:
+            orders (list[Order | Cancel]): created orders to submit
+        """
+        orders: list[Order | Cancel] = []
+        market_price: float = market.get_market_price()
+        order_volume: int = 1
+        order_kind: OrderKind = LIMIT_ORDER
+        if market_price < expected_future_price:
+            is_buy: bool = True
+            order_price: float = expected_future_price * (1 - self.order_margin)
+        else:
+            is_buy: bool = False
+            order_price: float = expected_future_price * (1 + self.order_margin)
+        orders.append(
+            Order(
+                agent_id=self.agent_id,
+                market_id=market.market_id,
+                is_buy=is_buy,
+                kind=order_kind,
+                volume=order_volume,
+                price=order_price,
+                ttl=self.time_window_size
+            )
+        )
+        return orders
