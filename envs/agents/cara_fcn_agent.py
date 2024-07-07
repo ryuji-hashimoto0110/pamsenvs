@@ -75,13 +75,15 @@ class CARAFCNAgent(Agent):
                 - noiseWeight: weight given to the chartist component.
                 - noiseScale: the scale of noise component.
                 - timeWindowSize: time horizon.
+                - isCARA: wheter order decision is based on CARA utility. If False,
+                    basic FCN order decision is applied.
                 - riskAversionTerm: reference level of risk aversion.
                     The precise relative risk aversion coefficient is calculated
                     by using fundamental/chart weights.
-                - yesterdayAware: whether the agent know yesterday market prices.
-                    If yesterdayAware is set true, accessible market must be YesterdayAwareMarket.
                 and can include
                 - chartFollowRate: probability that the agent is chart-follower.
+                - yesterdayAware: whether the agent know yesterday market prices.
+                    If yesterdayAware is set true, accessible market must be YesterdayAwareMarket.
             accessible_market_ids (list[MarketID]): _description_
 
         If feedbackAsymmetry and noiseAsymmetry are both 0, aFCNAgent is equivalent to FCNAgent.
@@ -102,16 +104,23 @@ class CARAFCNAgent(Agent):
         self.time_window_size = int(
             json_random.random(json_value=settings["timeWindowSize"])
         )
-        self.risk_aversion_term: float = json_random.random(
-            json_value=settings["riskAversionTerm"]
-        )
+        self.is_cara: bool = settings["isCARA"]
+        if "riskAversionTerm" in settings:
+            self.risk_aversion_term: float = json_random.random(
+                json_value=settings["riskAversionTerm"]
+            )
+        else:
+            self.risk_aversion_term: float = 0.1
         if "meanReversionTime" in settings:
             self.mean_reversion_time: int = int(
                 json_random.random(json_value=settings["meanReversionTime"])
             )
         else:
             self.mean_reversion_time: int = self.time_window_size
-        self.is_yesterday_aware: bool = settings["yesterdayAware"]
+        if "yesterdayAware" in settings:
+            self.is_yesterday_aware: bool = settings["yesterdayAware"]
+        else:
+            self.is_yesterday_aware: bool = False
         if "chartFollowRate" in settings:
             p: float = settings["chartFollowRate"]
             if p < 0 or 1 < p:
@@ -373,6 +382,29 @@ class CARAFCNAgent(Agent):
         risk_aversion_term: float
     ) -> list[Order | Cancel]:
         """create new orders.
+        """
+        if self.is_cara:
+            orders: list[Order | Cancel] = self._create_order_cara(
+                market, expected_future_price,
+                expected_volatility, risk_aversion_term
+            )
+        else:
+            orders: list[Order | Cancel] = self._create_order_wo_cara(
+                market, expected_future_price
+            )
+        for order in orders:
+            if isinstance(order, Order):
+                self.unexecuted_orders.extend(orders)
+        return orders
+    
+    def _create_order_cara(
+        self,
+        market: Market,
+        expected_future_price: float,
+        expected_volatility: float,
+        risk_aversion_term: float
+    ) -> list[Order | Cancel]:
+        """create new orders w/ CARA utility.
 
         This method create new order according to the demand of the agent indiced from CARA utility
         in following procedure.
@@ -451,7 +483,7 @@ class CARAFCNAgent(Agent):
             order_volume: int = int(asset_volume - demand)
         orders: list[Order | Cancel] = []
         if not order_volume == 0:
-            orders: list[Order | Cancel] = [
+            orders.append(
                 Order(
                     agent_id=self.agent_id,
                     market_id=market.market_id,
@@ -461,8 +493,7 @@ class CARAFCNAgent(Agent):
                     price=price,
                     ttl=self.time_window_size
                 )
-            ]
-            self.unexecuted_orders.extend(orders)
+            )
         return orders
 
     def _calc_demand(
