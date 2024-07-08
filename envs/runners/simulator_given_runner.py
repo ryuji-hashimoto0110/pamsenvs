@@ -1,9 +1,11 @@
 from ..markets import YesterdayAwareMarket
 from pams.market import Market
+from pams.logs import Logger
 from pams.order import Order
 from pams.order_book import OrderBook
 from pams.runners.sequential import SequentialRunner
 from pams.simulator import Simulator
+import random
 from typing import Optional
 import warnings 
 
@@ -15,22 +17,34 @@ class SimulatorGivenRunner(SequentialRunner):
     """
     def _setup(
         self,
-        previous_simulator: Optional[Simulator] = None
+        previous_simulator: Optional[Simulator] = None,
+        new_logger: Optional[Logger] = None
     ) -> None:
         if previous_simulator is None:
             super()._setup()
         else:
             self.simulator = previous_simulator
-            self._assign_new_logger_to_all_classes()
+            self._assign_new_logger_to_all_classes(new_logger)
             self._initialize_times()
 
-    def _assign_new_logger_to_all_classes(self):
+    def set_seed(self, seed: int) -> None:
+        self._prng = random.Random(seed)
+        self.simulator._prng = random.Random(seed)
         for agent in self.simulator.agents:
-            agent.logger = self.logger
+            agent.prng = random.Random(seed)
         for market in self.simulator.markets:
-            market.logger = self.logger
+            market._prng = random.Random(seed)
         for session in self.simulator.sessions:
-            session.logger = self.logger
+            session.prng = random.Random(seed)
+
+    def _assign_new_logger_to_all_classes(self, new_logger):
+        self.logger = new_logger
+        for agent in self.simulator.agents:
+            agent.logger = new_logger
+        for market in self.simulator.markets:
+            market.logger = new_logger
+        for session in self.simulator.sessions:
+            session.logger = new_logger
 
     def _initialize_times(self):
         for market in self.simulator.markets:
