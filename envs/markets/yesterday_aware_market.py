@@ -6,9 +6,6 @@ from .total_time_aware_market import TotalTimeAwareMarket
 import random
 from typing import Iterable
 from typing import Optional
-from typing import TypeVar
-
-T = TypeVar("T")
 
 class YesterdayAwareMarket(TotalTimeAwareMarket):
     def __init__(
