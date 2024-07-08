@@ -1,1 +1,2 @@
-from stylized_facts.stylized_facts_checker import StylizedFactsChecker
+from .stylized_facts_checker import StylizedFactsChecker
+from .simulation_evaluater import SimulationEvaluater
