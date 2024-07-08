@@ -12,14 +12,14 @@ class OHLCVProcessor:
 
     def __init__(
         self,
-        tickers: list[int],
+        tickers: list[int | str],
         daily_ohlcv_dfs_path: Path,
         all_time_ohlcv_dfs_path: Optional[Path],
         start_date: date,
         end_date: date,
     ) -> None:
         """initialization."""
-        self.tickers: list[int] = tickers
+        self.tickers: list[int | str] = tickers
         self.daily_ohlcv_dfs_path: Path = daily_ohlcv_dfs_path
         self.all_time_ohlcv_dfs_path: Optional[Path] = all_time_ohlcv_dfs_path
         self.start_date: date = start_date
