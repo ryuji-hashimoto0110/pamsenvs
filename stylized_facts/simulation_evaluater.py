@@ -210,7 +210,7 @@ class SimulationEvaluater:
             raise ValueError("specify config_path.")
         if self.txts_path is None:
             raise ValueError("spevify txts_path.")
-        config: dict[str, Any] = json.load(fp=open(str(self.config_path)), mode="r")
+        config: dict[str, Any] = json.load(fp=open(str(self.config_path), mode="r"))
         session1_end_time, session2_start_time = self._get_session_boundary(config)
         today_date: date = date(year=2015, month=1, day=1) if start_date is None else start_date
         start_date: date = today_date
