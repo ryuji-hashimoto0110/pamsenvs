@@ -181,12 +181,15 @@ class SimulationEvaluater:
     
     def _class_register(self, runner: Runner) -> None:
         """register classes."""
-        runner.class_register(aFCNAgent)
-        runner.class_register(CARAFCNAgent)
-        runner.class_register(MoodAwareCARAFCNAgent)
-        runner.class_register(MoodAwareMarket)
-        runner.class_register(TotalTimeAwareMarket)
-        runner.class_register(YesterdayAwareMarket)
+        runner.class_register(aFCNAgent) if aFCNAgent not in runner.registered_classes else ...
+        runner.class_register(CARAFCNAgent) if CARAFCNAgent not in runner.registered_classes else ...
+        runner.class_register(MoodAwareCARAFCNAgent) \
+            if MoodAwareCARAFCNAgent not in runner.registered_classes else ...
+        runner.class_register(MoodAwareMarket) if MoodAwareMarket not in runner.registered_classes else ...
+        runner.class_register(TotalTimeAwareMarket) \
+            if TotalTimeAwareMarket not in runner.registered_classes else ...
+        runner.class_register(YesterdayAwareMarket) \
+            if YesterdayAwareMarket not in runner.registered_classes else ...
 
     def simulate_multiple_times(
         self,
@@ -241,6 +244,7 @@ class SimulationEvaluater:
                     previous_simulator=previous_simulator,
                     new_logger=saver
                 )
+                pending_simulator = copy.deepcopy(runner.simulator)
             else:
                 runner: Runner = SequentialRunner(
                     settings=config,
@@ -263,7 +267,6 @@ class SimulationEvaluater:
             del pending_simulator
             if use_simulator_given_runner:
                 previous_simulator = copy.deepcopy(runner.simulator)
-                pending_simulator = copy.deepcopy(previous_simulator)
         end_date: date = today_date
         start_date_str: str = start_date.strftime(format='%Y%m%d')
         end_date_str: str = end_date.strftime(format='%Y%m%d')
