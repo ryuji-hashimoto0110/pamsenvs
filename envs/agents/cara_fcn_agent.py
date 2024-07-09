@@ -403,7 +403,7 @@ class CARAFCNAgent(Agent):
             )
         for order in orders:
             if isinstance(order, Order):
-                self.unexecuted_orders.extend(orders)
+                self.unexecuted_orders.append(order)
         return orders
     
     def _create_order_cara(
@@ -600,8 +600,7 @@ class CARAFCNAgent(Agent):
         for order in self.unexecuted_orders:
             if not order.volume == 0:
                 cancels.append(Cancel(order))
-            else:
-                self.unexecuted_orders.remove(order)
+        self.unexecuted_orders = []
         return cancels
     
     def _create_order_wo_cara(
