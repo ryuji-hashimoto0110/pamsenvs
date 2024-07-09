@@ -213,7 +213,7 @@ class CARAFCNAgent(Agent):
         orders: list[Order | Cancel] = []
         if not self.is_market_accessible(market_id=market.market_id):
             return orders
-        orders.extend(self._cancel_orders())
+        #orders.extend(self._cancel_orders())
         time: int = market.get_time()
         time_window_size: int = self._calc_temporal_time_window_size(
             time, self.w_n, self.w_c, market
