@@ -213,8 +213,7 @@ class CARAFCNAgent(Agent):
         orders: list[Order | Cancel] = []
         if not self.is_market_accessible(market_id=market.market_id):
             return orders
-        if self.is_cara:
-            orders.extend(self._cancel_orders())
+        orders.extend(self._cancel_orders())
         time: int = market.get_time()
         time_window_size: int = self._calc_temporal_time_window_size(
             time, self.w_n, self.w_c, market
@@ -601,8 +600,8 @@ class CARAFCNAgent(Agent):
         for order in self.unexecuted_orders:
             if not order.volume == 0:
                 cancels.append(Cancel(order))
-        if len(cancels) == 0:
-            self.unexecuted_orders = []
+            else:
+                self.unexecuted_orders.remove(order)
         return cancels
     
     def _create_order_wo_cara(
