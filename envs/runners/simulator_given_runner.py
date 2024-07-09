@@ -20,12 +20,13 @@ class SimulatorGivenRunner(SequentialRunner):
         previous_simulator: Optional[Simulator] = None,
         new_logger: Optional[Logger] = None
     ) -> None:
-        if previous_simulator is None:
-            super()._setup()
-        else:
+        if previous_simulator is not None:
             self.simulator = previous_simulator
-            self._assign_new_logger_to_all_classes(new_logger)
             self._initialize_times()
+        else:
+            super()._setup()
+        if new_logger is not None:
+            self._assign_new_logger_to_all_classes(new_logger)
 
     def set_seed(self, seed: int) -> None:
         self._prng = random.Random(seed)
