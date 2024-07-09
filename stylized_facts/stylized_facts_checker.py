@@ -943,6 +943,8 @@ class StylizedFactsChecker:
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
             if print_results:
                 self.print_results(stylized_facts_df)
+            if not save_path.parent.exists():
+                save_path.parent.mkdir(parents=True)
             stylized_facts_df.to_csv(str(save_path))
 
     def print_results(
