@@ -313,7 +313,7 @@ class SimulationEvaluater:
             raise ValueError("tick_dfs_path is empty. Run process_flex first.")
         if self.ohlcv_dfs_path is None:
             raise ValueError("spevify ohlcv_dfs_path.")
-        if 0 < len(list(self.ohlcv_dfs_path)):
+        if 0 < len(list(self.ohlcv_dfs_path.iterdir())):
             warnings.warn("ohlcv_dfs_path is not empty. Some files are possible to be overwritten.")
         if self.transactions_path is None:
             raise ValueError("specify transactions_path.")
