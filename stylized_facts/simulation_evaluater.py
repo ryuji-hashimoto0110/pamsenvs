@@ -259,6 +259,8 @@ class SimulationEvaluater:
                     previous_simulator = copy.deepcopy(pending_simulator)
                 continue
             today_date += timedelta(days=1)
+            del previous_simulator
+            del pending_simulator
             if use_simulator_given_runner:
                 previous_simulator = copy.deepcopy(runner.simulator)
                 pending_simulator = copy.deepcopy(previous_simulator)
