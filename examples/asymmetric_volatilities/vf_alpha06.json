@@ -57,7 +57,7 @@
 		"chartWeight": {"expon": [1.2]},
 		"noiseWeight": {"expon": [1.0]},
         "riskAversionTerm": 0.06,
-		"noiseScale": 0.001,
+		"noiseScale": 0.0001,
 		"timeWindowSize": 200,
 		"chartFollowRate": 1
     }

@@ -59,7 +59,7 @@
 		"noiseWeight": {"expon": [1.0]},
         "feedbackAsymmetry": 0.5,
         "noiseAsymmetry": 0.0, 
-		"noiseScale": 0.001,
+		"noiseScale": 0.0001,
 		"timeWindowSize": 200,
 		"chartFollowRate": 1
     }
