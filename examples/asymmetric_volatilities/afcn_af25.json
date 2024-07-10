@@ -1,5 +1,5 @@
 {
-    "comment": "simulation with asymmetric positive feedback, a_f=0.5",
+    "comment": "simulation with asymmetric positive feedback, a_f=2.5",
     "simulation": {
 		"markets": ["Market"],
 		"agents": ["Agent"],
