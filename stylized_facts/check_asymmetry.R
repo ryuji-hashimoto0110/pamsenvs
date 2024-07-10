@@ -35,7 +35,7 @@ calc_return <- function(vprice, obs_num, is_percentage = TRUE) {
 
 report_asv_mcmc <- function(
   vlog_return,
-  sim_num = 5000, burn_num = 1000, seed = 42
+  sim_num = 10000, burn_num = 6000, seed = 42
 ) {
   set.seed(seed)
   asv_results <- try(
