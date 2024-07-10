@@ -1,5 +1,5 @@
 {
-    "comment": "simulation with volatility feedback component, alpha=0.06",
+    "comment": "simulation with volatility feedback component, alpha=0.10",
     "simulation": {
 		"markets": ["Market"],
 		"agents": ["Agent"],
@@ -56,7 +56,7 @@
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [1.2]},
 		"noiseWeight": {"expon": [1.0]},
-        "riskAversionTerm": 0.06,
+        "riskAversionTerm": 0.10,
 		"noiseScale": 0.001,
 		"timeWindowSize": 200,
 		"chartFollowRate": 1
