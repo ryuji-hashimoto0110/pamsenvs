@@ -3,7 +3,7 @@ significant_figures=10
 config_path="wo.json"
 specific_name="wo"
 txts_path="../../datas/artificial_datas/flex_txt/asymmetric_volatility/wo"
-num_simulations=1500
+num_simulations=3000
 resample_rule="1min"
 tick_dfs_path="../../datas/artificial_datas/flex_csv/asymmetric_volatility/wo"
 ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/asymmetric_volatility/wo"
@@ -30,6 +30,7 @@ python ../evaluate_simulations.py \
 --transactions_path ${transactions_path} \
 --session1_transactions_file_name ${session1_transactions_file_name} \
 --session2_transactions_file_name ${session2_transactions_file_name} \
+--figs_save_path ${figs_save_path} \
 --results_save_path ${results_save_path} \
 --check_asymmetry \
 --check_asymmetry_path ${check_asymmetry_path}
