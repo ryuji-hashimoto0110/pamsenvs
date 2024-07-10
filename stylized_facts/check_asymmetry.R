@@ -26,7 +26,7 @@ freq_ohlcv_size_dic <- Dict$new(
 
 calc_return <- function(vprice, obs_num, is_percentage = TRUE) {
   mprice <- matrix(vprice, ncol = obs_num, byrow = TRUE)
-  vlog_return <- log(mprice[, obs_num]) - log(mprice[, 1])[1:1000]
+  vlog_return <- log(mprice[, obs_num]) - log(mprice[, 1])
   if (is_percentage) {
     vlog_return <- 100 * vlog_return
   }
@@ -36,7 +36,7 @@ calc_return <- function(vprice, obs_num, is_percentage = TRUE) {
 
 report_asv_mcmc <- function(
   vlog_return,
-  sim_num = 20000, burn_num = 20000, seed = 42
+  sim_num = 20000, burn_num = 10000, seed = 42
 ) {
   set.seed(seed)
   asv_results <- try(
