@@ -1,5 +1,5 @@
 {
-    "comment": "simulation with volatility feedback and asymmetric positive feedback, alpha=1.0, a_f=1.0",
+    "comment": "simulation with volatility feedback and asymmetric positive feedback, a_f=0.5, alpha=1.0",
     "simulation": {
 		"markets": ["Market"],
 		"agents": ["Agent"],
@@ -56,7 +56,7 @@
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [1.2]},
 		"noiseWeight": {"expon": [1.0]},
-        "feedbackAsymmetry": 1.0,
+        "feedbackAsymmetry": 0.5,
         "noiseAsymmetry": 0.0, 
 		"riskAversionTerm": 0.10,
 		"noiseScale": 0.001,
