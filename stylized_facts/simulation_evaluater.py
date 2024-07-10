@@ -377,7 +377,7 @@ class SimulationEvaluater:
             raise ValueError("spevify ohlcv_dfs_path.")
         if len(list(self.ohlcv_dfs_path.iterdir())) == 0:
             raise ValueError("ohlcv_dfs_path is empty. Run check_stylized_facts first.")
-        print("[green]==concat daily OHLCV datas[green]")
+        print("[green]==concat daily OHLCV datas==[green]")
         print(f"daily OHLCV csvs-> {str(self.ohlcv_dfs_path)} all-time OHLCV csv-> {str(self.all_time_ohlcv_dfs_path)}")
         processor = OHLCVProcessor(
             tickers=[self.specific_name],
