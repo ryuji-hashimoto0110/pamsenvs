@@ -1,7 +1,7 @@
 initial_seed=42
 significant_figures=10
 config_path="afcn_vf_alpha10_af10.json"
-specific_name="afcn_af10"
+specific_name="afcn_vf_alpha10_afcn_af10"
 txts_path="../../datas/artificial_datas/flex_txt/asymmetric_volatility/afcn_vf_alpha10_af10"
 num_simulations=3000
 resample_rule="1min"
