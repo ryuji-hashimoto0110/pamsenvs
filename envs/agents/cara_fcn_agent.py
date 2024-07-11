@@ -216,7 +216,7 @@ class CARAFCNAgent(Agent):
         orders.extend(self._cancel_orders())
         time: int = market.get_time()
         time_window_size: int = self._calc_temporal_time_window_size(
-            time, self.w_n, self.w_c, market
+            time, self.w_f, self.w_c, market
         )
         weights: list[float] = self._calc_temporal_weights(market, time_window_size)
         fundamental_weight: float = weights[0]
