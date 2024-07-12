@@ -42,7 +42,7 @@
 	},
     "Market": {
         "class": "YesterdayAwareMarket",
-		"tickSize": 0.0001,
+		"tickSize": 0.0005,
 		"marketPrice": 300.0
     },
     "Agent": {
@@ -55,12 +55,13 @@
 		"assetVolume": {"uniform": [0,100]},
 		"cashAmount": {"uniform": [0,30000]},
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.6]},
+		"chartWeight": {"expon": [1.2]},
 		"noiseWeight": {"expon": [1.0]},
         "feedbackAsymmetry": 3.0,
         "noiseAsymmetry": 0.0, 
 		"noiseScale": 0.0001,
 		"timeWindowSize": 200,
+		"meanReversionTime": 400,
 		"chartFollowRate": 1
     }
 }
