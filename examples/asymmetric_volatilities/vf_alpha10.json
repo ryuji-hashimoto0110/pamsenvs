@@ -51,8 +51,12 @@
         "yesterdayAware": true,
         "numAgents": 1000,
 		"markets": ["Market"],
-		"assetVolume": {"uniform": [0,100]},
-		"cashAmount": {"uniform": [0,30000]},
+		"assetVolume": {"expon": [1]},
+		"cashAmount": {"expon": [1]},
+		"paretoVariables": {
+			"assetVolume": {"alpha": 16.67, "beta": 1.5},
+			"cashAmount": {"alpha": 5000, "beta": 1.5}
+		},
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [1.6]},
 		"noiseWeight": {"expon": [1.0]},
