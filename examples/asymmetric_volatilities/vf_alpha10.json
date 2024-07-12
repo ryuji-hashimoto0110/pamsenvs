@@ -51,19 +51,15 @@
         "yesterdayAware": true,
         "numAgents": 200,
 		"markets": ["Market"],
-		"assetVolume": {"expon": [1]},
-		"cashAmount": {"expon": [1]},
-		"paretoVariables": {
-			"assetVolume": {"alpha": 16.67, "beta": 1.5},
-			"cashAmount": {"alpha": 5000, "beta": 1.5}
-		},
+		"assetVolume": {"uniform": [0,100]},
+		"cashAmount": {"uniform": [0,30000]},
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [1.2]},
 		"noiseWeight": {"expon": [1.0]},
         "riskAversionTerm": 0.10,
 		"noiseScale": 0.0001,
 		"timeWindowSize": 200,
-		"meanReversionTime": 2000,
+		"meanReversionTime": 1000,
 		"chartFollowRate": 1
     }
 }
