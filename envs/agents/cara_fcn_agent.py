@@ -230,7 +230,6 @@ class CARAFCNAgent(Agent):
         )
         assert 0 <= time_window_size
         assert 0 < risk_aversion_term
-        self.mean_reversion_time: int = time_window_size
         expected_future_price: float = self._calc_expected_future_price(
             market, weights, time_window_size
         )
