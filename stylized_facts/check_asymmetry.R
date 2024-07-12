@@ -27,9 +27,12 @@ freq_ohlcv_size_dic <- Dict$new(
 calc_return <- function(vprice, obs_num, is_percentage = TRUE) {
   mprice <- matrix(vprice, ncol = obs_num, byrow = TRUE)
   daily_vprice <- mprice[, obs_num]
+  num_days <- length(daily_vprice)
   vlog_return <- log(
-    daily_vprice[2: length(daily_vprice)]
-  ) - log(daily_vprice[1: length(daily_vprice) - 1])
+    daily_vprice[2: num_days]
+  ) - log(
+    daily_vprice[1: num_days - 1]
+  )
   if (is_percentage) {
     vlog_return <- 100 * vlog_return
   }
