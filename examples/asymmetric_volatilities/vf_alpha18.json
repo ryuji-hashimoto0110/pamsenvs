@@ -59,7 +59,7 @@
         "riskAversionTerm": 0.18,
 		"noiseScale": 0.0001,
 		"timeWindowSize": 200,
-		"meanReversionTime": 400,
+		"meanReversionTime": 800,
 		"chartFollowRate": 1
     }
 }
