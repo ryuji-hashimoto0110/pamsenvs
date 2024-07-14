@@ -285,10 +285,9 @@ class CARAFCNAgent(Agent):
         Returns:
             temporal_time_window_size (int): calculated the agent's temporal time horizon.
         """
-        time_window_size: int = self.time_window_size
-        #int(
-        #    self.time_window_size * (1 + fundamental_weight) / (1 + chart_weight)
-        #)
+        time_window_size: int = int(
+            self.time_window_size * (1 + fundamental_weight) / (1 + chart_weight)
+        )
         if self.is_yesterday_aware:
             return time_window_size
         else:
