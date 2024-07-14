@@ -48,7 +48,7 @@
     "Agent": {
         "class": "aFCNAgent",
 		"isCARA": false,
-        "orderMargin": [0,0.03],
+        "orderMargin": [0,0.01],
         "yesterdayAware": true,
         "numAgents": 1000,
 		"markets": ["Market"],
