@@ -6,7 +6,7 @@
 		"sessions": [
 			{	
 				"sessionName": "0",
-				"iterationSteps": 100,
+				"iterationSteps": 10,
 				"withOrderPlacement": true,
 				"withOrderExecution": false,
 				"withPrint": true,
@@ -23,7 +23,7 @@
 			},
             {	
 				"sessionName": "00",
-				"iterationSteps": 100,
+				"iterationSteps": 10,
 				"withOrderPlacement": true,
 				"withOrderExecution": false,
 				"withPrint": true,
@@ -60,8 +60,8 @@
         "feedbackAsymmetry": 1.0,
         "noiseAsymmetry": 0.0, 
 		"noiseScale": 0.0001,
-		"timeWindowSize": 200,
-		"meanReversionTime": 600,
+		"timeWindowSize": 100,
+		"meanReversionTime": 200,
 		"chartFollowRate": 1
     }
 }
