@@ -60,7 +60,7 @@
         "feedbackAsymmetry": 2.5,
         "noiseAsymmetry": 0.0, 
 		"noiseScale": 0.0001,
-		"timeWindowSize": 100,
+		"timeWindowSize": 200,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1
     }
