@@ -105,10 +105,10 @@ class aFCNAgent(CARAFCNAgent):
             market_price / market.get_market_price(time - time_window_size)
         )
         chart_weight: float = max(
-            0, self.w_c - min(0, self.a_feedback * chart_log_return)
+            0, self.w_c - self.a_feedback * chart_log_return
         )
         noise_weight: float = max(
-            0, self.w_n - min(0, self.a_noise * chart_log_return)
+            0, self.w_n - self.a_noise * chart_log_return
         )
         weights: list[float] = [self.w_f, chart_weight, noise_weight]
         return weights
