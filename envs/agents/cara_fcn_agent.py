@@ -377,7 +377,8 @@ class CARAFCNAgent(Agent):
             range(time-time_window_size,time+1)
         )
         log_returns: ndarray = np.log(market_prices[1:]) - np.log(market_prices[:len(market_prices)-1])
-        expected_volatility: float = np.std(log_returns)
+        avg_log_return: float = np.sum(log_returns) / (time_window_size + 1e-10)
+        expected_volatility: float = np.sum((log_returns - avg_log_return)**2) / (time_window_size + 1e-10)
         assert self.is_finite(expected_volatility)
         expected_volatility = max(1e-10, expected_volatility)
         return expected_volatility
