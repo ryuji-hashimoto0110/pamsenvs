@@ -1,18 +1,18 @@
 initial_seed=42
 significant_figures=10
-config_path="afcn_vf_af20_alpha10.json"
-specific_name="afcn_vf_af20_alpha10"
-txts_path="../../datas/artificial_datas/flex_txt/asymmetric_volatility/afcn_vf_af20_alpha10"
+config_path="afcn_vf_af40_alpha06.json"
+specific_name="afcn_vf_af40_alpha06"
+txts_path="../../datas/artificial_datas/flex_txt/asymmetric_volatility/afcn_vf_af40_alpha06"
 num_simulations=1500
 resample_rule="1min"
-tick_dfs_path="../../datas/artificial_datas/flex_csv/asymmetric_volatility/afcn_vf_af20_alpha10"
-ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/asymmetric_volatility/afcn_vf_af20_alpha10"
+tick_dfs_path="../../datas/artificial_datas/flex_csv/asymmetric_volatility/afcn_vf_af40_alpha06"
+ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/asymmetric_volatility/afcn_vf_af40_alpha06"
 all_time_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/all_time/asymmetric_volatility"
 transactions_path="../../datas/real_datas/intraday/flex_transactions/1min/7203"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
-figs_save_path="../../imgs/asymmetric_volatility/afcn_vf_af20_alpha10"
-results_save_path="../../stylized_facts/results/asymmetric_volatility/afcn_vf_af20_alpha10.csv"
+figs_save_path="../../imgs/asymmetric_volatility/afcn_vf_af40_alpha06"
+results_save_path="../../stylized_facts/results/asymmetric_volatility/afcn_vf_af40_alpha06.csv"
 check_asymmetry_path="../../stylized_facts/check_asymmetry.R"
 
 python ../evaluate_simulations.py \
