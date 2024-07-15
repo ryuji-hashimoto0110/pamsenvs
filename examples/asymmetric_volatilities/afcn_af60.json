@@ -1,5 +1,5 @@
 {
-    "comment": "simulation with asymmetric positive feedback, a_f=0.5",
+    "comment": "simulation with asymmetric positive feedback, a_f=2.5",
     "simulation": {
 		"markets": ["Market"],
 		"agents": ["Agent"],
@@ -57,7 +57,7 @@
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [1.7]},
 		"noiseWeight": {"expon": [1.0]},
-        "feedbackAsymmetry": 0.5,
+        "feedbackAsymmetry": 6.0,
         "noiseAsymmetry": 0.0, 
 		"noiseScale": 0.0001,
 		"timeWindowSize": 150,

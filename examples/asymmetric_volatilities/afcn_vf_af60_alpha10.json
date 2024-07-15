@@ -1,5 +1,5 @@
 {
-    "comment": "simulation with asymmetric positive feedback, a_f=2.5",
+    "comment": "simulation with volatility feedback and asymmetric positive feedback, a_f=2.5, alpha=1.0",
     "simulation": {
 		"markets": ["Market"],
 		"agents": ["Agent"],
@@ -47,8 +47,7 @@
     },
     "Agent": {
         "class": "aFCNAgent",
-		"isCARA": false,
-        "orderMargin": [0,0.01],
+		"isCARA": true,
         "yesterdayAware": true,
         "numAgents": 5000,
 		"markets": ["Market"],
@@ -57,8 +56,9 @@
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [1.7]},
 		"noiseWeight": {"expon": [1.0]},
-        "feedbackAsymmetry": 2.5,
+        "feedbackAsymmetry": 6.0,
         "noiseAsymmetry": 0.0, 
+		"riskAversionTerm": 0.10,
 		"noiseScale": 0.0001,
 		"timeWindowSize": 150,
 		"meanReversionTime": 200,
