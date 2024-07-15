@@ -56,7 +56,7 @@
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [1.7]},
 		"noiseWeight": {"expon": [1.0]},
-        "riskAversionTerm": 0.22,
+        "riskAversionTerm": 0.04,
 		"noiseScale": 0.0001,
 		"timeWindowSize": 150,
 		"meanReversionTime": 200,
