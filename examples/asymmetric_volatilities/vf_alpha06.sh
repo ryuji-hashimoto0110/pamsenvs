@@ -1,4 +1,4 @@
-initial_seed=42
+initial_seed=2042
 significant_figures=10
 config_path="vf_alpha06.json"
 specific_name="vf_alpha06"
