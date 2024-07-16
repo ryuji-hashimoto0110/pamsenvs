@@ -1,4 +1,4 @@
-initial_seed=6042
+initial_seed=8042
 significant_figures=10
 config_path="afcn_vf_af30_alpha06.json"
 specific_name="afcn_vf_af30_alpha06"
