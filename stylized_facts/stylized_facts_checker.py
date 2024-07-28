@@ -127,7 +127,7 @@ class StylizedFactsChecker:
         self,
         csvs_path: Path,
         need_resample: bool,
-        resample_mid: bool,
+        resample_mid: bool = False,
         choose_full_size_df: bool = False
     ) -> tuple[list[DataFrame], list[str]]:
         """read all csv files in given folder path.
@@ -146,7 +146,7 @@ class StylizedFactsChecker:
                     continue
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
-                df = self._resample(df)
+                df = self._resample(df, resample_mid)
             if choose_full_size_df:
                 if len(df) < freq_ohlcv_size_dic[self.resample_rule]:
                     store_df = False

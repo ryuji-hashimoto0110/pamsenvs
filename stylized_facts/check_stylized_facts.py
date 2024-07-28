@@ -81,6 +81,7 @@ def main(args):
         seed=seed,
         ohlcv_dfs_path=ohlcv_dfs_path,
         tick_dfs_path=tick_dfs_path,
+        resample_mid=resample_mid,
         resample_rule=resample_rule,
         is_real=is_real,
         ohlcv_dfs_save_path=ohlcv_dfs_save_path,
