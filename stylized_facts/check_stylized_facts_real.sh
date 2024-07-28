@@ -18,6 +18,7 @@ python check_stylized_facts.py \
 --session1_transactions_file_name ${session1_transactions_file_name} \
 --session2_transactions_file_name ${session2_transactions_file_name} \
 --specific_name ${specific_name} \
+--resample_mid \
 --is_real \
 --choose_full_size_df \
 --results_folder ${results_folder} \

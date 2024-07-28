@@ -41,6 +41,7 @@ class StylizedFactsChecker:
         ohlcv_dfs_path: Optional[Path] = None,
         tick_dfs_path: Optional[Path] = None,
         resample_rule: str = "1min",
+        resample_mid: bool = False,
         is_real: bool = True,
         ohlcv_dfs_save_path: Optional[Path] = None,
         choose_full_size_df: bool = True,
@@ -60,6 +61,8 @@ class StylizedFactsChecker:
             ohlcv_dfs_path (Optional[Path]): path in which ohlcv csv datas are saved. Default to None.
                 ohlcv data consists of 5 columns: open, high, low, close, volume.
             tick_dfs_path (Optional[Path]): path in which tick csv datas are saved. Default to None.
+            resample_rule
+            resample_mid
             is_real (bool): whether df is real_data
             ohlcv_dfs_save_path (Optional[Path]):
             choose_full_size_df
@@ -97,10 +100,11 @@ class StylizedFactsChecker:
             print("read tick dfs")
             self._read_tick_dfs(tick_dfs_path)
             if ohlcv_dfs_path is None:
-                print("read tick dfs, resampling")
+                print(f"read tick dfs, resampling. resample_mid: {resample_mid}")
                 self.ohlcv_dfs, self.ohlcv_csv_names = self._read_csvs(
                     tick_dfs_path,
                     need_resample=True,
+                    resample_mid=resample_mid,
                     choose_full_size_df=choose_full_size_df
                 )
         if ohlcv_dfs_path is not None:
@@ -123,6 +127,7 @@ class StylizedFactsChecker:
         self,
         csvs_path: Path,
         need_resample: bool,
+        resample_mid: bool,
         choose_full_size_df: bool = False
     ) -> tuple[list[DataFrame], list[str]]:
         """read all csv files in given folder path.
@@ -156,7 +161,7 @@ class StylizedFactsChecker:
                 dfs.append(df)
         return dfs, csv_names
 
-    def _resample(self, df: DataFrame) -> DataFrame:
+    def _resample(self, df: DataFrame, resample_mid: bool) -> DataFrame:
         """resample tick data to OHLCV data.
 
         Args:
@@ -165,13 +170,14 @@ class StylizedFactsChecker:
         assert "market_price" in df.columns
         assert "event_volume" in df.columns
         if self.is_real:
-            return self._resample_real(df)
+            return self._resample_real(df, resample_mid)
         else:
-            return self._resample_art(df)
+            return self._resample_art(df, resample_mid)
 
-    def _resample_real(self, df: DataFrame) -> DataFrame:
+    def _resample_real(self, df: DataFrame, resample_mid: bool) -> DataFrame:
         df.index = pd.to_datetime(df.index, format="%H:%M:%S.%f") #09:00:00.357000
-        resampled_df: DataFrame = df["market_price"].resample(
+        price_column: str = "mid_price" if resample_mid else "market_price"
+        resampled_df: DataFrame = df[price_column].resample(
             rule=self.resample_rule, closed="left", label="left"
         ).ohlc()
         resampled_df["volume"] = df["event_volume"].resample(
@@ -188,11 +194,11 @@ class StylizedFactsChecker:
         ]
         return resampled_df
 
-    def _resample_art(self, df: DataFrame) -> DataFrame:
+    def _resample_art(self, df: DataFrame, resample_mid: bool) -> DataFrame:
         assert "session_id" in df.columns
         session1_df: DataFrame = df[df["session_id"] == 1]
         session1_resampled_df: DataFrame = self._resample_art_per_session(
-            session1_df, self.session1_transactions_file_name
+            session1_df, self.session1_transactions_file_name, resample_mid
         )
         if self.session1_end_time is None:
             self.session1_end_time = pd.to_datetime(
@@ -200,7 +206,7 @@ class StylizedFactsChecker:
             ).time()
         session2_df: DataFrame = df[df["session_id"] == 2]
         session2_resampled_df: DataFrame = self._resample_art_per_session(
-            session2_df, self.session2_transactions_file_name
+            session2_df, self.session2_transactions_file_name, resample_mid
         )
         if self.session2_start_time is None:
             self.session2_start_time = pd.to_datetime(
@@ -217,7 +223,8 @@ class StylizedFactsChecker:
     def _resample_art_per_session(
         self,
         df: DataFrame,
-        transactions_file_name: str
+        transactions_file_name: str,
+        resample_mid: bool
     ) -> DataFrame:
         assert self.transactions_folder_path is not None
         assert transactions_file_name is not None
@@ -239,13 +246,14 @@ class StylizedFactsChecker:
         num_events: list[int] = []
         moods: list[float] = []
         num_pre_transactions: int = 0
+        price_column: str = "mid_price" if resample_mid else "market_price"
         for num_cur_transactions in cumsum_transactions:
             cur_df: DataFrame = df.iloc[num_pre_transactions:num_cur_transactions,:]
             if 0 < len(cur_df):
-                opens.append(cur_df["event_price (avg)"].iloc[0])
-                highes.append(cur_df["event_price (avg)"].max())
-                lowes.append(cur_df["event_price (avg)"].min())
-                closes.append(cur_df["event_price (avg)"].iloc[-1])
+                opens.append(cur_df[price_column].iloc[0])
+                highes.append(cur_df[price_column].max())
+                lowes.append(cur_df[price_column].min())
+                closes.append(cur_df[price_column].iloc[-1])
                 volumes.append(cur_df["event_volume"].sum())
                 num_events.append(len(cur_df))
                 if "mood" in cur_df.columns:
