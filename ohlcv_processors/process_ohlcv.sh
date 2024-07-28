@@ -1,4 +1,4 @@
-tickers="3407 4188 4568 5020 6502 9202"
+tickers="4568 6502 7203 8306 9202 9437"
 daily_ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv/1min"
 all_time_ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv/all_time"
 start_year="2015"
@@ -12,4 +12,8 @@ python process_ohlcv.py \
 --daily_ohlcv_folder_path ${daily_ohlcv_folder_path} \
 --all_time_ohlcv_folder_path ${all_time_ohlcv_folder_path} \
 --start_year ${start_year} \
---end_year ${end_year}
+--start_month ${start_month} \
+--start_day ${start_day} \
+--end_year ${end_year} \
+--end_month ${end_month} \
+--end_day ${end_day}
