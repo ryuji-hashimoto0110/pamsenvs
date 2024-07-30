@@ -8,7 +8,6 @@ from numpy.random import Generator
 import ot
 import pandas as pd
 from pandas import DataFrame
-import pathlib
 from pathlib import Path
 from typing import Optional
 

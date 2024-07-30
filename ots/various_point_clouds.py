@@ -3,10 +3,7 @@ import numpy as np
 from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
-import pathlib
 from pathlib import Path
-from typing import Optional
-import warnings
 
 freq_ohlcv_size_dic: dict[str, int] = {
     "1s": 18002,
