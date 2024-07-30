@@ -19,11 +19,12 @@ class DDEvaluater:
     """
     def __init__(
         self,
-        seed: int = 42
+        seed: int = 42,
+        ticker_path_dic: dict[str | int, Path] = {},
     ) -> None:
         """initialization."""
         self.prng: Generator = np.random.default_rng(seed)
-        self.ticker_path_dic: dict[str | int, Path] = {}
+        self.ticker_path_dic: dict[str | int, Path] = ticker_path_dic
         self.ticker_point_clouds_dic: dict[str | int, ndarray] = {}
 
     def calc_ot_distance(
@@ -106,10 +107,12 @@ class DDEvaluater:
     def create_ot_distance_matrix(
         self,
         num_points: int,
-        tickers: list[str | int],
+        tickers: Optional[list[str | int]] = None,
         save_path: Optional[Path] = None,
         return_distance_matrix: bool = False,
     ) -> Optional[ndarray]:
+        if tickers is None:
+            tickers: list[str | int] = list(self.ticker_path_dic.keys())
         num_tickers: int = len(tickers)
         distance_matrix: ndarray = np.zeros(
             (num_tickers, num_tickers), dtype=np.float64
