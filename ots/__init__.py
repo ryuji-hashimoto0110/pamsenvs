@@ -1,1 +1,3 @@
 from .data_distance_evaluater import DDEvaluater
+from .various_point_clouds import ReturnDDEvaluater
+from .various_point_clouds import TailReturnDDEvaluater
