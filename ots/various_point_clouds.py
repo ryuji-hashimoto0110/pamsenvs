@@ -16,9 +16,14 @@ freq_ohlcv_size_dic: dict[str, int] = {
 
 class ReturnDDEvaluater(DDEvaluater):
     """ReturnDDEvaluater class."""
-    def __init__(self, seed: int = 42, resample_rule: str = "1min") -> None:
+    def __init__(
+        self,
+        seed: int = 42,
+        resample_rule: str = "1min",
+        ticker_path_dic: dict[str | int, Path] = {},
+    ) -> None:
         """initialization."""
-        super().__init__(seed)
+        super().__init__(seed, ticker_path_dic)
         self.resample_rule: str = resample_rule
 
     def _read_csvs(self, dfs_path: Path, choose_full_size_df: bool) -> list[DataFrame]:
