@@ -64,11 +64,7 @@ class DDEvaluater:
         return ot_distance
     
     @abstractmethod
-    def get_point_cloud_from_path(
-        self,
-        num_points: int,
-        data_path: Path,
-    ) -> tuple[ndarray]:
+    def get_point_cloud_from_path(self, *args, **kwargs) -> tuple[ndarray]:
         pass
 
     def get_point_cloud_from_ticker(
