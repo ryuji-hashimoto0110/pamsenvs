@@ -111,6 +111,7 @@ class ReturnDDEvaluater(DDEvaluater):
         point_cloud: ndarray = self.prng.choice(
             return_arr, num_points, replace=False
         )
+        point_cloud: ndarray = point_cloud.reshape(-1, 1)
         return point_cloud
 
 
@@ -160,5 +161,6 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         abs_return_arr: ndarray = np.abs(return_arr)
         sorted_return_arr: ndarray = np.sort(abs_return_arr)
         point_cloud: ndarray = self._calc_tail_return_ratios(sorted_return_arr)
+        point_cloud: ndarray = point_cloud.reshape(-1, 1)
         return point_cloud
         
