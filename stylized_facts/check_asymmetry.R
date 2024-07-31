@@ -13,7 +13,7 @@ library(ASV)
 args <- commandArgs(trailingOnly = TRUE)
 ohlcv_file_path <- args[1]
 obs_freq <- args[2]
-obs_num2calc_return <- args[3]
+obs_num2calc_return <- as.integer(args[3])
 close_name <- args[4]
 
 freq_ohlcv_size_dic <- Dict$new(
