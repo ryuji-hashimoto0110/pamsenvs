@@ -4,9 +4,9 @@ ticker_folder_names="3382 4568 6501 6502 7203 8306 8411 9202"
 tickers="3382 4568 6501 6502 7203 8306 8411 9202"
 resample_rule="1min"
 point_cloud_type="return"
-distance_matrix_save_path="distance_matrixes/distance_matrix_real.csv"
+distance_matrix_save_path="distance_matrixes/distance_matrix_return_real.csv"
 n_samples=600
-fig_save_path="../imgs/distance_matrix_real.pdf"
+fig_save_path="../imgs/distance_matrix_return_real.pdf"
 python evaluate_distances_real.py \
 --seed ${seed} \
 --ohlcv_folder_path ${ohlcv_folder_path} \
