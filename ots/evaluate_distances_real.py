@@ -30,6 +30,9 @@ def create_path(folder_name: Optional[str]) -> Optional[Path]:
     folder_path: Optional[Path] = None
     if folder_name is not None:
         folder_path: Path = pathlib.Path(folder_name).resolve()
+    parent_path: Path = folder_path.parent
+    if not parent_path.exists():
+        parent_path.mkdir(parents=True)
     return folder_path
 
 def main(args):
