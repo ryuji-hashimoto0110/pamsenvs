@@ -20,12 +20,12 @@ from typing import Optional
 import warnings
 
 freq_ohlcv_size_dic: dict[str, int] = {
-    "1s": 18002,
-    "10s": 1802,
-    "30s": 602,
-    "1min": 302,
-    "5min": 62,
-    "15min": 22
+    "1s": 18001,
+    "10s": 1801,
+    "30s": 601,
+    "1min": 301,
+    "5min": 61,
+    "15min": 21
 }
 
 class StylizedFactsChecker:
@@ -192,6 +192,9 @@ class StylizedFactsChecker:
             (resampled_df.index <= self.session1_end_time) | \
             (self.session2_start_time <= resampled_df.index)
         ]
+        ohlcv_size: int = freq_ohlcv_size_dic[self.resample_rule]
+        if ohlcv_size < len(resampled_df):
+            resampled_df = resampled_df.iloc[:ohlcv_size+1,:]
         return resampled_df
 
     def _resample_art(self, df: DataFrame, resample_mid: bool) -> DataFrame:
