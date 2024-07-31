@@ -37,6 +37,7 @@ calc_return <- function(
   if (is_percentage) {
     vreturn_expanded <- 100 * vreturn_expanded
   }
+  vreturn_expanded <- scale(vreturn_expanded)
   return(vreturn_expanded)
 }
 
