@@ -94,7 +94,7 @@ class ReturnDDEvaluater(DDEvaluater):
         num_points: int,
         ohlcv_dfs_path: Path,
         choose_full_size_df: bool = True
-    ) -> tuple[ndarray]:
+    ) -> ndarray:
         """Get a point cloud from a path.
 
         A point is defined as a logarithmic return of the stock prices.
@@ -139,7 +139,7 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         ohlcv_dfs_path: Path,
         choose_full_size_df: bool = True,
         cut_off_th: float = 0.05
-    ) -> tuple[ndarray]:
+    ) -> ndarray:
         """Get a point cloud from a path.
 
         A point is defined as a logarithmic return of the stock prices.
@@ -165,4 +165,13 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         point_cloud: ndarray = self._get_tail_return(sorted_return_arr)
         point_cloud: ndarray = point_cloud.reshape(-1, 1)
         return point_cloud
-        
+    
+class RVsDDEvaluater(DDEvaluater):
+    """RVsDDEvaluater class."""
+    def get_point_cloud_from_path(
+        self,
+        num_points: int,
+        ohlcv_df_path: Path
+    ) -> tuple[ndarray]:
+        """Get a point cloud from a path.
+        """
