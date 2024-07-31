@@ -1,7 +1,7 @@
 seed=42
 ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv/1min"
 ticker_folder_names="3382 4568 6501 6502 7203 8306 8411 9202"
-tikcers="3382 4568 6501 6502 7203 8306 8411 9202"
+tickers="3382 4568 6501 6502 7203 8306 8411 9202"
 resample_rule="1min"
 point_cloud_type="return"
 distance_matrix_save_path="distance_matrixes/distance_matrix_real.csv"

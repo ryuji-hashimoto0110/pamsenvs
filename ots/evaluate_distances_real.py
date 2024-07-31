@@ -18,7 +18,7 @@ def get_config():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--ohlcv_folder_path", type=str, default=None)
     parser.add_argument("--ticker_folder_names", type=str, nargs="+", default=None)
-    parser.add_argument("--tikcers", type=str, nargs="+", default=None)
+    parser.add_argument("--tickers", type=str, nargs="+", default=None)
     parser.add_argument("--resample_rule", type=str, default="1min")
     parser.add_argument("--point_cloud_type", type=str, choices=["return", "tail_return"])
     parser.add_argument("--distance_matrix_save_path", type=str, default=None)
