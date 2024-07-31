@@ -91,8 +91,8 @@ class DDEvaluater:
             )
             return point_cloud
         else:
-            if ticker not in self.ticker_point_clouds_dic:
-                raise ValueError(f"The ticker {ticker} is not in the point cloud dictionary.")
+            if ticker not in self.ticker_path_dic:
+                raise ValueError(f"The ticker {ticker} is not in the path dictionary.")
             data_path: Path = self.ticker_path_dic[ticker]
             point_cloud: ndarray = self.get_point_cloud_from_path(num_points, data_path)
             if save2dic:
