@@ -76,7 +76,7 @@ def main(args):
     fig_save_path: Optional[Path] = create_path(all_args.fig_save_path)
     if fig_save_path is not None:
         print(f"Figure will be saved at {str(fig_save_path)}")
-        evaluater.draw_distance_matrix(distance_matrix, fig_save_path)
+        evaluater.draw_distance_matrix(tickers, distance_matrix, fig_save_path)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
