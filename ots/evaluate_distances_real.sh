@@ -11,7 +11,7 @@ python evaluate_distances_real.py \
 --seed ${seed} \
 --ohlcv_folder_path ${ohlcv_folder_path} \
 --ticker_folder_names ${ticker_folder_names} \
---tikcers ${tikcers} \
+--tickers ${tickers} \
 --resample_rule ${resample_rule} \
 --point_cloud_type ${point_cloud_type} \
 --distance_matrix_save_path ${distance_matrix_save_path} \
