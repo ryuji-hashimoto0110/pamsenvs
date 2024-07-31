@@ -140,7 +140,8 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         self,
         num_points: int,
         ohlcv_dfs_path: Path,
-        choose_full_size_df: bool = True
+        choose_full_size_df: bool = True,
+        cut_off_th: float = 0.05
     ) -> tuple[ndarray]:
         """Get a point cloud from a path.
 
@@ -155,8 +156,12 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         """
         ohlcv_dfs: list[DataFrame] = self._read_csvs(ohlcv_dfs_path, choose_full_size_df)
         return_arr: ndarray = self._calc_return_arr_from_dfs(ohlcv_dfs, "close")
+        if len(return_arr) < num_points / cut_off_th:
+            raise ValueError(
+                "The number of points in the point cloud is less than num_points/cut_off_th."
+            )
         return_arr: ndarray = self.prng.choice(
-            return_arr, num_points, replace=False
+            return_arr, int(num_points/cut_off_th), replace=False
         )
         abs_return_arr: ndarray = np.abs(return_arr)
         sorted_return_arr: ndarray = np.sort(abs_return_arr)
