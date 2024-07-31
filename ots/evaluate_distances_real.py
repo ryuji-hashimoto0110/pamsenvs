@@ -71,10 +71,10 @@ def main(args):
     print(f"Distance matrix will be saved at {str(distance_matrix_save_path)}")
     print(f"Number of samples: {n_samples}")
     distance_matrix: Optional[ndarray] = evaluater.create_ot_distance_matrix(
-        n_samples, tickers, distance_matrix_save_path
+        n_samples, tickers, distance_matrix_save_path, return_distance_matrix=True
     )
     fig_save_path: Optional[Path] = create_path(all_args.fig_save_path)
-    if fig_save_path is not None:
+    if fig_save_path is not None and distance_matrix is not None:
         print(f"Figure will be saved at {str(fig_save_path)}")
         evaluater.draw_distance_matrix(tickers, distance_matrix, fig_save_path)
 
