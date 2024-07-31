@@ -7,7 +7,7 @@ point_cloud_type="return"
 distance_matrix_save_path="distance_matrixes/distance_matrix_real.csv"
 n_samples=600
 fig_save_path="../imgs/distance_matrix_real.pdf"
-python evaluate_distances.py \
+python evaluate_distances_real.py \
 --seed ${seed} \
 --ohlcv_folder_path ${ohlcv_folder_path} \
 --ticker_folder_names ${ticker_folder_names} \
