@@ -117,7 +117,7 @@ class ReturnDDEvaluater(DDEvaluater):
 
 class TailReturnDDEvaluater(ReturnDDEvaluater):
     """TailReturnDDEvaluater class."""
-    def _calc_tail_return_ratios(
+    def _get_tail_return(
         self,
         sorted_return_arr: ndarray,
         cut_off_th: float = 0.05
@@ -131,10 +131,7 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         cut_sorted_return_arr: ndarray = sorted_return_arr[
             int(np.floor(len(sorted_return_arr) * (1-cut_off_th))):
         ]
-        tail_return_ratios: ndarray = np.log(
-            cut_sorted_return_arr / cut_sorted_return_arr[0]
-        )
-        return tail_return_ratios
+        return cut_sorted_return_arr
 
     def get_point_cloud_from_path(
         self,
@@ -165,7 +162,7 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         )
         abs_return_arr: ndarray = np.abs(return_arr)
         sorted_return_arr: ndarray = np.sort(abs_return_arr)
-        point_cloud: ndarray = self._calc_tail_return_ratios(sorted_return_arr)
+        point_cloud: ndarray = self._get_tail_return(sorted_return_arr)
         point_cloud: ndarray = point_cloud.reshape(-1, 1)
         return point_cloud
         
