@@ -6,12 +6,12 @@ from pandas import DataFrame
 from pathlib import Path
 
 freq_ohlcv_size_dic: dict[str, int] = {
-    "1s": 18002,
-    "10s": 1802,
-    "30s": 602,
-    "1min": 302,
-    "5min": 62,
-    "15min": 22
+    "1s": 18001,
+    "10s": 1801,
+    "30s": 601,
+    "1min": 301,
+    "5min": 61,
+    "15min": 21
 }
 
 class ReturnDDEvaluater(DDEvaluater):
