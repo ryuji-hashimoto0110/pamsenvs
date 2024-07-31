@@ -37,7 +37,7 @@ calc_return <- function(
   if (is_percentage) {
     vreturn_expanded <- 100 * vreturn_expanded
   }
-  return(vlog_return)
+  return(vreturn_expanded)
 }
 
 report_asv_mcmc <- function(
