@@ -194,7 +194,7 @@ class StylizedFactsChecker:
         ]
         ohlcv_size: int = freq_ohlcv_size_dic[self.resample_rule]
         if ohlcv_size < len(resampled_df):
-            resampled_df = resampled_df.iloc[:ohlcv_size+1,:]
+            resampled_df = resampled_df.iloc[:ohlcv_size,:]
         return resampled_df
 
     def _resample_art(self, df: DataFrame, resample_mid: bool) -> DataFrame:
