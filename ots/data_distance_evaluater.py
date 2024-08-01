@@ -2,6 +2,7 @@ from abc import abstractmethod
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes
 from matplotlib.pyplot import Figure
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from numpy import ndarray
 from numpy.random import Generator
@@ -220,7 +221,7 @@ class DDEvaluater:
         
     def _scatter_points3d(
         self,
-        ax: Axes,
+        ax: Axes3D,
         point_cloud3d: ndarray,
         color: str = "blue",
         label: Optional[str] = None,
@@ -253,7 +254,7 @@ class DDEvaluater:
 
     def _draw_points(
         self,
-        ax: Axes,
+        ax: Axes | Axes3D,
         point_cloud: ndarray,
         draw_dims: Optional[list[int]] = None,
         color: str = "blue",
@@ -306,10 +307,13 @@ class DDEvaluater:
             else:
                 raise ValueError("Specify the dimensions to draw.")
         if hist_points:
+            assert isinstance(ax, Axes)
             self._hist_points(ax, point_cloud1d, color, label, xlabel)
         elif scatter_points2d:
+            assert isinstance(ax, Axes)
             self._scatter_points2d(ax, point_cloud2d, color, label, xlabel, ylabel)
-        elif scatter_points3d:
+        elif scatter_points3d:  
+            assert isinstance(ax, Axes3D)
             self._scatter_points3d(
                 ax, point_cloud3d, color, label, xlabel, ylabel, zlabel
             )
