@@ -10,6 +10,7 @@ import sys
 sys.path.append(str(parent_path))
 from ots import DDEvaluater
 from ots import ReturnDDEvaluater
+from ots import RVsDDEvaluater
 from ots import TailReturnDDEvaluater
 from typing import Optional
 
@@ -17,8 +18,8 @@ def get_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--ohlcv_folder_path", type=str, default=None)
-    parser.add_argument("--ticker_folder_names", type=str, nargs="+", default=None)
-    parser.add_argument("--ticker_file_names", type=str, nargs="+", default=None)
+    parser.add_argument("--ticker_folder_names", type=str, nargs="*", default=None)
+    parser.add_argument("--ticker_file_names", type=str, nargs="*", default=None)
     parser.add_argument("--tickers", type=str, nargs="+", default=None)
     parser.add_argument("--resample_rule", type=str, default="1min")
     parser.add_argument(
@@ -84,8 +85,12 @@ def main(args):
         evaluater: DDEvaluater = TailReturnDDEvaluater(
             seed=seed, resample_rule=resample_rule, ticker_path_dic=ticker_path_dic
         )
+    elif point_cloud_type == "rv_returns":
+        evaluater: DDEvaluater = RVsDDEvaluater(
+            seed=seed, ticker_path_dic=ticker_path_dic
+        )
     else:
-        NotImplementedError(f"{point_cloud_type} is not implemented.")
+        raise NotImplementedError(f"{point_cloud_type} is not implemented.")
     distance_matrix_save_path: Optional[Path] = create_path(all_args.distance_matrix_save_path)
     n_samples: int = all_args.n_samples
     print(f"Distance matrix will be saved at {str(distance_matrix_save_path)}")
