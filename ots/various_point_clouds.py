@@ -224,6 +224,8 @@ class RVsDDEvaluater(DDEvaluater):
             axis=1
         )
         assert point_cloud.shape == (num_days-1, 4)
-        indices: ndarray = self.prng.randint(0, num_days-1, num_points)
+        indices: ndarray = self.prng.choice(
+            np.arange(num_days-1), num_points, replace=False
+        )
         point_cloud: ndarray = point_cloud[indices, :]
         return point_cloud
