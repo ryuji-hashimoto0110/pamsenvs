@@ -148,4 +148,108 @@ class DDEvaluater:
         plt.savefig(save_path)
         plt.close()
 
+    def _hist_points(
+        self,
+        ax: Axes,
+        point_cloud1d: ndarray,
+        color: str = "blue",
+        label: Optional[str] = None,
+        xlabel: Optional[str] = None
+    ) -> None:
+        ax.hist(
+            point_cloud1d, bins=100, alpha=0.5,
+            label=label, color=color
+        )
+        ax.legend()
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel("Frequency")
+        
+    def _scatter_points2d(
+        self,
+        ax: Axes,
+        point_cloud2d: ndarray,
+        color: str = "blue",
+        label: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None
+    ) -> None:
+        ax.scatter(
+            point_cloud2d[:, 0], point_cloud2d[:, 1],
+            label=label, color=color
+        )
+        ax.legend()
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        
+    def _scatter_points3d(
+        self,
+        ax: Axes,
+        point_cloud3d: ndarray,
+        color: str = "blue",
+        label: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        zlabel: Optional[str] = None
+    ) -> None:
+        ax.scatter(
+            point_cloud3d[:, 0], point_cloud3d[:, 1], point_cloud3d[:, 2],
+            label=label, color=color
+        )
+        ax.legend()
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_zlabel(zlabel)
+
+    def _draw_points(
+        self,
+        ax: Axes,
+        point_cloud: ndarray,
+        draw_dims: Optional[list[int]] = None,
+        color: str = "blue",
+        label: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        zlabel: Optional[str] = None
+    ) -> None:
+        point_dim: int = point_cloud.shape[1]
+        hist_points: bool = False
+        scatter_points2d: bool = False
+        scatter_points3d: bool = False
+        if draw_dims is not None:
+            if len(draw_dims) == 1:
+                point_cloud1d: ndarray = point_cloud[:, draw_dims].flatten()
+                hist_points = True
+            elif len(draw_dims) == 2:
+                point_cloud2d: ndarray = point_cloud[:, draw_dims]
+                scatter_points2d = True
+            elif len(draw_dims) == 3:
+                point_cloud3d: ndarray = point_cloud[:, draw_dims]
+                scatter_points3d = True
+            else:
+                raise ValueError("The number of dimensions to draw must be less than or equal to 3.")
+        else:
+            if point_dim == 1:
+                point_cloud1d: ndarray = point_cloud.flatten()
+                hist_points = True
+            elif point_dim == 2:
+                point_cloud2d: ndarray = point_cloud
+                scatter_points2d = True
+            elif point_dim == 3:
+                point_cloud3d: ndarray = point_cloud
+                scatter_points3d = True
+            else:
+                raise ValueError("Specify the dimensions to draw.")
+        if hist_points:
+            self._hist_points(ax, point_cloud1d, color, label, xlabel)
+        elif scatter_points2d:
+            self._scatter_points2d(ax, point_cloud2d, color, label, xlabel, ylabel)
+        elif scatter_points3d:
+            self._scatter_points3d(
+                ax, point_cloud3d, color, label, xlabel, ylabel, zlabel
+            )
+        else:
+            raise ValueError("Could not draw anything.")
+
+
+
         
