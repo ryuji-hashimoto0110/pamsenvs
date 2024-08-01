@@ -18,9 +18,12 @@ def get_config():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--ohlcv_folder_path", type=str, default=None)
     parser.add_argument("--ticker_folder_names", type=str, nargs="+", default=None)
+    parser.add_argument("--ticker_file_names", type=str, nargs="+", default=None)
     parser.add_argument("--tickers", type=str, nargs="+", default=None)
     parser.add_argument("--resample_rule", type=str, default="1min")
-    parser.add_argument("--point_cloud_type", type=str, choices=["return", "tail_return"])
+    parser.add_argument(
+        "--point_cloud_type", type=str,choices=["return", "tail_return", "rv_returns"]
+    )
     parser.add_argument("--distance_matrix_save_path", type=str, default=None)
     parser.add_argument("--n_samples", type=int, default=100)
     parser.add_argument("--fig_save_path", type=str, default=None)
@@ -45,11 +48,28 @@ def main(args):
     tree: Tree = Tree(str(datas_path))
     tickers: list[str | int] = all_args.tickers
     ticker_folder_names: list[str] = all_args.ticker_folder_names
-    assert len(tickers) == len(ticker_folder_names)
+    ticker_file_names: list[str] = all_args.ticker_file_names
+    if (
+        ticker_folder_names is not None and
+        ticker_file_names is not None
+    ):
+        assert len(tickers) == len(ticker_folder_names)
+    elif (
+        ticker_file_names is not None and
+        ticker_folder_names is None
+    ):
+        assert len(tickers) == len(ticker_file_names)
+    else:
+        raise ValueError(
+            "Please specify either ticker_folder_names or ticker_file_names."
+        )
     ticker_path_dic: dict[str | int, Path] = {}
-    for ticker, ticker_folder_name in zip(tickers, ticker_folder_names):
-        tree.add(f"{ticker}: {ticker_folder_name}")
-        ticker_path: Path = datas_path / ticker_folder_name
+    target_names: list[str] = (
+        ticker_folder_names if ticker_folder_names is not None else ticker_file_names
+    )
+    for ticker, target_name in zip(tickers, target_names):
+        tree.add(f"{ticker}: {target_name}")
+        ticker_path: Path = datas_path / target_name
         ticker_path_dic[ticker] = ticker_path
     print("Tickers and their corresponding paths:")
     print(tree)
