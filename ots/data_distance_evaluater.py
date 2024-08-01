@@ -135,6 +135,18 @@ class DDEvaluater:
         title: str = "OT Distance Matrix",
         cmap: str = "viridis"
     ) -> None:
+        """Draw heatmap of the distance matrix.
+        
+        Args:
+            tickers (list[str | int]): The list of tickers.
+            distance_matrix (ndarray): The distance matrix.
+            save_path (Path): The path to save the heatmap.
+            title (str): The title of the heatmap.
+            cmap (str): The colormap of the heatmap.
+
+        Returns:
+            None
+        """
         num_tickers: int = len(tickers)
         fig: Figure = plt.figure(figsize=(10, 10), dpi=50)
         ax: Axes = fig.add_subplot(111)
@@ -156,6 +168,18 @@ class DDEvaluater:
         label: Optional[str] = None,
         xlabel: Optional[str] = None
     ) -> None:
+        """Draw a histogram of the points. point_cloud1d is a 1D array.
+        
+        Args:
+            ax (Axes): The axes of the plot.
+            point_cloud1d (ndarray): The 1D array of the points.
+            color (str): The color of the histogram.
+            label (str): The label of the histogram.
+            xlabel (str): The label of the x-axis.
+
+        Returns:
+            None
+        """
         ax.hist(
             point_cloud1d, bins=100, alpha=0.5,
             label=label, color=color
@@ -173,6 +197,19 @@ class DDEvaluater:
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None
     ) -> None:
+        """Draw a scatter plot of the points. point_cloud2d is a 2D array.
+        
+        Args:
+            ax (Axes): The axes of the plot.
+            point_cloud2d (ndarray): The 2D array of the points.
+            color (str): The color of the scatter plot.
+            label (str): The label of the scatter plot.
+            xlabel (str): The label of the x-axis.
+            ylabel (str): The label of the y-axis.
+
+        Returns:
+            None
+        """
         ax.scatter(
             point_cloud2d[:, 0], point_cloud2d[:, 1],
             label=label, color=color
@@ -191,6 +228,20 @@ class DDEvaluater:
         ylabel: Optional[str] = None,
         zlabel: Optional[str] = None
     ) -> None:
+        """Draw a scatter plot of the points. point_cloud3d is a 3D array.
+        
+        Args:
+            ax (Axes): The axes of the plot.
+            point_cloud3d (ndarray): The 3D array of the points.
+            color (str): The color of the scatter plot.
+            label (str): The label of the scatter plot.
+            xlabel (str): The label of the x-axis.
+            ylabel (str): The label of the y-axis.
+            zlabel (str): The label of the z-axis.
+        
+        Returns:
+            None
+        """
         ax.scatter(
             point_cloud3d[:, 0], point_cloud3d[:, 1], point_cloud3d[:, 2],
             label=label, color=color
@@ -211,6 +262,21 @@ class DDEvaluater:
         ylabel: Optional[str] = None,
         zlabel: Optional[str] = None
     ) -> None:
+        """Draw the points in the point cloud.
+        
+        Args:
+            ax (Axes): The axes of the plot.
+            point_cloud (ndarray): The point cloud.
+            draw_dims (list[int]): The dimensions to draw.
+            color (str): The color of the points.
+            label (str): The label of the points.
+            xlabel (str): The label of the x-axis.
+            ylabel (str): The label of the y-axis.
+            zlabel (str): The label of the z-axis.
+
+        Returns:
+            None
+        """
         point_dim: int = point_cloud.shape[1]
         hist_points: bool = False
         scatter_points2d: bool = False
