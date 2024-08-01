@@ -171,7 +171,59 @@ class RVsDDEvaluater(DDEvaluater):
     def get_point_cloud_from_path(
         self,
         num_points: int,
-        ohlcv_df_path: Path
+        ohlcv_df_path: Path,
+        colname: str = "close",
+        resample_rule: str = "1min",
     ) -> tuple[ndarray]:
         """Get a point cloud from a path.
+
+        A point is defined as following 4 dimensional vector:
+            [log RV_t, r_t, log RV_{t+1}, r_t]
+        r_t and RV_t are calculated as follows.
+            1. Get price series price_arr from ohlcv_df_path 
+                whose length is num_days * num_daily_obs.
+            2. Reshape price_arr into num_days x num_daily_obs matrix.
+                (i, j) component of price_arr p_{i,j} is a price at i-th day and j-th observation.
+            3. Calculate intraday returns r_{i,j} = log(p_{i,j+1}/p_{i,j}) and create
+                return matrix return_arr whose shape is (num_days, num_daily_obs-1).
+            4. Calculate daily return and daily realized volatility as follows.
+                r_t = r_{t,1} + ... + r_{t,num_daily_obs-1},
+                RV_t = r_{t,1}^2 + ... + r_{t,num_daily_obs-1}^2.
+
+        Args:
+            num_points (int): The number of points in the point cloud.
+            ohlcv_df_path (Path): The path of the target OHLCV df.
+            colname (str): The name of the target column.
+            resample_rule (str): The resample rule.
+
+        Returns:
+            point_cloud (ndarray): The point cloud.
         """
+        num_daily_obs: int = freq_ohlcv_size_dic[resample_rule]
+        ohlcv_df: DataFrame = pd.read_csv(ohlcv_df_path, index_col=0)
+        price_arr: ndarray = ohlcv_df[colname].values.flatten()
+        num_days: int = len(price_arr) // num_daily_obs
+        if num_days * num_daily_obs != len(price_arr):
+            raise ValueError("Length of price series is not multiplicatable by num_daily_obs.")
+        price_arr: ndarray = price_arr.reshape(num_days, num_daily_obs)
+        intraday_return_arr: ndarray = (
+            np.log(price_arr[:, 1:]) - np.log(price_arr[:, :-1])
+        ) * 100
+        daily_return_arr: ndarray = np.sum(intraday_return_arr, axis=1).flatten()
+        assert num_days == len(daily_return_arr)
+        daily_rv_arr: ndarray = np.sum(intraday_return_arr**2, axis=1).flatten()
+        daily_log_rv_arr: ndarray = np.log(daily_rv_arr + 1e-10)
+        assert num_days == len(daily_log_rv_arr)
+        point_cloud: ndarray = np.concatenate(
+            [
+                daily_log_rv_arr[:-1].reshape(-1, 1),
+                daily_return_arr[:-1].reshape(-1, 1),
+                daily_log_rv_arr[1:].reshape(-1, 1),
+                daily_return_arr[1:].reshape(-1, 1),
+            ],
+            axis=1
+        )
+        assert point_cloud.shape == (num_days-1, 4)
+        indices: ndarray = self.prng.randint(0, num_days-1, num_points)
+        point_cloud: ndarray = point_cloud[indices, :]
+        return point_cloud
