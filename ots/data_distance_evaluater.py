@@ -158,6 +158,9 @@ class DDEvaluater:
         ax.set_yticks(range(num_tickers))
         ax.set_xticklabels(tickers, rotation=45)
         ax.set_yticklabels(tickers)
+        parent_path: Path = save_path.parent
+        if not parent_path.exists():
+            parent_path.mkdir(parents=True)
         plt.savefig(save_path)
         plt.close()
 
@@ -167,7 +170,6 @@ class DDEvaluater:
         point_cloud1d: ndarray,
         color: str = "blue",
         label: Optional[str] = None,
-        xlabel: Optional[str] = None
     ) -> None:
         """Draw a histogram of the points. point_cloud1d is a 1D array.
         
@@ -176,18 +178,15 @@ class DDEvaluater:
             point_cloud1d (ndarray): The 1D array of the points.
             color (str): The color of the histogram.
             label (str): The label of the histogram.
-            xlabel (str): The label of the x-axis.
 
         Returns:
             None
         """
+        assert point_cloud1d.ndim == 1
         ax.hist(
             point_cloud1d, bins=100, alpha=0.5,
             label=label, color=color
         )
-        ax.legend()
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel("Frequency")
         
     def _scatter_points2d(
         self,
@@ -195,8 +194,6 @@ class DDEvaluater:
         point_cloud2d: ndarray,
         color: str = "blue",
         label: Optional[str] = None,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None
     ) -> None:
         """Draw a scatter plot of the points. point_cloud2d is a 2D array.
         
@@ -205,19 +202,15 @@ class DDEvaluater:
             point_cloud2d (ndarray): The 2D array of the points.
             color (str): The color of the scatter plot.
             label (str): The label of the scatter plot.
-            xlabel (str): The label of the x-axis.
-            ylabel (str): The label of the y-axis.
 
         Returns:
             None
         """
+        assert point_cloud2d.shape[1] == 2
         ax.scatter(
             point_cloud2d[:, 0], point_cloud2d[:, 1],
             label=label, color=color
         )
-        ax.legend()
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
         
     def _scatter_points3d(
         self,
@@ -225,9 +218,6 @@ class DDEvaluater:
         point_cloud3d: ndarray,
         color: str = "blue",
         label: Optional[str] = None,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None,
-        zlabel: Optional[str] = None
     ) -> None:
         """Draw a scatter plot of the points. point_cloud3d is a 3D array.
         
@@ -236,21 +226,15 @@ class DDEvaluater:
             point_cloud3d (ndarray): The 3D array of the points.
             color (str): The color of the scatter plot.
             label (str): The label of the scatter plot.
-            xlabel (str): The label of the x-axis.
-            ylabel (str): The label of the y-axis.
-            zlabel (str): The label of the z-axis.
         
         Returns:
             None
         """
+        assert point_cloud3d.shape[1] == 3
         ax.scatter(
             point_cloud3d[:, 0], point_cloud3d[:, 1], point_cloud3d[:, 2],
             label=label, color=color
         )
-        ax.legend()
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_zlabel(zlabel)
 
     def _draw_points(
         self,
@@ -259,9 +243,6 @@ class DDEvaluater:
         draw_dims: Optional[list[int]] = None,
         color: str = "blue",
         label: Optional[str] = None,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None,
-        zlabel: Optional[str] = None
     ) -> None:
         """Draw the points in the point cloud.
         
@@ -271,9 +252,6 @@ class DDEvaluater:
             draw_dims (list[int]): The dimensions to draw.
             color (str): The color of the points.
             label (str): The label of the points.
-            xlabel (str): The label of the x-axis.
-            ylabel (str): The label of the y-axis.
-            zlabel (str): The label of the z-axis.
 
         Returns:
             None
@@ -308,17 +286,21 @@ class DDEvaluater:
                 raise ValueError("Specify the dimensions to draw.")
         if hist_points:
             assert isinstance(ax, Axes)
-            self._hist_points(ax, point_cloud1d, color, label, xlabel)
+            self._hist_points(ax, point_cloud1d, color, label)
         elif scatter_points2d:
             assert isinstance(ax, Axes)
-            self._scatter_points2d(ax, point_cloud2d, color, label, xlabel, ylabel)
+            self._scatter_points2d(ax, point_cloud2d, color, label)
         elif scatter_points3d:  
             assert isinstance(ax, Axes3D)
             self._scatter_points3d(
-                ax, point_cloud3d, color, label, xlabel, ylabel, zlabel
+                ax, point_cloud3d, color, label
             )
         else:
             raise ValueError("Could not draw anything.")
+        
+    @abstractmethod
+    def draw_points(self, *args, **kwargs) -> None:
+        pass
 
 
 
