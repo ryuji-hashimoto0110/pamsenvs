@@ -114,11 +114,17 @@ def main(args):
         evaluater.draw_distance_matrix(
             tickers, distance_matrix, fig_distance_matrix_path
         )
-        if isinstance(evaluater, ReturnDDEvaluater):
-            nrow_subplots: int = all_args.nrows_subolots
-            ncol_subplots: int = all_args.ncols_subplots
+        nrow_subplots: int = all_args.nrows_subolots
+        ncol_subplots: int = all_args.ncols_subplots
+        if isinstance(evaluater, TailReturnDDEvaluater):
             evaluater.draw_points(
-                tickers, n_samples, xlim=[-10,10], xlabel="Log-return",
+                tickers, n_samples, xlim=[0, 8], xlabel="Abs Log-return (Top 5%)",
+                is_all_in_one_subplot=False, save_path=fig_point_clouds_path,
+                subplots_arrangement=(nrow_subplots, ncol_subplots)
+            )
+        elif isinstance(evaluater, ReturnDDEvaluater):
+            evaluater.draw_points(
+                tickers, n_samples, xlim=[-8, 8], xlabel="Log-return",
                 is_all_in_one_subplot=False, save_path=fig_point_clouds_path,
                 subplots_arrangement=(nrow_subplots, ncol_subplots)
             )
