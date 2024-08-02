@@ -140,7 +140,7 @@ class ReturnDDEvaluater(DDEvaluater):
         """
         nrows: int = subplots_arrangement[0]
         ncols: int = subplots_arrangement[1]
-        fig: Figure = plt.figure(figsize=(10*ncols, 8*nrows), dpi=50)
+        fig: Figure = plt.figure(figsize=(10*ncols, 5*nrows), dpi=50)
         if is_all_in_one_subplot:
             ax: Optional[Axes] = fig.add_subplot(111)
         else:
@@ -172,7 +172,6 @@ class ReturnDDEvaluater(DDEvaluater):
         parent_path: Path = save_path.parent
         if not parent_path.exists():
             parent_path.mkdir(parents=True)
-        fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         plt.savefig(save_path)
         plt.close()
 
