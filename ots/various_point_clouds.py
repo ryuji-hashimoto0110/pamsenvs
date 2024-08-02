@@ -1,9 +1,14 @@
 from .data_distance_evaluater import DDEvaluater
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
 from pathlib import Path
+from typing import Optional
 
 freq_ohlcv_size_dic: dict[str, int] = {
     "1s": 18001,
@@ -113,7 +118,62 @@ class ReturnDDEvaluater(DDEvaluater):
         )
         point_cloud: ndarray = point_cloud.reshape(-1, 1)
         return point_cloud
-
+    
+    def draw_points(
+        self,
+        tickers: list[str | int],
+        num_points: int,
+        xlim: list[float, float],
+        xlabel: str,
+        save_path: Path,
+        is_all_in_one_subplot: bool = True,
+        subplots_arrangement: tuple[int, int] = (1, 1),
+    ) -> None:
+        """Draw all point clouds in 1 figure.
+        
+        Args:
+            tickers (list[str | int]): The list of the tickers.
+            num_points (int): The number of points in each point cloud.
+            save_path (Path): The path to save the figure.
+            is_all_in_one_subplot (bool): Whether not to devide subplots for different point clouds.
+            subplots_arrangement (tuple[int, int]): The arrangement of subplots. (nrows, ncols)
+        """
+        nrows: int = subplots_arrangement[0]
+        ncols: int = subplots_arrangement[1]
+        fig: Figure = plt.figure(figsize=(10*ncols, 10*nrows), dpi=50)
+        if is_all_in_one_subplot:
+            ax: Optional[Axes] = fig.add_subplot(111)
+        else:
+            ax: Optional[Axes] = None
+            if nrows * ncols < len(tickers):
+                raise ValueError("The number of subplots is less than the number of tickers.")
+        for i, ticker in enumerate(tickers):
+            point_cloud: ndarray = self.get_point_cloud_from_ticker(
+                ticker, num_points, save2dic=False
+            )
+            if not is_all_in_one_subplot:
+                ax = fig.add_subplot(nrows, ncols, i+1)
+            ax.set_xlim(xlim)
+            self._draw_points(
+                ax, point_cloud, draw_dims=None, label=ticker
+            )
+            if (
+                is_all_in_one_subplot or
+                i % ncols == 0
+            ):
+                ax.set_ylabel("Frequency")
+            if (
+                is_all_in_one_subplot or
+                ncols * (nrows-1) <= i
+            ):
+                ax.set_xlabel(xlabel)
+            ax.legend() if not is_all_in_one_subplot else None
+        ax.legend() if is_all_in_one_subplot else None
+        parent_path: Path = save_path.parent
+        if not parent_path.exists():
+            parent_path.mkdir(parents=True)
+        plt.savefig(save_path)
+        plt.close()
 
 class TailReturnDDEvaluater(ReturnDDEvaluater):
     """TailReturnDDEvaluater class."""
