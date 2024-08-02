@@ -12,7 +12,7 @@ ticker_folder_names="3382 4568 6501 6502 7203 8306 8411 9202"
 #"9202_20150105_20210820.csv"
 tickers="3382 4568 6501 6502 7203 8306 8411 9202"
 resample_rule="1min"
-point_cloud_type="returns"
+point_cloud_type="return"
 distance_matrix_save_path="distance_matrices/distance_matrix_returns_real.csv"
 n_samples=1000
 figs_save_path="../imgs/ots/returns/real"
