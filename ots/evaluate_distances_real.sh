@@ -17,7 +17,7 @@ distance_matrix_save_path="distance_matrices/distance_matrix_returns_real.csv"
 n_samples=1000
 figs_save_path="../imgs/ots/returns/real"
 nrows_subolots=2
-nrows_subolots=4
+ncols_subolots=4
 python evaluate_distances_real.py \
 --seed ${seed} \
 --ohlcv_folder_path ${ohlcv_folder_path} \
@@ -29,4 +29,4 @@ python evaluate_distances_real.py \
 --n_samples ${n_samples} \
 --figs_save_path ${figs_save_path} \
 --nrows_subolots ${nrows_subolots} \
---ncols_subplots ${ncols_subplots} \
+--ncols_subplots ${ncols_subplots}
