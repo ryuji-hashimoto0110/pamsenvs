@@ -54,7 +54,7 @@ def main(args):
     ticker_file_names: list[str] = all_args.ticker_file_names
     if (
         ticker_folder_names is not None and
-        ticker_file_names is not None
+        ticker_file_names is None
     ):
         assert len(tickers) == len(ticker_folder_names)
     elif (
