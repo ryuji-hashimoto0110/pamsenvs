@@ -45,7 +45,9 @@ class SimulationEvaluater:
     def __init__(
         self,
         initial_seed: int,
+        show_process: bool = True,
         significant_figures: int = 10,
+        config: Optional[dict[str, Any]] = None,
         config_path: Optional[Path | str] = None,
         specific_name: Optional[str] = None,
         txts_path: Optional[Path | str] = None,
@@ -63,7 +65,9 @@ class SimulationEvaluater:
 
         Args:
             initial_seed (int): seed number to start first simulation.
+            show_process (bool): whether to print process.
             significant_figures (int): significant figures for logger.
+            config (dict, optional): configuration dictionary.
             config_path (Path | str, optional): path to configuration file.
                 Ex) 'pamsenvs/examples/asymmetric_volatility/volatility_feedback_alpha010.json'
             specific_name (str, Optional): specific name contained in all stored file names.
@@ -84,7 +88,9 @@ class SimulationEvaluater:
             results_save_path (Path | str, optional): csv file path to store results by StylizedFactsChecker.
         """
         self.initial_seed: int = initial_seed
+        self.show_process: bool = show_process
         self.significant_figures: int = significant_figures
+        self.config: Optional[dict[str, Any]] = config
         self.config_path: Optional[Path] = self._convert_str2path(config_path, mkdir=False)
         self.specific_name: Optional[str] = specific_name
         self.txts_path: Optional[Path] = self._convert_str2path(txts_path, mkdir=True)
@@ -209,11 +215,14 @@ class SimulationEvaluater:
             start_date (date): start date
             end_date (date): end date
         """
-        if self.config_path is None:
-            raise ValueError("specify config_path.")
         if self.txts_path is None:
             raise ValueError("spevify txts_path.")
-        config: dict[str, Any] = json.load(fp=open(str(self.config_path), mode="r"))
+        if self.config is not None:
+            config: dict[str, Any] = self.config
+        elif self.config_path is not None:
+            config: dict[str, Any] = json.load(fp=open(str(self.config_path), mode="r"))
+        else:
+            raise ValueError("specify config or config_path.")
         session1_end_time, session2_start_time = self._get_session_boundary(config)
         today_date: date = date(year=2015, month=1, day=1) if start_date is None else start_date
         start_date: date = today_date
@@ -222,10 +231,11 @@ class SimulationEvaluater:
         if use_simulator_given_runner:
             runner: Runner = SimulatorGivenRunner(settings=config)
         exceptions_dic: dict[int, str] = {}
-        print("[green]==start simulations==[green]")
-        print(f"config-> {str(self.config_path)}  txts-> {str(self.txts_path)}")
-        print(f"Session 1 end at time {session1_end_time}. Session 2 start at time {session2_start_time}.")
-        print(f"Whether to use SimulatorGivenRunner: {use_simulator_given_runner}")
+        if self.show_process:
+            print("[green]==start simulations==[green]")
+            print(f"config-> {str(self.config_path)}  txts-> {str(self.txts_path)}")
+            print(f"Session 1 end at time {session1_end_time}. Session 2 start at time {session2_start_time}.")
+            print(f"Whether to use SimulatorGivenRunner: {use_simulator_given_runner}")
         for simulation_id in tqdm(range(num_simulations)):
             txt_file_name_dic: dict[MarketName, str] = self._get_txt_file_name_dic(
                 config, today_date
@@ -270,10 +280,11 @@ class SimulationEvaluater:
         end_date: date = today_date
         start_date_str: str = start_date.strftime(format='%Y%m%d')
         end_date_str: str = end_date.strftime(format='%Y%m%d')
-        print("[green]==simulations ended==[green]")
-        print(exceptions_dic)
-        print(f"Pseudo dates are assined to each artificial data. [{start_date_str}->{end_date_str}]")
-        print()
+        if self.show_process:
+            print("[green]==simulations ended==[green]")
+            print(exceptions_dic)
+            print(f"Pseudo dates are assined to each artificial data. [{start_date_str}->{end_date_str}]")
+            print()
         return start_date, end_date
 
     def process_flex(self) -> None:
@@ -286,19 +297,22 @@ class SimulationEvaluater:
             raise ValueError("spevify tick_dfs_path.")
         if 0 < len(list(self.tick_dfs_path.iterdir())):
             warnings.warn("tick_dfs_path is not empty. Some files are possible to be overwritten.")
-        print("[green]==convert txt to csv==[green]")
-        print("Extract execution events from txt datas and convert them into csv datas.")
-        print(f"txts-> {str(self.txts_path)} tick csvs-> {str(self.tick_dfs_path)}")
+        if self.show_process:
+            print("[green]==convert txt to csv==[green]")
+            print("Extract execution events from txt datas and convert them into csv datas.")
+            print(f"txts-> {str(self.txts_path)} tick csvs-> {str(self.tick_dfs_path)}")
         processor = FlexProcessor(
             txt_datas_path=self.txts_path,
             csv_datas_path=self.tick_dfs_path
         )
         processor.convert_all_txt2csv(is_display_path=False)
-        print("[green]==converting process ended==[green]")
-        print()
+        if self.show_process:
+            print("[green]==converting process ended==[green]")
+            print()
 
     def check_stylized_facts(
         self,
+        check_stylized_facts: bool = True,
         check_asymmetry: bool = False,
         check_asymmetry_path: str = "check_asymmetry.R",
         start_date: Optional[date] = None,
@@ -307,6 +321,7 @@ class SimulationEvaluater:
         """check stylized facts.
 
         Args:
+            check_stylized_facts (bool): whether to check stylized facts.
             check_asymmetry (bool): whether to check asymmetric volatility.
             check_asymmetry_path (str): path to the executable file 'check_asymmetry.R'
             start_date (date, optional)
@@ -326,15 +341,16 @@ class SimulationEvaluater:
             raise ValueError("specify session1_transactions_file_name.")
         if self.session2_transactions_file_name is None:
             raise ValueError("specify session2_transactions_file_name.")
-        print("[green]==check stylized facts==[green]")
-        print(f"tick csvs-> {str(self.tick_dfs_path)} OHLCV csvs-> {str(self.ohlcv_dfs_path)}")
-        print(f"specific name that must be contained in file names-> {self.specific_name}")
-        print(f"figures-> {self.figs_save_path}")
-        tree: Tree = Tree(str(self.transactions_path.resolve()))
-        tree.add(self.session1_transactions_file_name)
-        tree.add(self.session2_transactions_file_name)
-        print("transaction files:")
-        print(tree)
+        if self.show_process:
+            print("[green]==check stylized facts==[green]")
+            print(f"tick csvs-> {str(self.tick_dfs_path)} OHLCV csvs-> {str(self.ohlcv_dfs_path)}")
+            print(f"specific name that must be contained in file names-> {self.specific_name}")
+            print(f"figures-> {self.figs_save_path}")
+            tree: Tree = Tree(str(self.transactions_path.resolve()))
+            tree.add(self.session1_transactions_file_name)
+            tree.add(self.session2_transactions_file_name)
+            print("transaction files:")
+            print(tree)
         checker = StylizedFactsChecker(
             seed=self.initial_seed,
             ohlcv_dfs_path=None,
@@ -348,10 +364,12 @@ class SimulationEvaluater:
             session1_transactions_file_name=self.session1_transactions_file_name,
             session2_transactions_file_name=self.session2_transactions_file_name
         )
-        if self.results_save_path is None:
-            raise ValueError("specify results_save_path.")
-        print(f"results-> {str(self.results_save_path)}")
-        checker.check_stylized_facts(save_path=self.results_save_path)
+        if check_stylized_facts:
+            if self.results_save_path is None:
+                raise ValueError("specify results_save_path.")
+            if self.show_process:
+                print(f"results-> {str(self.results_save_path)}")
+            checker.check_stylized_facts(save_path=self.results_save_path)
         if check_asymmetry:
             if start_date is None:
                 raise ValueError("specify start_date.")
@@ -367,8 +385,9 @@ class SimulationEvaluater:
             check_asymmetry_command: str = f"Rscript {check_asymmetry_path} " + \
             f"{str(all_time_ohlcv_df_path)} {self.resample_rule} close"
             _ = subprocess.run(check_asymmetry_command, shell=True)
-        print("[green]==stylized facts checking process ended==[green]")
-        print()
+        if self.show_process:
+            print("[green]==stylized facts checking process ended==[green]")
+            print()
 
     def concat_ohlcv(self, start_date: date, end_date: date) -> None:
         if self.all_time_ohlcv_dfs_path is None:
@@ -377,8 +396,9 @@ class SimulationEvaluater:
             raise ValueError("spevify ohlcv_dfs_path.")
         if len(list(self.ohlcv_dfs_path.iterdir())) == 0:
             raise ValueError("ohlcv_dfs_path is empty. Run check_stylized_facts first.")
-        print("[green]==concat daily OHLCV datas==[green]")
-        print(f"daily OHLCV csvs-> {str(self.ohlcv_dfs_path)} all-time OHLCV csv-> {str(self.all_time_ohlcv_dfs_path)}")
+        if self.show_process:
+            print("[green]==concat daily OHLCV datas==[green]")
+            print(f"daily OHLCV csvs-> {str(self.ohlcv_dfs_path)} all-time OHLCV csv-> {str(self.all_time_ohlcv_dfs_path)}")
         processor = OHLCVProcessor(
             tickers=[self.specific_name],
             daily_ohlcv_dfs_path=self.ohlcv_dfs_path,
