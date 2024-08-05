@@ -288,15 +288,15 @@ class OTGridSearcher:
                     "path_to_calc_point_clouds must be identical with either temp_ohlcv_dfs_path or temp_all_time_ohlcv_dfs_path."
                 )
             self.dd_evaluater.add_ticker_path(
-                ticker_path=self.path_to_calc_point_clouds, ticker_name="temp"
+                ticker="temp", path=self.path_to_calc_point_clouds
             )
             art_point_cloud: ndarray = self.dd_evaluater.get_point_cloud_from_ticker(
-                ticker_name="temp", num_points=self.num_points, save2dic=False
+                ticker="temp", num_points=self.num_points, save2dic=False
             )
             ot_distances: list[float] = []
             for ticker in self.real_tickers:
                 real_point_cloud: ndarray = self.dd_evaluater.get_point_cloud_from_ticker(
-                    ticker_name=ticker, num_points=self.num_points, save2dic=True
+                    ticker=ticker, num_points=self.num_points, save2dic=True
                 )
                 ot_distance: float = self.dd_evaluater.calc_ot_distance(
                     art_point_cloud, real_point_cloud, is_per_bit=True
