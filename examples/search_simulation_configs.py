@@ -102,6 +102,7 @@ def create_otsearcher(
         session2_transactions_file_name=session2_transactions_file_name,
         num_points=num_points,
     )
+    return ot_searcher
 
 def main(args):
     parser = get_config()
