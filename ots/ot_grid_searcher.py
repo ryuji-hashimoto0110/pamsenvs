@@ -26,9 +26,9 @@ class OTGridSearcher:
         dd_evaluater: DDEvaluater,
         show_process: bool = True,
         base_config: Optional[dict[str, Any]] = None,
-        base_config_path: Optional[Path] = None,
+        base_config_path: Optional[str | Path] = None,
         target_variables_config: Optional[dict[str, Any]] = None,
-        target_variables_config_path: Optional[Path] = None,
+        target_variables_config_path: Optional[str | Path] = None,
         use_simulator_given_runner: bool = False,
         num_simulations: int = 1500,
         temp_txts_path: Optional[str | Path] = None,
@@ -70,11 +70,11 @@ class OTGridSearcher:
         self.show_process: bool = show_process
         self.base_config: dict[str, Any] = self._get_config(
             config=base_config,
-            config_path=base_config_path
+            config_path=self._convert_str2path(base_config_path, mkdir=False)
         )
         self.target_variables_config: dict[str, Any] = self._get_config(
             config=target_variables_config,
-            config_path=target_variables_config_path
+            config_path=self._convert_str2path(target_variables_config_path, mkdir=False)
         )
         self.id2var_dic: dict[VarID, list[str]] = self._get_target_variables(
             target_variables_config=self.target_variables_config, show_variables=self.show_process
