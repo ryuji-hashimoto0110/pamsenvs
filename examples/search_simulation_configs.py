@@ -5,7 +5,7 @@ curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
 root_path: Path = curr_path.parents[0]
 import sys
 sys.path.append(str(root_path))
-from ots import create_ddevaluater
+from ots.evaluate_distances_real import create_ddevaluater
 from ots import DDEvaluater
 from ots import OTGridSearcher
 from rich import print
