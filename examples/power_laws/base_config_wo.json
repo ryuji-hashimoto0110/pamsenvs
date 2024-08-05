@@ -48,7 +48,6 @@
     "Agent": {
         "class": "CARAFCNAgent",
 		"isCARA": true,
-        "yesterdayAware": true,
         "numAgents": 500,
 		"markets": ["Market"],
 		"assetVolume": {"uniform": [0,100]},
