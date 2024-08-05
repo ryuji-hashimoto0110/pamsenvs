@@ -17,7 +17,7 @@ from typing import Optional
 def get_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--ohlcv_folder_path", type=str, default=None)
+    parser.add_argument("--ohlcv_folder_path", type=str)
     parser.add_argument("--ticker_folder_names", type=str, nargs="*", default=None)
     parser.add_argument("--ticker_file_names", type=str, nargs="*", default=None)
     parser.add_argument("--tickers", type=str, nargs="+", default=None)
@@ -47,9 +47,7 @@ def create_ddevaluater(all_args, show_args: bool = True) -> DDEvaluater:
         - seed: int
     """
     seed: int = all_args.seed
-    datas_path: Optional[str] = create_path(all_args.ohlcv_folder_path)
-    if datas_path is None:
-        raise ValueError("Please specify the path of the OHLCV data.")
+    datas_path: str = pathlib.Path(all_args.ohlcv_folder_path).resolve()
     tree: Tree = Tree(str(datas_path))
     tickers: list[str | int] = all_args.tickers
     ticker_folder_names: list[str] = all_args.ticker_folder_names
