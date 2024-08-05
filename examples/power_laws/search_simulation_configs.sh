@@ -6,8 +6,8 @@ resample_rule="1min"
 point_cloud_type="return"
 
 initial_seed=42
-base_config_path="base_config_wo.json"
-target_variables_config_path="target_variables_config_wo.json"
+base_config_path="base_config.json"
+target_variables_config_path="target_variables_config.json"
 temp_txts_path="../../datas/artificial_datas/flex_txt/temp"
 temp_tick_dfs_path="../../datas/artificial_datas/flex_csv/temp"
 temp_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp"
@@ -18,7 +18,7 @@ transactions_path="../../datas/real_datas/intraday/flex_transactions/1min/7203"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
 num_points=1000
-results_save_path="ot_result_wo.csv"
+results_save_path="ot_result.csv"
 
 python ../search_simulation_configs.py \
 --seed ${seed} \
