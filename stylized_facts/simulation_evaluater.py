@@ -273,9 +273,9 @@ class SimulationEvaluater:
                     previous_simulator = copy.deepcopy(pending_simulator)
                 continue
             today_date += timedelta(days=1)
-            del previous_simulator
-            del pending_simulator
             if use_simulator_given_runner:
+                del previous_simulator
+                del pending_simulator
                 previous_simulator = copy.deepcopy(runner.simulator)
         end_date: date = today_date
         start_date_str: str = start_date.strftime(format='%Y%m%d')
