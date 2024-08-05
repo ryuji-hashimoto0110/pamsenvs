@@ -256,6 +256,7 @@ class OTGridSearcher:
                 show_process=self.show_process,
                 config=specific_config,
                 specific_name="temp",
+                resample_mid=True,
                 txts_path=self.temp_txts_path,
                 tick_dfs_path=self.temp_tick_dfs_path,
                 ohlcv_dfs_path=self.temp_ohlcv_dfs_path,
@@ -274,7 +275,9 @@ class OTGridSearcher:
             assert self.transactions_path is not None
             assert self.session1_transactions_file_name is not None
             assert self.session2_transactions_file_name is not None
-            sim_evaluater.check_stylized_facts(check_asymmetry=False)
+            sim_evaluater.check_stylized_facts(
+                check_stylized_facts=False, check_asymmetry=False
+            )
             assert self.temp_all_time_ohlcv_dfs_path is not None
             sim_evaluater.concat_ohlcv(start_date=start_date, end_date=end_date)
             if not (
