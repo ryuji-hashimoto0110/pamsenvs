@@ -1,0 +1,6 @@
+{
+    "0": [["Agent", "chartWeight"],[{"expon": [0.0]}, {"expon": [3.0]}]],
+    "1": [["Agent", "noiseWeight"], [{"expon": [0.0]}, {"expon": [3.0]}]],
+    "2": [["Agent", "riskAversionTerm"], [0.02, 0.20]],
+    "3": [["Agent", "timeWindowSize"], [10, 1000]]
+}
