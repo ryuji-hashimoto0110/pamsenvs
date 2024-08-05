@@ -249,9 +249,7 @@ class OTGridSearcher:
         num_comb_dic: dict[VarID, int] = self._create_num_comb_dic()
         sim_id: int = 0
         while True:
-            specific_config, variable_values = self._set_specific_config(
-                self.base_config, comb_dic
-            )
+            specific_config, variable_values = self._set_specific_config(comb_dic)
             self._make_temp_folders_empty()
             sim_evaluater: SimulationEvaluater = SimulationEvaluater(
                 initial_seed=self.initial_seed,
