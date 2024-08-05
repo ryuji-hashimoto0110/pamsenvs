@@ -27,6 +27,20 @@ class DDEvaluater:
         self.ticker_path_dic: dict[str | int, Path] = ticker_path_dic
         self.ticker_point_clouds_dic: dict[str | int, ndarray] = {}
 
+    def add_ticker_path(self, ticker: str | int, path: Path) -> None:
+        """Add a ticker and its path to the dictionary.
+        
+        Args:
+            ticker (str | int): The ticker of the financial instrument.
+            path (Path): The path to the data of the financial instrument.
+        
+        Returns:
+            None
+        """
+        self.ticker_path_dic[ticker] = path
+        if ticker in self.ticker_point_clouds_dic:
+            del self.ticker_point_clouds_dic[ticker]
+
     def calc_ot_distance(
         self,
         point_cloud1: ndarray,
