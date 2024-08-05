@@ -305,9 +305,9 @@ class OTGridSearcher:
             assert len(self.result_df.columns) == len(new_results)
             self.result_df.loc[sim_id] = new_results
             comb_dic, is_break = self._update_comb_dic(comb_dic, num_comb_dic)
+            self.result_df.to_csv(result_save_path)
             if is_break:
                 break
-        self.result_df.to_csv(result_save_path)
 
     def _init_comb_dic(self) -> dict[VarID, int]:
         """Initialize combination dictionary.
