@@ -1,7 +1,7 @@
 {
     "0": [
         ["Agent", "noiseWeight"],
-        [{"expon": [0.0]}, {"expon": [0.5]}, {"expon": [0.75]}, {"expon": [1.0]}, {"expon": [1.25]}, {"expon": [1.5]}, {"expon": [3.0]}]
+        [{"expon": [0.5]}, {"expon": [0.75]}, {"expon": [1.0]}, {"expon": [1.25]}, {"expon": [1.5]}, {"expon": [3.0]}]
     ],
     "1": [
         ["Agent", "riskAversionTerm"],
