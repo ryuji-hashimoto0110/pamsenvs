@@ -162,10 +162,10 @@ class OTGridSearcher:
         keys to the target variables and target candidates to search.
 
         {
-            0: [["Agent", "chartWeight"], [{"expon": [0.0]}, ..., {"expon": [3.0]}]],
-            1: [["Agent", "noiseWeight"], [{"expon": [0.0]}, ..., {"expon": [3.0]}]],
-            2: [["Agent", "riskAversionTerm"], [0.02, ..., 0.20]],
-            3: [["Agent", "timeWindowSize"], [10, ..., 1000]]
+            '0': [["Agent", "chartWeight"], [{"expon": [0.0]}, ..., {"expon": [3.0]}]],
+            '1': [["Agent", "noiseWeight"], [{"expon": [0.0]}, ..., {"expon": [3.0]}]],
+            '2': [["Agent", "riskAversionTerm"], [0.02, ..., 0.20]],
+            '3': [["Agent", "timeWindowSize"], [10, ..., 1000]]
         }
 
         This method extract Variable Ids and their names as a dictionary:
