@@ -1,5 +1,4 @@
 from .data_distance_evaluater import DDEvaluater
-from .evaluate_distances_real import create_ddevaluater
 from .ot_grid_searcher import OTGridSearcher
 from .various_point_clouds import ReturnDDEvaluater
 from .various_point_clouds import RVsDDEvaluater
