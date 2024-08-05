@@ -263,15 +263,15 @@ class SimulationEvaluater:
                 )
                 self._class_register(runner)
                 runner._setup()
-            #try:
-            #    with warnings.catch_warnings():
-            #        warnings.simplefilter("ignore")
-            runner._run()
-            #except Exception as e:
-            #    exceptions_dic[simulation_id] = e
-            #    if use_simulator_given_runner:
-            #        previous_simulator = copy.deepcopy(pending_simulator)
-            #    continue
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    runner._run()
+            except Exception as e:
+                exceptions_dic[simulation_id] = e
+                if use_simulator_given_runner:
+                    previous_simulator = copy.deepcopy(pending_simulator)
+                continue
             today_date += timedelta(days=1)
             del previous_simulator
             del pending_simulator
