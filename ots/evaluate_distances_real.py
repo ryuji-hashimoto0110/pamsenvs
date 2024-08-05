@@ -41,9 +41,11 @@ def create_path(folder_name: Optional[str]) -> Optional[Path]:
         parent_path.mkdir(parents=True)
     return folder_path
 
-def main(args):
-    parser = get_config()
-    all_args = parser.parse_known_args(args)[0]
+def create_ddevaluater(all_args, show_args: bool = True) -> DDEvaluater:
+    """
+    all_args must contain:
+        - seed: int
+    """
     seed: int = all_args.seed
     datas_path: Optional[str] = create_path(all_args.ohlcv_folder_path)
     if datas_path is None:
@@ -93,6 +95,13 @@ def main(args):
         )
     else:
         raise NotImplementedError(f"{point_cloud_type} is not implemented.")
+    return evaluater
+
+def main(args):
+    parser = get_config()
+    all_args = parser.parse_known_args(args)[0]
+    tickers: list[str | int] = all_args.tickers
+    evaluater: DDEvaluater = create_ddevaluater(all_args)
     distance_matrix_save_path: Optional[Path] = create_path(all_args.distance_matrix_save_path)
     n_samples: int = all_args.n_samples
     print(f"Distance matrix will be saved at {str(distance_matrix_save_path)}")
