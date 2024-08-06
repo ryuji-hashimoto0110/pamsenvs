@@ -67,6 +67,7 @@ class OTGridSearcher:
         self.initial_seed: int = initial_seed
         self.real_tickers: list[int] = list(dd_evaluater.ticker_path_dic.keys())
         self.dd_evaluater: DDEvaluater = dd_evaluater
+        self.statistics_names: list[str] = dd_evaluater.get_statistics()
         self.show_process: bool = show_process
         self.base_config: dict[str, Any] = self._get_config(
             config=base_config,
@@ -216,7 +217,7 @@ class OTGridSearcher:
         """
         idvars: list[str] = [f"{var_id}:{self.id2var_dic[var_id]}" for var_id in self.var_ids]
         ottickers: list[str] = [f"ot({ticker})" for ticker in self.real_tickers]
-        columns: list[str] = ["simulation id"] + idvars + ottickers
+        columns: list[str] = ["simulation id"] + idvars + self.statistics_names + ottickers
         result_df: DataFrame = pd.DataFrame(columns=columns)
         result_df: DataFrame = result_df.set_index("simulation id")
         return result_df
@@ -290,8 +291,9 @@ class OTGridSearcher:
             self.dd_evaluater.add_ticker_path(
                 ticker="temp", path=self.path_to_calc_point_clouds
             )
-            art_point_cloud: ndarray = self.dd_evaluater.get_point_cloud_from_ticker(
-                ticker="temp", num_points=self.num_points, save2dic=False
+            art_point_cloud, statistics = self.dd_evaluater.get_point_cloud_from_ticker(
+                ticker="temp", num_points=self.num_points,
+                save2dic=False, return_statistics=True
             )
             ot_distances: list[float] = []
             for ticker in self.real_tickers:
@@ -302,7 +304,7 @@ class OTGridSearcher:
                     art_point_cloud, real_point_cloud, is_per_bit=True
                 )
                 ot_distances.append(ot_distance)
-            new_results: list[int | float] = variable_values + ot_distances
+            new_results: list[int | float] = variable_values + statistics + ot_distances
             assert len(self.result_df.columns) == len(new_results)
             self.result_df.loc[sim_id] = new_results
             comb_dic, is_break = self._update_comb_dic(comb_dic, num_comb_dic)
