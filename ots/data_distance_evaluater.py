@@ -27,6 +27,18 @@ class DDEvaluater:
         self.ticker_path_dic: dict[str | int, Path] = ticker_path_dic
         self.ticker_point_clouds_dic: dict[str | int, ndarray] = {}
 
+    @abstractmethod
+    def get_statistics(self, *args, **kwargs) -> list[str]:
+        pass
+
+    def calc_statistics(
+        self,
+        point_cloud: ndarray,
+        *args,
+        **kwargs
+    ) -> Optional[list[float]]:
+        return None
+
     def add_ticker_path(self, ticker: str | int, path: Path) -> None:
         """Add a ticker and its path to the dictionary.
         
@@ -85,14 +97,16 @@ class DDEvaluater:
         self,
         ticker: str | int,
         num_points: int,
-        save2dic: bool = True
-    ) -> ndarray:
+        save2dic: bool = True,
+        return_statistics: bool = False
+    ) -> ndarray | tuple[ndarray, Optional[list[float]]]:
         """Get a point cloud from a ticker.
         
         Args:
             ticker (str | int): The ticker of the target data.
             num_points (int): The number of points in the point cloud.
             save2dic (bool): whether to save  the point cloud into ticker_point_clouds_dic.
+            return_statistics (bool): whether to return the statistics of the point cloud.
             
         Returns:
             point_cloud (ndarray): The point cloud of the financial instrument.
@@ -104,7 +118,6 @@ class DDEvaluater:
             point_cloud: ndarray = self.prng.choice(
                 point_cloud, num_points, replace=False
             )
-            return point_cloud
         else:
             if ticker not in self.ticker_path_dic:
                 raise ValueError(f"The ticker {ticker} is not in the path dictionary.")
@@ -112,6 +125,10 @@ class DDEvaluater:
             point_cloud: ndarray = self.get_point_cloud_from_path(num_points, data_path)
             if save2dic:
                 self.ticker_point_clouds_dic[ticker] = point_cloud
+        if return_statistics:
+            statistics: Optional[list[float]] = self.calc_statistics(point_cloud)
+            return point_cloud, statistics
+        else:
             return point_cloud
 
     def create_ot_distance_matrix(
