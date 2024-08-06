@@ -8,7 +8,7 @@ from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
 from pathlib import Path
-from scipy.stats import kurtosis
+from scipy import stats
 from typing import Optional
 
 freq_ohlcv_size_dic: dict[str, int] = {
@@ -50,7 +50,7 @@ class ReturnDDEvaluater(DDEvaluater):
         Returns:
             statistics (list[float]): The statistics.
         """
-        kurtosis: float = kurtosis(point_cloud.flatten(), fisher=True)
+        kurtosis: float = stats.kurtosis(point_cloud.flatten(), fisher=True)
         statistics: list[float] = [kurtosis]
         return statistics
 
