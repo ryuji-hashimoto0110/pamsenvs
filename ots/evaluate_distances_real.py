@@ -125,7 +125,7 @@ def main(args):
         ncol_subplots: int = all_args.ncols_subplots
         if isinstance(evaluater, TailReturnDDEvaluater):
             evaluater.draw_points(
-                tickers, n_samples, xlim=[0, 2], xlabel="Abs Log-return (Top 5%)",
+                tickers, n_samples, xlim=[0, 2], xlabel="Abs Log-return ratio (Top 5%)",
                 is_all_in_one_subplot=False, save_path=fig_point_clouds_path,
                 subplots_arrangement=(nrow_subplots, ncol_subplots)
             )
