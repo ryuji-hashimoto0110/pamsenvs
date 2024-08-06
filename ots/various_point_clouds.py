@@ -8,6 +8,7 @@ from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
 from pathlib import Path
+from scipy.stats import kurtosis
 from typing import Optional
 
 freq_ohlcv_size_dic: dict[str, int] = {
@@ -30,6 +31,28 @@ class ReturnDDEvaluater(DDEvaluater):
         """initialization."""
         super().__init__(seed, ticker_path_dic)
         self.resample_rule: str = resample_rule
+
+    def get_statistics(self) -> list[str]:
+        """Get the names of the statistics to be calculated."""
+        return ["Kurtosis"]
+    
+    def calc_statistics(
+        self,
+        point_cloud: ndarray,
+    ) -> list[float]:
+        """Calculate kurtosis of the point cloud.
+        
+        The point cloud for ReturnDDEvaluater is defined as a 1D array of return values.
+
+        Args:
+            point_cloud (ndarray): The point cloud.
+
+        Returns:
+            statistics (list[float]): The statistics.
+        """
+        kurtosis: float = kurtosis(point_cloud.flatten(), fisher=True)
+        statistics: list[float] = [kurtosis]
+        return statistics
 
     def _read_csvs(self, dfs_path: Path, choose_full_size_df: bool) -> list[DataFrame]:
         """Read CSV files from a path.
@@ -148,14 +171,14 @@ class ReturnDDEvaluater(DDEvaluater):
             if nrows * ncols < len(tickers):
                 raise ValueError("The number of subplots is less than the number of tickers.")
         for i, ticker in enumerate(tickers):
-            point_cloud: ndarray = self.get_point_cloud_from_ticker(
-                ticker, num_points, save2dic=False
+            point_cloud, statistics = self.get_point_cloud_from_ticker(
+                ticker, num_points, save2dic=False, return_statistics=True
             )
             if not is_all_in_one_subplot:
                 ax = fig.add_subplot(nrows, ncols, i+1)
             ax.set_xlim(xlim)
             self._draw_points(
-                ax, point_cloud, draw_dims=None, label=ticker
+                ax, point_cloud, draw_dims=None, label=ticker + f" stat={statistics[0]:.2f}"
             )
             if (
                 is_all_in_one_subplot or
@@ -177,6 +200,25 @@ class ReturnDDEvaluater(DDEvaluater):
 
 class TailReturnDDEvaluater(ReturnDDEvaluater):
     """TailReturnDDEvaluater class."""
+    def get_statistics(self) -> list[str]:
+        return ["Tail"]
+    
+    def calc_statistics(self, point_cloud: ndarray) -> list[float]:
+        """Calculate the tail return ratio of the point cloud.
+        
+        The point cloud for TailReturnDDEvaluater is defined as a 1D array of tail-return values.
+
+        Args:
+            point_cloud (ndarray): The point cloud.
+
+        Returns:
+            statistics (list[float]): The statistics.
+        """
+        k: int = len(point_cloud)
+        tail_index: float = 1 / (1 / k * np.sum(point_cloud))
+        statistics: list[float] = [tail_index]
+        return statistics
+        
     def _get_tail_return(
         self,
         sorted_return_arr: ndarray,
@@ -231,6 +273,9 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
     
 class RVsDDEvaluater(DDEvaluater):
     """RVsDDEvaluater class."""
+    def get_statistics(self) -> list[str]:
+        return []
+
     def get_point_cloud_from_path(
         self,
         num_points: int,
