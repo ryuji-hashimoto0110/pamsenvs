@@ -191,7 +191,10 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         cut_sorted_return_arr: ndarray = sorted_return_arr[
             int(np.floor(len(sorted_return_arr) * (1-cut_off_th))):
         ]
-        return cut_sorted_return_arr
+        cut_sorted_return_log_ratio_arr: ndarray = np.log(
+            cut_sorted_return_arr / cut_sorted_return_arr[0]
+        )
+        return cut_sorted_return_log_ratio_arr
 
     def get_point_cloud_from_path(
         self,
