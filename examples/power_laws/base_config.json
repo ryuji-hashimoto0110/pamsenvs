@@ -15,7 +15,7 @@
 			},
 			{	
 				"sessionName": "1",
-				"iterationSteps": 1000,
+				"iterationSteps": 10000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -32,7 +32,7 @@
 			},
             {	
 				"sessionName": "2",
-				"iterationSteps": 1000,
+				"iterationSteps": 10000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -55,7 +55,6 @@
         "paretoVariables": {},
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [0.0]},
-        "moodWeight": {"uniform": [0, 0]},
 		"noiseWeight": {"expon": [1.0]},
         "riskAversionTerm": 0.1,
 		"noiseScale": 0.0001,
