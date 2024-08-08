@@ -286,7 +286,7 @@ class RVsDDEvaluater(DDEvaluater):
         """Get a point cloud from a path.
 
         A point is defined as following 4 dimensional vector:
-            [log RV_t, r_t, log RV_{t+1}, r_t]
+            [RV_t, r_t, RV_{t+1}, r_t]
         r_t and RV_t are calculated as follows.
             1. Get price series price_arr from ohlcv_df_path 
                 whose length is num_days * num_daily_obs.
@@ -320,13 +320,13 @@ class RVsDDEvaluater(DDEvaluater):
         daily_return_arr: ndarray = np.sum(intraday_return_arr, axis=1).flatten()
         assert num_days == len(daily_return_arr)
         daily_rv_arr: ndarray = np.sum(intraday_return_arr**2, axis=1).flatten()
-        daily_log_rv_arr: ndarray = np.log(daily_rv_arr + 1e-10)
+        daily_log_rv_arr: ndarray = np.log(daily_rv_arr)
         assert num_days == len(daily_log_rv_arr)
         point_cloud: ndarray = np.concatenate(
             [
-                daily_log_rv_arr[:-1].reshape(-1, 1),
+                daily_rv_arr[:-1].reshape(-1, 1),
                 daily_return_arr[:-1].reshape(-1, 1),
-                daily_log_rv_arr[1:].reshape(-1, 1),
+                daily_rv_arr[1:].reshape(-1, 1),
                 daily_return_arr[1:].reshape(-1, 1),
             ],
             axis=1
