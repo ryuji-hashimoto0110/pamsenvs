@@ -1,0 +1,34 @@
+{
+    "1": [
+        ["Agent", "paretoVariables"],
+        [
+            {
+                "assetVolume": {"alpha": 16.67, "beta": 1.5},
+                "cashAmount": {"alpha": 5000, "beta": 1.5}
+            }
+        ]
+    ],
+    "2": [
+        ["Agent", "chartistWeight"],
+        [{"expon": 0.0}, {"expon": 1.0}, {"expon": 1.5}, {"expon": 2.0},
+         {"expon": 2.5}, {"expon": 3.0}]
+    ],
+    "3": [
+        ["Agent", "moodWeight"],
+        [{"uniform": [0, 0.0001]}, {"uniform": [0, 0.0002]},
+         {"uniform": [0, 0.0003]}, {"uniform": [0, 0.0010]},
+         {"uniform": [0, 0.0100]}]
+    ],
+    "3_": [
+        ["Agent", "moodSensitivity"],
+        [0.1, 0.3, 0.5, 0.7, 0.9]
+    ],
+    "4": [
+        ["Agent", "riskAversionTerm"],
+        [0.02, 0.06, 0.10, 0.2, 0.3]
+    ],
+    "5": [
+        ["Agent", "timeWindowSize"],
+        [100, 140, 180, 220, 260, 300]
+    ]
+}

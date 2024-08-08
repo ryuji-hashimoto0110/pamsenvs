@@ -6,19 +6,19 @@ resample_rule="1min"
 point_cloud_type="return"
 
 initial_seed=42
-base_config_path="base_config.json"
-target_variables_config_path="target_variables_config.json"
-temp_txts_path="../../datas/artificial_datas/flex_txt/temp"
-temp_tick_dfs_path="../../datas/artificial_datas/flex_csv/temp"
-temp_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp"
-temp_all_time_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/all_time/temp"
-path_to_calc_point_clouds="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp"
+base_config_path="base_config02.json"
+target_variables_config_path="target_variables_config02.json"
+temp_txts_path="../../datas/artificial_datas/flex_txt/temp02"
+temp_tick_dfs_path="../../datas/artificial_datas/flex_csv/temp02"
+temp_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp02"
+temp_all_time_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/all_time/temp02"
+path_to_calc_point_clouds="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp02"
 num_simulations=100
 transactions_path="../../datas/real_datas/intraday/flex_transactions/1min/7203"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
 num_points=1000
-results_save_path="ot_result.csv"
+results_save_path="ot_result02.csv"
 
 python ../search_simulation_configs.py \
 --seed ${seed} \
