@@ -1,25 +1,15 @@
 {
-    "0": [
-        ["Agent", "paretoVariables"],
-        [
-            {},
-            {
-                "assetVolume": {"alpha": 16.67, "beta": 1.5},
-                "cashAmount": {"alpha": 5000, "beta": 1.5}
-            }
-        ]
-    ],
     "1": [
         ["Agent", "chartistWeight"],
         [{"expon": 0.0}, {"expon": 0.5}, {"expon": 1.0}, {"expon": 1.5}, {"expon": 2.0},
          {"expon": 2.5}, {"expon": 3.0}, {"expon": 4.0}, {"expon": 5.0}]
     ],
-    "2": [
+    "3": [
         ["Agent", "riskAversionTerm"],
         [0.02, 0.06, 0.10, 0.2, 0.3]
     ],
-    "3": [
+    "4": [
         ["Agent", "timeWindowSize"],
-        [10, 80, 120, 160, 200, 240, 1000, 2000]
+        [100, 140, 180, 220, 260, 300]
     ]
 }
