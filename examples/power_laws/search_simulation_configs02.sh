@@ -1,9 +1,9 @@
 seed=42
 ohlcv_folder_path="../../datas/real_datas/intraday/flex_ohlcv/1min"
-ticker_folder_names="2802 3382 4452 4568 4578 6501 6502 7203 8306 8411 9202 9613"
-tickers="2802 3382 4452 4568 4578 6501 6502 7203 8306 8411 9202 9613"
+ticker_folder_names="2802 3382 4063 4452 4568 4578 6501 6502 7203 7267 8001 8035 8058 8306 8411 9202 9613 9984"
+tickers="2802 3382 4063 4452 4568 4578 6501 6502 7203 7267 8001 8035 8058 8306 8411 9202 9613 9984"
 resample_rule="1min"
-point_cloud_type="return"
+point_cloud_type="tail_return"
 
 initial_seed=42
 base_config_path="base_config02.json"
@@ -13,7 +13,7 @@ temp_tick_dfs_path="../../datas/artificial_datas/flex_csv/temp02"
 temp_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp02"
 temp_all_time_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/all_time/temp02"
 path_to_calc_point_clouds="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp02"
-num_simulations=100
+num_simulations=60
 transactions_path="../../datas/real_datas/intraday/flex_transactions/1min/7203"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
