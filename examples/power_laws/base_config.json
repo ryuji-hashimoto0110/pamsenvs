@@ -42,7 +42,7 @@
 	},
     "Market": {
         "class": "Market",
-		"tickSize": 0.1,
+		"tickSize": 0.005,
 		"marketPrice": 300.0
     },
     "Agent": {
