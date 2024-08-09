@@ -2,17 +2,17 @@
     "2": [
         ["Agent", "chartistWeight"],
         [{"expon": 0.0}, {"expon": 1.0}, {"expon": 1.5}, {"expon": 2.0},
-         {"expon": 2.5}, {"expon": 3.0}]
+         {"expon": 3.0}, {"expon": 5.0}]
     ],
     "3": [
         ["Agent", "moodWeight"],
-        [{"uniform": [0, 0.0001]}, {"uniform": [0, 0.0002]},
-         {"uniform": [0, 0.0003]}, {"uniform": [0, 0.0010]},
-         {"uniform": [0, 0.0100]}]
+        [{"uniform": [0, 0.00001]}, {"uniform": [0, 0.00003]},
+         {"uniform": [0, 0.00005]}, {"uniform": [0, 0.00010]},
+         {"uniform": [0, 0.00050]}]
     ],
     "3_": [
         ["Agent", "moodSensitivity"],
-        [0.1, 0.3, 0.5, 0.7, 0.9]
+        [0.1, 0.3, 0.5]
     ],
     "4": [
         ["Agent", "riskAversionTerm"],
