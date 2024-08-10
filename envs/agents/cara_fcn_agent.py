@@ -45,6 +45,7 @@ class CARAFCNAgent(Agent):
         logger: Optional[Logger]
     ) -> None:
         super().__init__(agent_id, prng, simulator, name, logger)
+        self.unexecuted_orders: list[Order] = []
 
     def is_finite(self, x: float) -> bool:
         """determine if it is a valid value.
@@ -89,6 +90,7 @@ class CARAFCNAgent(Agent):
 
         If feedbackAsymmetry and noiseAsymmetry are both 0, aFCNAgent is equivalent to FCNAgent.
         """
+        self.settings: dict[str, Any] = settings
         super().setup(
             settings=settings, accessible_markets_ids=accessible_markets_ids
         )
@@ -141,7 +143,6 @@ class CARAFCNAgent(Agent):
             )[0]
         else:
             self.is_chart_following: bool = True
-        self.unexecuted_orders: list[Order] = []
 
     def _convert_exp2pareto(self, settings: dict[str, Any]) -> None:
         """convert Exponential distribution to Pareto distribution.
