@@ -15,7 +15,7 @@
 			},
 			{	
 				"sessionName": "1",
-				"iterationSteps": 10000,
+				"iterationSteps": 5000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -32,7 +32,7 @@
 			},
             {	
 				"sessionName": "2",
-				"iterationSteps": 10000,
+				"iterationSteps": 5000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -42,7 +42,7 @@
 	},
     "Market": {
         "class": "Market",
-		"tickSize": 0.005,
+		"tickSize": 0.0001,
 		"marketPrice": 300.0
     },
     "Agent": {
