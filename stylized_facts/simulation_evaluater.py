@@ -387,7 +387,7 @@ class SimulationEvaluater:
                 / f"{self.specific_name}_{start_date_str}_{end_date_str}.csv"
             )
             check_asymmetry_command: str = f"Rscript {check_asymmetry_path} " + \
-            f"{str(all_time_ohlcv_df_path)} {self.resample_rule} close"
+            f"{str(all_time_ohlcv_df_path)} {self.resample_rule} {self.resample_rule-1} close"
             _ = subprocess.run(check_asymmetry_command, shell=True)
         if self.show_process:
             print("[green]==stylized facts checking process ended==[green]")
