@@ -1036,7 +1036,7 @@ class StylizedFactsChecker:
         ax.plot(sorted_abs_return_arr, ccdf, color=color, label=label)
         ax.set_xscale("log")
         ax.set_yscale("log")
-        ax.set_xlabel("return")
+        ax.set_xlabel("abs return")
         ax.set_ylabel("CCDF")
         #ax.set_title("Complementary Cumulative Distribution Function (CCDF) of absolute price returns")
         ax.set_xlim([1, 40])
