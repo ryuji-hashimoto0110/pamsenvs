@@ -188,10 +188,14 @@ class StylizedFactsChecker:
         ).count()
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill().bfill()
-        resampled_df = resampled_df[
-            (resampled_df.index <= self.session1_end_time) | \
-            (self.session2_start_time <= resampled_df.index)
-        ]
+        assert self.session1_end_time is not None
+        if self.session2_start_time is not None:
+            resampled_df = resampled_df[
+                (resampled_df.index <= self.session1_end_time) | \
+                (self.session2_start_time <= resampled_df.index)
+            ]
+        else:
+            resampled_df = resampled_df[resampled_df.index <= self.session1_end_time]
         ohlcv_size: int = freq_ohlcv_size_dic[self.resample_rule]
         if ohlcv_size < len(resampled_df):
             resampled_df = resampled_df.iloc[:ohlcv_size,:]
@@ -208,16 +212,19 @@ class StylizedFactsChecker:
                 session1_resampled_df.index[-1]
             ).time()
         session2_df: DataFrame = df[df["session_id"] == 2]
-        session2_resampled_df: DataFrame = self._resample_art_per_session(
+        session2_resampled_df: Optional[DataFrame] = self._resample_art_per_session(
             session2_df, self.session2_transactions_file_name, resample_mid
         )
-        if self.session2_start_time is None:
-            self.session2_start_time = pd.to_datetime(
-                session2_resampled_df.index[0]
-            ).time()
-        resampled_df: DataFrame = pd.concat(
-            [session1_resampled_df, session2_resampled_df], axis=0
-        )
+        if session2_resampled_df is not None:
+            if self.session2_start_time is None:
+                self.session2_start_time = pd.to_datetime(
+                    session2_resampled_df.index[0]
+                ).time()
+            resampled_df: DataFrame = pd.concat(
+                [session1_resampled_df, session2_resampled_df], axis=0
+            )
+        else:
+            resampled_df = session1_resampled_df
         resampled_df.index = pd.to_datetime(resampled_df.index, format="%H:%M:%S")
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill().bfill()
@@ -226,11 +233,12 @@ class StylizedFactsChecker:
     def _resample_art_per_session(
         self,
         df: DataFrame,
-        transactions_file_name: str,
+        transactions_file_name: Optional[str],
         resample_mid: bool
-    ) -> DataFrame:
+    ) -> Optional[DataFrame]:
         assert self.transactions_folder_path is not None
-        assert transactions_file_name is not None
+        if transactions_file_name is None:
+            return None
         transactions_file_path: Path = self.transactions_folder_path / transactions_file_name
         cumsum_scaled_transactions_df: DataFrame = pd.read_csv(
             str(transactions_file_path), index_col=0
@@ -1102,8 +1110,7 @@ class StylizedFactsChecker:
     ) -> None:
         if (
             self._is_stacking_possible(self.ohlcv_dfs, "scaled_num_events") and
-            self._is_stacking_possible(self.ohlcv_dfs, "session1_scaled_num_events") and
-            self._is_stacking_possible(self.ohlcv_dfs, "session2_scaled_num_events")
+            self._is_stacking_possible(self.ohlcv_dfs, "session1_scaled_num_events")
         ):
             transactions_save_path: Path = transactions_save_folder_path / "cumsum_scaled_transactions.csv"
             self.calc_mean_cumulative_transactions(
@@ -1113,10 +1120,15 @@ class StylizedFactsChecker:
             self.calc_mean_cumulative_transactions(
                 transactions_session1_save_path, return_mean=False, session_name="session1"
             )
-            transactions_session2_save_path: Path = transactions_save_folder_path / self.session2_transactions_file_name
-            self.calc_mean_cumulative_transactions(
-                transactions_session2_save_path, return_mean=False, session_name="session2"
-            )
+            if (
+                self.session2_transactions_file_name is not None and
+                self._is_stacking_possible(self.ohlcv_dfs, "session2_scaled_num_events")
+            ):
+                transactions_session2_save_path: Path = transactions_save_folder_path / self.session2_transactions_file_name
+                self.calc_mean_cumulative_transactions(
+                    transactions_session2_save_path, return_mean=False,
+                    session_name="session2"
+                )
         else:
             raise ValueError(
                 f"failed to stack dataframes."
