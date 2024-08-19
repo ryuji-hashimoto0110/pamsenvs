@@ -291,22 +291,25 @@ class OTGridSearcher:
             self.dd_evaluater.add_ticker_path(
                 ticker="temp", path=self.path_to_calc_point_clouds
             )
-            art_point_cloud, statistics = self.dd_evaluater.get_point_cloud_from_ticker(
-                ticker="temp", num_points=self.num_points,
-                save2dic=False, return_statistics=True
-            )
-            ot_distances: list[float] = []
-            for ticker in self.real_tickers:
-                real_point_cloud: ndarray = self.dd_evaluater.get_point_cloud_from_ticker(
-                    ticker=ticker, num_points=self.num_points, save2dic=True
+            try:
+                art_point_cloud, statistics = self.dd_evaluater.get_point_cloud_from_ticker(
+                    ticker="temp", num_points=self.num_points,
+                    save2dic=False, return_statistics=True
                 )
-                ot_distance: float = self.dd_evaluater.calc_ot_distance(
-                    art_point_cloud, real_point_cloud, is_per_bit=True
-                )
-                ot_distances.append(ot_distance)
-            new_results: list[int | float] = variable_values + statistics + ot_distances
-            assert len(self.result_df.columns) == len(new_results)
-            self.result_df.loc[sim_id] = new_results
+                ot_distances: list[float] = []
+                for ticker in self.real_tickers:
+                    real_point_cloud: ndarray = self.dd_evaluater.get_point_cloud_from_ticker(
+                        ticker=ticker, num_points=self.num_points, save2dic=True
+                    )
+                    ot_distance: float = self.dd_evaluater.calc_ot_distance(
+                        art_point_cloud, real_point_cloud, is_per_bit=True
+                    )
+                    ot_distances.append(ot_distance)
+                new_results: list[int | float] = variable_values + statistics + ot_distances
+                assert len(self.result_df.columns) == len(new_results)
+                self.result_df.loc[sim_id] = new_results
+            except Exception as e:
+                print(e)
             comb_dic, is_break = self._update_comb_dic(comb_dic, num_comb_dic)
             self.result_df.to_csv(result_save_path)
             sim_id += 1
