@@ -52,6 +52,7 @@ class SimulationEvaluater:
         txts_path: Optional[Path | str] = None,
         resample_rule: str = "1min",
         resample_mid: bool = True,
+        is_bybit: bool = False,
         tick_dfs_path: Optional[Path | str] = None,
         ohlcv_dfs_path: Optional[Path | str] = None,
         all_time_ohlcv_dfs_path: Optional[Path | str] = None,
@@ -75,6 +76,7 @@ class SimulationEvaluater:
                 Ex) 'pamsenvs/datas/artificial_datas/flex_txt/asymmetric_volatility/volatility_feedback_alpha010'
             resample_rule (str): resample frequency.
             resample_mid (bool): whether to resample mid price.
+            is_bybit (bool): whether to save data as bybit format.
             tick_dfs_path (Path | str, optional): folder path to store executions csvs.
                 Ex) 'pamsenvs/datas/artificial_datas/flex_csv/asymmetric_volatility/volatility_feedback_alpha010'
             ohlcv_dfs_path (Path | str, optional): folder path to store preprocessed OHLCV csvs.
@@ -97,6 +99,7 @@ class SimulationEvaluater:
         self.txts_path: Optional[Path] = self._convert_str2path(txts_path, mkdir=True)
         self.resample_rule: str = resample_rule
         self.resample_mid: bool = resample_mid
+        self.is_bybit: bool = is_bybit
         self.tick_dfs_path: Optional[Path] = self._convert_str2path(tick_dfs_path, mkdir=True)
         self.ohlcv_dfs_path: Optional[Path] = self._convert_str2path(ohlcv_dfs_path, mkdir=True)
         self.all_time_ohlcv_dfs_path: Optional[Path] = self._convert_str2path(all_time_ohlcv_dfs_path, mkdir=True)
@@ -307,7 +310,9 @@ class SimulationEvaluater:
             txt_datas_path=self.txts_path,
             csv_datas_path=self.tick_dfs_path
         )
-        processor.convert_all_txt2csv(is_display_path=False)
+        processor.convert_all_txt2csv(
+            is_bybit_format=self.is_bybit, is_display_path=False
+        )
         if self.show_process:
             print("[green]==converting process ended==[green]")
             print()
@@ -363,6 +368,7 @@ class SimulationEvaluater:
             specific_name=self.specific_name,
             resample_rule=self.resample_rule,
             is_real=False,
+            is_bybit=self.is_bybit,
             transactions_folder_path=self.transactions_path,
             session1_transactions_file_name=self.session1_transactions_file_name,
             session2_transactions_file_name=self.session2_transactions_file_name
