@@ -106,7 +106,6 @@ class FlexProcessor:
         self.quote_num: int = quote_num
         self.is_execution_only: bool = is_execution_only
         self.is_mood_aware: bool = is_mood_aware
-        self.column_names: list[str] = self._create_columns()
         self.session1_end_time: Timestamp = pd.to_datetime(session1_end_time_str).time()
         self.session2_start_time: Timestamp = pd.to_datetime(session2_start_time_str).time()
 
@@ -145,19 +144,20 @@ class FlexProcessor:
             self.convert_all_txt2csv(is_display_path=False)
         self.txt_datas_path.unlink()
 
-    def _create_columns(self) -> list[str]:
+    def _create_columns(self, is_bybit_format: bool = False) -> list[str]:
         column_names: list[str] = [
-            "time", "session_id", "event_flag", "event_volume", "event_price (avg)",
-            "market_price", "mid_price", "best_buy", "best_sell"
+            "time", "session_id", "event_flag", "event_volume", "event_price (avg)", "market_price"
         ]
-        [
-            (column_names.append(f"buy{i+1}_price"), column_names.append(f"buy{i+1}_volume")) \
-                for i in range(self.quote_num)
-        ]
-        [
-            (column_names.append(f"sell{i+1}_price"), column_names.append(f"sell{i+1}_volume")) \
-                for i in range(self.quote_num)
-        ]
+        if not is_bybit_format:
+            column_names.extend(["mid_price", "best_buy", "best_sell"])
+            [
+                (column_names.append(f"buy{i+1}_price"), column_names.append(f"buy{i+1}_volume")) \
+                    for i in range(self.quote_num)
+            ]
+            [
+                (column_names.append(f"sell{i+1}_price"), column_names.append(f"sell{i+1}_volume")) \
+                    for i in range(self.quote_num)
+            ]
         if self.is_mood_aware:
             column_names.append("mood")
         return column_names
@@ -181,14 +181,16 @@ class FlexProcessor:
         self,
         txt_path: Path,
         csv_path: Path,
-        is_display_path: bool
+        is_display_path: bool,
+        is_bybit_format: bool = False
     ) -> None:
         assert txt_path.suffix == ".txt"
         assert csv_path.suffix == ".csv"
+        column_names: list[str] = self._create_columns(is_bybit_format=is_bybit_format)
         with open(txt_path, mode="r") as f:
             with open(csv_path, mode="w") as g:
                 writer = csv.writer(g)
-                writer.writerow(self.column_names)
+                writer.writerow(column_names)
                 line: str
                 if is_display_path:
                     print(f"convert from {str(txt_path)} to {str(csv_path)}")
@@ -205,19 +207,20 @@ class FlexProcessor:
                         continue
                     if len(log_columns) == 0:
                         pass
-                    elif len(log_columns) == len(self.column_names):
+                    elif len(log_columns) == len(column_names):
                         writer.writerow(log_columns)
                     else:
-                        print(len(self.column_names), len(log_columns))
+                        print(len(column_names), len(log_columns))
                         raise ValueError(
                             "column mismatch.\n" +
-                            f"column names = {self.column_names}\n" +
+                            f"column names = {column_names}\n" +
                             f"records = {log_columns}"
                         )
 
     def _extract_info_from_log(
         self,
-        log_dic: dict[str, dict[str, dict[str, list | dict, str]]]
+        log_dic: dict[str, dict[str, dict[str, list | dict, str]]],
+        is_bybit_format: bool = False
     ) -> list[str]:
         message_dics: list[dict[str, str]] = log_dic["Data"]["message"]
         if self.is_execution_only:
@@ -232,6 +235,8 @@ class FlexProcessor:
             log_columns: list[str] = [time_str]
             if "session_id" in log_dic["Data"].keys():
                 log_columns.append(log_dic["Data"]["session_id"])
+            elif is_bybit_format:
+                log_columns.append("1")
             else:
                 t: Timestamp = pd.to_datetime(time_str).time()
                 if t <= self.session1_end_time:
@@ -242,9 +247,11 @@ class FlexProcessor:
                     raise ValueError(f"cannot identify session. time={time_str}")
                 log_columns.append(session_id)
             log_columns.extend(execution_infos)
+            log_columns.append(float(log_dic["Data"]["market_price"]))
+            if is_bybit_format:
+                return log_columns
             log_columns.extend(
                 [
-                    float(log_dic["Data"]["market_price"]),
                     float(log_dic["Data"]["mid_price"]),
                     float(log_dic["Data"]["best_bid"]),
                     float(log_dic["Data"]["best_ask"])
