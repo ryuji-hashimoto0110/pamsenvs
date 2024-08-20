@@ -15,6 +15,7 @@ python check_stylized_facts.py \
 --transactions_save_folder_path ${transactions_save_folder_path} \
 --session1_transactions_file_name ${session1_transactions_file_name} \
 --specific_name ${specific_name} \
+--resample_mid \
 --is_real \
 --is_bybit \
 --choose_full_size_df \
