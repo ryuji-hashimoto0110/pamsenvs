@@ -1,13 +1,13 @@
 tick_folder_path="../datas/real_datas/bybit_csv"
-new_ohlcv_folder_path="../datas/real_datas/intraday/bybit_ohlcv/1min/LUNAUSD"
-transactions_save_folder_path="../datas/real_datas/intraday/bybit_transactions/1min/LUNAUSD"
+new_ohlcv_folder_path="../datas/real_datas/intraday/bybit_ohlcv/1min/EOSUSD"
+transactions_save_folder_path="../datas/real_datas/intraday/bybit_transactions/1min/EOSUSD"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 resample_rule="1min"
-specific_name="LUNAUSD"
-figs_folder="../imgs/1min/LUNAUSD"
+specific_name="EOSUSD"
+figs_folder="../imgs/1min/EOSUSD"
 session1_end_time_str="23:59:59.999999"
 results_folder="./results"
-results_csv_name="1min_LUNAUSD.csv"
+results_csv_name="1min_EOSUSD.csv"
 python check_stylized_facts.py \
 --tick_folder_path ${tick_folder_path} \
 --new_ohlcv_folder_path ${new_ohlcv_folder_path} \
