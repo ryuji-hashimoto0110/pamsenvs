@@ -24,7 +24,6 @@ from ohlcv_processors import OHLCVProcessor
 import random
 from rich import print
 from rich.tree import Tree
-from .stylized_facts_checker import freq_ohlcv_size_dic
 from .stylized_facts_checker import StylizedFactsChecker
 import subprocess
 from tqdm import tqdm
