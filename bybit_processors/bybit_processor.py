@@ -5,6 +5,7 @@ import pandas as pd
 from pandas import DataFrame
 import pathlib
 from pathlib import Path
+from rich import print
 from typing import Optional
 import urllib.request as request
 import warnings
@@ -70,6 +71,9 @@ class BybitProcessor:
             self.csv_datas_path.mkdir(parents=True)
         current_datetime = datetime.strptime(str(start_date), "%Y%m%d")
         end_datetime = datetime.strptime(str(end_date), "%Y%m%d")
+        print("Start downloading datas from Bybit.")
+        print(f"tickers: {tickers}")
+        print(f"start_date: {start_date} end_date: {end_date}")
         while current_datetime <= end_datetime:
             current_date_str: str = current_datetime.strftime("%Y-%m-%d")
             current_date_int: int = int(current_datetime.strftime("%Y%m%d"))
@@ -84,6 +88,7 @@ class BybitProcessor:
                     save_path: Path = current_date_datas_path / f"Bybit{ticker}_{current_date_int}.csv"
                     current_date_df.to_csv(str(save_path))
             current_datetime += timedelta(days=1)
+        print("Done!")
 
     def _download_data_from_bybit(
         self,
@@ -106,14 +111,14 @@ class BybitProcessor:
         except Exception as e:
             return None
         df.sort_values(by="timestamp", ascending=True, inplace=True)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s").dt.time
         df.rename(columns={"timestamp": "time"}, inplace=True)
         df.set_index("time", inplace=True)
         df["session_id"] = 1
         df["event_flag"] = "execution"
         df.rename(columns={"size": "event_volume"}, inplace=True)
         df.rename(columns={"price": "event_price (avg)"}, inplace=True)
-        df["market_price"] = df["event_price"]
+        df["market_price"] = df["event_price (avg)"]
         df = df.loc[
             :,["session_id", "event_flag", "event_volume", "event_price (avg)", "market_price"]
         ]
