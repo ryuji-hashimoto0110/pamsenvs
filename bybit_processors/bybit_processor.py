@@ -111,7 +111,9 @@ class BybitProcessor:
         except Exception as e:
             return None
         df.sort_values(by="timestamp", ascending=True, inplace=True)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s").dt.time
+        df["timestamp"] = pd.to_datetime(
+            df["timestamp"], unit="s", format="%Y-%m-%d %H:%M:%S.%f"
+        ).dt.time
         df.rename(columns={"timestamp": "time"}, inplace=True)
         df.set_index("time", inplace=True)
         df["session_id"] = 1
