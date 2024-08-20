@@ -14,7 +14,6 @@ python check_stylized_facts.py \
 --resample_rule ${resample_rule} \
 --transactions_save_folder_path ${transactions_save_folder_path} \
 --session1_transactions_file_name ${session1_transactions_file_name} \
---session2_transactions_file_name ${session2_transactions_file_name} \
 --specific_name ${specific_name} \
 --is_real \
 --is_bybit \
@@ -22,5 +21,4 @@ python check_stylized_facts.py \
 --results_folder ${results_folder} \
 --figs_folder ${figs_folder} \
 --session1_end_time_str ${session1_end_time_str} \
---session2_start_time_str ${session2_start_time_str} \
 --results_csv_name ${results_csv_name}
