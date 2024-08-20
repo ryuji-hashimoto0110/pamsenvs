@@ -20,7 +20,7 @@ from typing import Optional
 import warnings
 
 bybit_freq_ohlcv_size_dic: dict[str, int] = {
-    "1min": 1441
+    "1min": 1440
 }
 
 flex_freq_ohlcv_size_dic: dict[str, int] = {
