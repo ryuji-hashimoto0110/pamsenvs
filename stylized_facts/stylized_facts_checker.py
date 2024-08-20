@@ -177,6 +177,10 @@ class StylizedFactsChecker:
     def _resample_real(self, df: DataFrame, resample_mid: bool) -> DataFrame:
         df.index = pd.to_datetime(df.index, format="%H:%M:%S.%f") #09:00:00.357000
         price_column: str = "mid_price" if resample_mid else "market_price"
+        if price_column not in df.columns:
+            raise ValueError(
+                f"{price_column} is not in df.columns. Maybe resample_mid is not set correctly."
+            )
         resampled_df: DataFrame = df[price_column].resample(
             rule=self.resample_rule, closed="left", label="left"
         ).ohlc()
@@ -237,7 +241,10 @@ class StylizedFactsChecker:
         resample_mid: bool
     ) -> Optional[DataFrame]:
         assert self.transactions_folder_path is not None
-        if transactions_file_name is None:
+        if (
+            len(df) == 0 or
+            transactions_file_name is None
+        ):
             return None
         transactions_file_path: Path = self.transactions_folder_path / transactions_file_name
         cumsum_scaled_transactions_df: DataFrame = pd.read_csv(
