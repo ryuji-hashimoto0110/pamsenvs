@@ -7,34 +7,32 @@ import numpy as np
 from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
+import pathlib
 from pathlib import Path
+curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
+parent_path: Path = curr_path.parents[0]
+import sys
+sys.path.append(str(parent_path))
+from stylized_facts import bybit_freq_ohlcv_size_dic
+from stylized_facts import flex_freq_ohlcv_size_dic
 from scipy import stats
 from typing import Optional
-
-freq_ohlcv_size_dic: dict[str, int] = {
-    "1s": 18001,
-    "10s": 1801,
-    "30s": 601,
-    "1min": 301,
-    "5min": 61,
-    "15min": 21
-}
 
 class ReturnDDEvaluater(DDEvaluater):
     """ReturnDDEvaluater class."""
     def __init__(
         self,
         seed: int = 42,
+        is_bybit: bool = False,
         resample_rule: str = "1min",
         ticker_path_dic: dict[str | int, Path] = {},
     ) -> None:
         """initialization."""
         super().__init__(seed, ticker_path_dic)
+        self.is_bybit: bool = is_bybit
+        self.freq_ohlcv_size_dic: dict[str, int] = \
+            bybit_freq_ohlcv_size_dic if is_bybit else flex_freq_ohlcv_size_dic
         self.resample_rule: str = resample_rule
-
-    def get_statistics(self) -> list[str]:
-        """Get the names of the statistics to be calculated."""
-        return ["Kurtosis"]
     
     def calc_statistics(
         self,
@@ -67,7 +65,7 @@ class ReturnDDEvaluater(DDEvaluater):
         for csv_path in dfs_path.glob("*.csv"):
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if choose_full_size_df:
-                if len(df) == freq_ohlcv_size_dic[self.resample_rule]:
+                if len(df) == self.freq_ohlcv_size_dic[self.resample_rule]:
                     dfs.append(df)
             else:
                 dfs.append(df)
@@ -273,15 +271,25 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
     
 class RVsDDEvaluater(DDEvaluater):
     """RVsDDEvaluater class."""
-    def get_statistics(self) -> list[str]:
-        return []
+    def __init__(
+        self,
+        seed: int = 42,
+        is_bybit: bool = False,
+        resample_rule: str = "1min",
+        ticker_path_dic: dict[str | int, Path] = {},
+    ) -> None:
+        """initialization."""
+        super().__init__(seed, ticker_path_dic)
+        self.is_bybit: bool = is_bybit
+        self.freq_ohlcv_size_dic: dict[str, int] = \
+            bybit_freq_ohlcv_size_dic if is_bybit else flex_freq_ohlcv_size_dic
+        self.resample_rule: str = resample_rule
 
     def get_point_cloud_from_path(
         self,
         num_points: int,
         ohlcv_df_path: Path,
         colname: str = "close",
-        resample_rule: str = "1min",
     ) -> tuple[ndarray]:
         """Get a point cloud from a path.
 
@@ -307,7 +315,7 @@ class RVsDDEvaluater(DDEvaluater):
         Returns:
             point_cloud (ndarray): The point cloud.
         """
-        num_daily_obs: int = freq_ohlcv_size_dic[resample_rule]
+        num_daily_obs: int = self.freq_ohlcv_size_dic[self.resample_rule]
         ohlcv_df: DataFrame = pd.read_csv(ohlcv_df_path, index_col=0)
         price_arr: ndarray = ohlcv_df[colname].values.flatten()
         num_days: int = len(price_arr) // num_daily_obs

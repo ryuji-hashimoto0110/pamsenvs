@@ -22,8 +22,9 @@ def get_config():
     parser.add_argument("--ticker_file_names", type=str, nargs="*", default=None)
     parser.add_argument("--tickers", type=str, nargs="+", default=None)
     parser.add_argument("--resample_rule", type=str, default="1min")
+    parser.add_argument("--is_bybit", action="store_true")
     parser.add_argument(
-        "--point_cloud_type", type=str,choices=["return", "tail_return", "rv_returns"]
+        "--point_cloud_type", type=str, choices=["return", "tail_return", "rv_returns"]
     )
     parser.add_argument("--distance_matrix_save_path", type=str, default=None)
     parser.add_argument("--n_samples", type=int, default=100)
@@ -77,19 +78,23 @@ def create_ddevaluater(all_args, show_args: bool = True) -> DDEvaluater:
     print("Tickers and their corresponding paths:")
     print(tree)
     resample_rule: str = all_args.resample_rule
+    is_bybit: bool = all_args.is_bybit
     point_cloud_type: str = all_args.point_cloud_type
-    print(f"resample_rule: {resample_rule} point_cloud_type: {point_cloud_type}")
+    print(f"resample_rule: {resample_rule} is_bybit: {is_bybit} point_cloud_type: {point_cloud_type}")
     if point_cloud_type == "return":
         evaluater: DDEvaluater = ReturnDDEvaluater(
-            seed=seed, resample_rule=resample_rule, ticker_path_dic=ticker_path_dic
+            seed=seed, resample_rule=resample_rule, 
+            is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
     elif point_cloud_type == "tail_return":
         evaluater: DDEvaluater = TailReturnDDEvaluater(
-            seed=seed, resample_rule=resample_rule, ticker_path_dic=ticker_path_dic
+            seed=seed, resample_rule=resample_rule,
+            is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
     elif point_cloud_type == "rv_returns":
         evaluater: DDEvaluater = RVsDDEvaluater(
-            seed=seed, ticker_path_dic=ticker_path_dic
+            seed=seed, resample_rule=resample_rule, 
+            is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
     else:
         raise NotImplementedError(f"{point_cloud_type} is not implemented.")
