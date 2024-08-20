@@ -118,8 +118,20 @@ class BybitProcessor:
         df["event_flag"] = "execution"
         df.rename(columns={"size": "event_volume"}, inplace=True)
         df.rename(columns={"price": "event_price (avg)"}, inplace=True)
+        df["best_buy"] = df["price"]
+        df.loc[df["side"] == "Buy", "best_buy"] = None
+        df["best_buy"] = df["best_buy"].ffill().bfill()
+        df["best_sell"] = df["price"]
+        df.loc[df["side"] == "Sell", "best_sell"] = None
+        df["best_sell"] = df["best_sell"].ffill().bfill()
+        df["mid_price"] = (
+            df["best_buy"] + df["best_sell"]
+        ) / 2
         df["market_price"] = df["event_price (avg)"]
         df = df.loc[
-            :,["session_id", "event_flag", "event_volume", "event_price (avg)", "market_price"]
+            :,[
+                "session_id", "event_flag", "event_volume", "event_price (avg)", "market_price",
+                "mid_price", "best_buy", "best_sell"
+            ]
         ]
         return df
