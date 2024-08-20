@@ -1,2 +1,4 @@
+from .stylized_facts_checker import bybit_freq_ohlcv_size_dic
+from .stylized_facts_checker import flex_freq_ohlcv_size_dic
 from .stylized_facts_checker import StylizedFactsChecker
 from .simulation_evaluater import SimulationEvaluater
