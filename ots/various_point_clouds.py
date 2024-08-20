@@ -327,8 +327,8 @@ class RVsDDEvaluater(DDEvaluater):
         ) * 100
         daily_return_arr: ndarray = np.sum(intraday_return_arr, axis=1).flatten()
         assert num_days == len(daily_return_arr)
-        daily_rv_arr: ndarray = np.sum(intraday_return_arr**2, axis=1).flatten()
-        daily_log_rv_arr: ndarray = np.log(daily_rv_arr)
+        daily_rv_arr: ndarray = np.sum(intraday_return_arr**2, axis=1).flatten() / num_daily_obs
+        daily_log_rv_arr: ndarray = np.log(daily_rv_arr) / num_daily_obs
         assert num_days == len(daily_log_rv_arr)
         point_cloud: ndarray = np.concatenate(
             [
