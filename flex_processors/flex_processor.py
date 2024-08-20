@@ -162,7 +162,11 @@ class FlexProcessor:
             column_names.append("mood")
         return column_names
 
-    def convert_all_txt2csv(self, is_display_path: bool = True) -> None:
+    def convert_all_txt2csv(
+        self,
+        is_bybit_format: bool,
+        is_display_path: bool = True,
+    ) -> None:
         for txt_path in tqdm(self.txt_datas_path.rglob("*.txt")):
             csv_path: Path = \
                 self.csv_datas_path / txt_path.relative_to(
@@ -173,7 +177,8 @@ class FlexProcessor:
                 csv_parent_path.mkdir(parents=True)
             self.convert_txt2csv(
                 txt_path, csv_path,
-                is_display_path
+                is_bybit_format=is_bybit_format,
+                is_display_path=is_display_path
             )
             txt_path.unlink()
 
