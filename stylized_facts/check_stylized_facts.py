@@ -16,7 +16,7 @@ def get_config():
                         help="folder path that target OHLCV datas are stored.")
     parser.add_argument("--tick_folder_path", type=str, default=None,
                         help="folder path that target tick datas are stored.")
-    parser.add_argument("--resample_rule", type=str, default="min")
+    parser.add_argument("--resample_rule", type=str, default="1min")
     parser.add_argument("--resample_mid", action="store_true")
     parser.add_argument("--is_real", action="store_true")
     parser.add_argument("--is_bybit", action="store_true")
@@ -31,7 +31,7 @@ def get_config():
         help="folder path that number of transaction data will be stored. This is used to save transactions of real data. Confirm that is_real=True."
     )
     parser.add_argument("--session1_transactions_file_name", type=str)
-    parser.add_argument("--session2_transactions_file_name", type=str)
+    parser.add_argument("--session2_transactions_file_name", type=str, default=None)
     parser.add_argument("--specific_name", type=str, default=None,
                         help="the specific name contained in target csv file name in common.")
     parser.add_argument("--choose_full_size_df", action="store_true")
@@ -73,7 +73,7 @@ def main(args):
     transactions_folder: Optional[str] = all_args.transactions_folder_path
     transactions_folder_path: Optional[Path] = create_path(transactions_folder)
     session1_transactions_file_name: str = all_args.session1_transactions_file_name
-    session2_transactions_file_name: str = all_args.session2_transactions_file_name
+    session2_transactions_file_name: Optional[str] = all_args.session2_transactions_file_name
     print(f"figs_save_path: {figs_save_path} transactions_folder_path: {transactions_folder_path}")
     session1_end_time_str: Optional[str] = all_args.session1_end_time_str
     session2_start_time_str: Optional[str] = all_args.session2_start_time_str
