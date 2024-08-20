@@ -19,6 +19,7 @@ def get_config():
     parser.add_argument("--resample_rule", type=str, default="min")
     parser.add_argument("--resample_mid", action="store_true")
     parser.add_argument("--is_real", action="store_true")
+    parser.add_argument("--is_bybit", action="store_true")
     parser.add_argument("--new_ohlcv_folder_path", type=str, default=None,
                         help="folder path that target csv datas are stored.")
     parser.add_argument(
@@ -58,13 +59,14 @@ def main(args):
     tick_dfs_path: Optional[Path] = create_path(tick_folder)
     resample_mid: bool = all_args.resample_mid
     is_real: bool = all_args.is_real
+    is_bybit: bool = all_args.is_bybit
     new_ohlcv_folder: Optional[str] = all_args.new_ohlcv_folder_path
     ohlcv_dfs_save_path: Optional[Path] = create_path(new_ohlcv_folder)
     specific_name: Optional[str] = all_args.specific_name
     choose_full_size_df: bool = all_args.choose_full_size_df
     print(f"ohlcv_dfs_path: {ohlcv_dfs_path}")
     print(f"tick_dfs_path: {tick_dfs_path}")
-    print(f"is_real: {is_real} resample_mid: {resample_mid} specific_name: {specific_name} choose_full_size_df: {choose_full_size_df}")
+    print(f"is_real: {is_real} is_bybit: {is_bybit} resample_mid: {resample_mid} specific_name: {specific_name} choose_full_size_df: {choose_full_size_df}")
     print()
     figs_folder: Optional[str] = all_args.figs_folder_path
     figs_save_path: Optional[Path] = create_path(figs_folder)
@@ -84,6 +86,7 @@ def main(args):
         resample_mid=resample_mid,
         resample_rule=resample_rule,
         is_real=is_real,
+        is_bybit=is_bybit,
         ohlcv_dfs_save_path=ohlcv_dfs_save_path,
         choose_full_size_df=choose_full_size_df,
         specific_name=specific_name,

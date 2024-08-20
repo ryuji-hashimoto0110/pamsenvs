@@ -19,7 +19,11 @@ from tqdm import tqdm
 from typing import Optional
 import warnings
 
-freq_ohlcv_size_dic: dict[str, int] = {
+bybit_freq_ohlcv_size_dic: dict[str, int] = {
+    "1min": 1441
+}
+
+flex_freq_ohlcv_size_dic: dict[str, int] = {
     "1s": 18001,
     "10s": 1801,
     "30s": 601,
@@ -43,6 +47,7 @@ class StylizedFactsChecker:
         resample_rule: str = "1min",
         resample_mid: bool = False,
         is_real: bool = True,
+        is_bybit: bool = False,
         ohlcv_dfs_save_path: Optional[Path] = None,
         choose_full_size_df: bool = True,
         specific_name: Optional[str] = None,
@@ -64,6 +69,7 @@ class StylizedFactsChecker:
             resample_rule
             resample_mid
             is_real (bool): whether df is real_data
+            is_bybit (bool): Whether the data is from Bybit. Default to False.
             ohlcv_dfs_save_path (Optional[Path]):
             choose_full_size_df
             specific_name (Optional[str]): the specific name in csv file name. Files that contain specific_name
@@ -74,11 +80,10 @@ class StylizedFactsChecker:
         """
         self.prng = random.Random(seed)
         self.is_real: bool = is_real
+        self.is_bybit: bool = is_bybit
+        self.freq_ohlcv_size_dic: dict[str, int] = \
+            bybit_freq_ohlcv_size_dic if is_bybit else flex_freq_ohlcv_size_dic
         self.resample_rule: str = resample_rule
-        if resample_rule not in freq_ohlcv_size_dic:
-            raise ValueError(
-                f"rule:{resample_rule} is not allowed."
-            )
         self.ohlcv_dfs: list[DataFrame] = []
         self.ohlcv_csv_names: list[str] = []
         self.tick_dfs: list[DataFrame] = []
@@ -148,7 +153,7 @@ class StylizedFactsChecker:
             if need_resample:
                 df = self._resample(df, resample_mid)
             if choose_full_size_df:
-                if len(df) < freq_ohlcv_size_dic[self.resample_rule]:
+                if len(df) < self.freq_ohlcv_size_dic[self.resample_rule]:
                     store_df = False
                 elif "num_events" in df.columns:
                     if df["num_events"].sum() < self.min_executions:
@@ -200,7 +205,7 @@ class StylizedFactsChecker:
             ]
         else:
             resampled_df = resampled_df[resampled_df.index <= self.session1_end_time]
-        ohlcv_size: int = freq_ohlcv_size_dic[self.resample_rule]
+        ohlcv_size: int = self.freq_ohlcv_size_dic[self.resample_rule]
         if ohlcv_size < len(resampled_df):
             resampled_df = resampled_df.iloc[:ohlcv_size,:]
         return resampled_df
