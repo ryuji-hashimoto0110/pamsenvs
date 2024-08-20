@@ -146,10 +146,10 @@ class FlexProcessor:
 
     def _create_columns(self, is_bybit_format: bool = False) -> list[str]:
         column_names: list[str] = [
-            "time", "session_id", "event_flag", "event_volume", "event_price (avg)", "market_price"
+            "time", "session_id", "event_flag", "event_volume", "event_price (avg)", "market_price",
+            "mid_price", "best_buy", "best_sell"
         ]
         if not is_bybit_format:
-            column_names.extend(["mid_price", "best_buy", "best_sell"])
             [
                 (column_names.append(f"buy{i+1}_price"), column_names.append(f"buy{i+1}_volume")) \
                     for i in range(self.quote_num)
@@ -247,11 +247,9 @@ class FlexProcessor:
                     raise ValueError(f"cannot identify session. time={time_str}")
                 log_columns.append(session_id)
             log_columns.extend(execution_infos)
-            log_columns.append(float(log_dic["Data"]["market_price"]))
-            if is_bybit_format:
-                return log_columns
             log_columns.extend(
                 [
+                    float(log_dic["Data"]["market_price"]),
                     float(log_dic["Data"]["mid_price"]),
                     float(log_dic["Data"]["best_bid"]),
                     float(log_dic["Data"]["best_ask"])
@@ -262,6 +260,8 @@ class FlexProcessor:
                 f"length of execution_infos must be 3 (event_flag, event_volume, event_price) " +
                 f"but found {execution_infos}"
             )
+        if is_bybit_format:
+            return log_columns
         buy_price_volumes: list[Optional[int | float]] = self._extract_price_volume_info_from_log(
             log_dic, key_name="buy_book"
         )
