@@ -346,8 +346,6 @@ class SimulationEvaluater:
             raise ValueError("specify transactions_path.")
         if self.session1_transactions_file_name is None:
             raise ValueError("specify session1_transactions_file_name.")
-        if self.session2_transactions_file_name is None:
-            raise ValueError("specify session2_transactions_file_name.")
         if self.show_process:
             print("[green]==check stylized facts==[green]")
             print(f"tick csvs-> {str(self.tick_dfs_path)} OHLCV csvs-> {str(self.ohlcv_dfs_path)}")
