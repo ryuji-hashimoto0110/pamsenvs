@@ -217,7 +217,7 @@ class CARAFCNAgent(Agent):
         orders.extend(self._cancel_orders())
         time: int = market.get_time()
         time_window_size: int = self._calc_temporal_time_window_size(
-            time, self.w_f, self.w_c, market
+            time, self.w_f, self.w_c, self.w_n, market
         )
         weights: list[float] = self._calc_temporal_weights(market, time_window_size)
         fundamental_weight: float = weights[0]
@@ -227,7 +227,7 @@ class CARAFCNAgent(Agent):
         assert 0 <= chart_weight
         assert 0 <= noise_weight
         risk_aversion_term: float = self._calc_temporal_risk_aversion_term(
-            fundamental_weight, chart_weight
+            fundamental_weight, chart_weight, noise_weight
         )
         assert 0 <= time_window_size
         assert 0 < risk_aversion_term
@@ -268,6 +268,7 @@ class CARAFCNAgent(Agent):
         time: int,
         fundamental_weight: float,
         chart_weight: float,
+        noise_weight: float,
         market: Market,
         **kwargs
     ) -> int:
@@ -287,7 +288,9 @@ class CARAFCNAgent(Agent):
             temporal_time_window_size (int): calculated the agent's temporal time horizon.
         """
         time_window_size: int = int(
-            self.time_window_size * (1 + fundamental_weight) / (1 + chart_weight)
+            self.time_window_size * (
+                (1 + fundamental_weight) / (1 + chart_weight + noise_weight)
+            )
         )
         if self.is_yesterday_aware:
             return time_window_size
@@ -297,7 +300,8 @@ class CARAFCNAgent(Agent):
     def _calc_temporal_risk_aversion_term(
         self,
         fundamental_weight: float,
-        chart_weight: float
+        chart_weight: float,
+        noise_weight: float
     ) -> float:
         """calculate temporal relative risk aversion term in CARA utility.
 
@@ -309,7 +313,7 @@ class CARAFCNAgent(Agent):
             risk_aversion_term (float): calculated the agent's temporal risk aversion term.
         """
         risk_aversion_term: float = self.risk_aversion_term * (
-            (1 + fundamental_weight) / (1 + chart_weight)
+            (1 + fundamental_weight) / (1 + chart_weight + noise_weight)
         )
         return risk_aversion_term
 
