@@ -50,7 +50,7 @@
 		"isCARA": false,
         "orderMargin": [0,0.01],
         "yesterdayAware": true,
-        "numAgents": 5000,
+        "numAgents": 2000,
 		"markets": ["Market"],
 		"assetVolume": {"uniform": [0,100]},
 		"cashAmount": {"uniform": [0,30000]},
