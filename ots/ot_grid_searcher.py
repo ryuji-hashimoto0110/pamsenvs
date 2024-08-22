@@ -310,6 +310,7 @@ class OTGridSearcher:
                 self.result_df.loc[sim_id] = new_results
             except Exception as e:
                 print(e)
+                continue
             comb_dic, is_break = self._update_comb_dic(comb_dic, num_comb_dic)
             self.result_df.to_csv(result_save_path)
             sim_id += 1
