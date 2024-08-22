@@ -101,7 +101,7 @@ class aFCNAgent(CARAFCNAgent):
         time: int = market.get_time()
         market_price: float = market.get_market_price()
         chart_scale: float = 1.0 / max(time_window_size, 1)
-        chart_log_return: float = chart_scale * 100 * math.log(
+        chart_log_return: float = 100 * math.log(
             market_price / market.get_market_price(time - time_window_size)
         )
         chart_weight: float = max(
