@@ -11,7 +11,7 @@
     "2": [
         ["Agent", "chartWeight"],
         [{"expon": [0.0]}, {"expon": [1.0]}, {"expon": [3.0]},
-         {"expon": [5.0]}, {"expon": [10.0]}]
+         {"expon": [5.0]}]
     ],
     "3": [
         ["Agent", "moodWeight"],
