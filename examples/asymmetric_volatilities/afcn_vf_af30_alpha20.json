@@ -23,7 +23,7 @@
 			},
             {	
 				"sessionName": "00",
-				"iterationSteps": 100,
+				"iterationSteps": 10,
 				"withOrderPlacement": true,
 				"withOrderExecution": false,
 				"withPrint": true,
@@ -42,25 +42,25 @@
 	},
     "Market": {
         "class": "YesterdayAwareMarket",
-		"tickSize": 0.0005,
+		"tickSize": 0.0001,
 		"marketPrice": 300.0
     },
     "Agent": {
         "class": "aFCNAgent",
 		"isCARA": true,
         "yesterdayAware": true,
-        "numAgents": 5000,
+        "numAgents": 200,
 		"markets": ["Market"],
 		"assetVolume": {"uniform": [0,100]},
 		"cashAmount": {"uniform": [0,30000]},
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.7]},
+		"chartWeight": {"expon": [5.0]},
 		"noiseWeight": {"expon": [1.0]},
         "feedbackAsymmetry": 3.0,
         "noiseAsymmetry": 0.0, 
-		"riskAversionTerm": 0.06,
+		"riskAversionTerm": 0.20,
 		"noiseScale": 0.0001,
-		"timeWindowSize": 130,
+		"timeWindowSize": 500,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1
     }
