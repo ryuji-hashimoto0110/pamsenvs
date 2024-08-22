@@ -96,6 +96,9 @@ class CARAFCNAgent(Agent):
             settings=settings, accessible_markets_ids=accessible_markets_ids
         )
         self._convert_exp2pareto(settings)
+        for order in self.unexecuted_orders:
+            if not order.is_buy:
+                self.asset_volumes[order.market_id] += order.volume
         if 2 <= len(accessible_markets_ids):
             warnings.warn(
                 "order decision for multiple assets has not implemented yet."
