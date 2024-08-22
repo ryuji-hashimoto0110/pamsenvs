@@ -99,6 +99,8 @@ class CARAFCNAgent(Agent):
         for order in self.unexecuted_orders:
             if not order.is_buy:
                 self.asset_volumes[order.market_id] += order.volume
+            else:
+                self.cash_amount -= order.volume * order.price
         if 2 <= len(accessible_markets_ids):
             warnings.warn(
                 "order decision for multiple assets has not implemented yet."
