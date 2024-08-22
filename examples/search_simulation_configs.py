@@ -22,6 +22,7 @@ def get_config():
     parser.add_argument("--ticker_file_names", type=str, nargs="*", default=None)
     parser.add_argument("--tickers", type=str, nargs="+", default=None)
     parser.add_argument("--resample_rule", type=str, default=None)
+    parser.add_argument("--is_bybit", action="store_true")
     parser.add_argument(
         "--point_cloud_type", type=str,choices=["return", "tail_return", "rv_returns"]
     )
