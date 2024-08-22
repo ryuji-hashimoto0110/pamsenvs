@@ -1,0 +1,67 @@
+{
+    "comment": "simulation with volatility feedback and asymmetric positive feedback, a_f=3.0, alpha=0.25",
+    "simulation": {
+		"markets": ["Market"],
+		"agents": ["Agent"],
+		"sessions": [
+			{	
+				"sessionName": "0",
+				"iterationSteps": 100,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0
+			},
+			{	
+				"sessionName": "1",
+				"iterationSteps": 1000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0
+			},
+            {	
+				"sessionName": "00",
+				"iterationSteps": 10,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0
+			},
+            {	
+				"sessionName": "2",
+				"iterationSteps": 1000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0
+			}
+		]
+	},
+    "Market": {
+        "class": "YesterdayAwareMarket",
+		"tickSize": 0.0001,
+		"marketPrice": 300.0
+    },
+    "Agent": {
+        "class": "aFCNAgent",
+		"isCARA": true,
+        "yesterdayAware": true,
+        "numAgents": 200,
+		"markets": ["Market"],
+		"assetVolume": {"uniform": [0,100]},
+		"cashAmount": {"uniform": [0,30000]},
+		"fundamentalWeight": {"expon": [10.0]},
+		"chartWeight": {"expon": [5.0]},
+		"noiseWeight": {"expon": [1.0]},
+        "feedbackAsymmetry": -3.0,
+        "noiseAsymmetry": 0.0, 
+		"riskAversionTerm": 0.25,
+		"noiseScale": 0.0001,
+		"timeWindowSize": 500,
+		"meanReversionTime": 200,
+		"chartFollowRate": 1
+    }
+}
