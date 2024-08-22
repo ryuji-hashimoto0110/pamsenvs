@@ -25,6 +25,8 @@ import random
 from rich import print
 from rich.tree import Tree
 from .stylized_facts_checker import StylizedFactsChecker
+from .stylized_facts_checker import bybit_freq_ohlcv_size_dic
+from .stylized_facts_checker import flex_freq_ohlcv_size_dic
 import subprocess
 from tqdm import tqdm
 from typing import Any
@@ -100,6 +102,8 @@ class SimulationEvaluater:
         self.resample_rule: str = resample_rule
         self.resample_mid: bool = resample_mid
         self.is_bybit: bool = is_bybit
+        self.freq_ohlcv_size_dic: dict[str, int] = bybit_freq_ohlcv_size_dic \
+            if is_bybit else flex_freq_ohlcv_size_dic
         self.tick_dfs_path: Optional[Path] = self._convert_str2path(tick_dfs_path, mkdir=True)
         self.ohlcv_dfs_path: Optional[Path] = self._convert_str2path(ohlcv_dfs_path, mkdir=True)
         self.all_time_ohlcv_dfs_path: Optional[Path] = self._convert_str2path(all_time_ohlcv_dfs_path, mkdir=True)
@@ -390,7 +394,8 @@ class SimulationEvaluater:
                 / f"{self.specific_name}_{start_date_str}_{end_date_str}.csv"
             )
             check_asymmetry_command: str = f"Rscript {check_asymmetry_path} " + \
-            f"{str(all_time_ohlcv_df_path)} {self.resample_rule} {self.resample_rule-1} close"
+            f"{str(all_time_ohlcv_df_path)} {self.resample_rule} " + \
+            f"{self.freq_ohlcv_size_dic[self.resample_rule]-1} close"
             _ = subprocess.run(check_asymmetry_command, shell=True)
         if self.show_process:
             print("[green]==stylized facts checking process ended==[green]")
