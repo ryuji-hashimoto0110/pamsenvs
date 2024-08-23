@@ -92,7 +92,10 @@ class YesterdayAwareMarket(TotalTimeAwareMarket):
     ) -> None:
         new_expire_time_list: dict[int, list[Order]] = {}
         for expire_time, orders in order_book.expire_time_list.items():
-            new_expire_time_list[expire_time-reversing_time] = orders
+            new_expire_time: int = max(0, expire_time-reversing_time)
+            if new_expire_time not in new_expire_time_list:
+                new_expire_time_list[new_expire_time] = []
+            new_expire_time_list[new_expire_time].extend(orders)
             for order in orders:
                 order.placed_at -= reversing_time
         order_book.expire_time_list = new_expire_time_list
