@@ -92,11 +92,11 @@ class CARAFCNAgent(Agent):
         If feedbackAsymmetry and noiseAsymmetry are both 0, aFCNAgent is equivalent to FCNAgent.
         """
         self.settings: dict[str, Any] = settings
-        self.accessible_markets_ids: list[MarketID] = accessible_markets_ids
-        super().setup(
-            settings=settings, accessible_markets_ids=accessible_markets_ids
-        )
-        self._convert_exp2pareto(settings)
+        if not hasattr(self, "cashAmount"):
+            super().setup(
+                settings=settings, accessible_markets_ids=accessible_markets_ids
+            )
+            self._convert_exp2pareto(settings)
         if 2 <= len(accessible_markets_ids):
             warnings.warn(
                 "order decision for multiple assets has not implemented yet."
