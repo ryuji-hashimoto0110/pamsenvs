@@ -64,7 +64,7 @@
 		"noiseScale": 0.0001,
 		"moodWeight": {"expon": [0.0002]},
         "moodSensitivity": 0.5,
-		"timeWindowSize": 100,
+		"timeWindowSize": 200,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1
     }
