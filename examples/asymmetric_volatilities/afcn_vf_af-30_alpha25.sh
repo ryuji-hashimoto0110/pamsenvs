@@ -23,6 +23,7 @@ python ../evaluate_simulations.py \
 --txts_path ${txts_path} \
 --num_simulations ${num_simulations} \
 --use_simulator_given_runner \
+--resample_mid \
 --resample_rule ${resample_rule} \
 --tick_dfs_path ${tick_dfs_path} \
 --ohlcv_dfs_path ${ohlcv_dfs_path} \
