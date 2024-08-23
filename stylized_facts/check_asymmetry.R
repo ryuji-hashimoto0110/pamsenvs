@@ -21,6 +21,7 @@ freq_ohlcv_size_dic <- Dict$new(
   "10s" = 1801,
   "30s" = 601,
   "1min" = 301,
+  "1min_bybit" = 1440,
   "5min" = 61,
   "15min" = 21
 )
@@ -37,7 +38,7 @@ calc_return <- function(
   if (is_percentage) {
     vreturn_expanded <- 100 * vreturn_expanded
   }
-  vreturn_expanded <- scale(vreturn_expanded)
+  #vreturn_expanded <- scale(vreturn_expanded)
   return(vreturn_expanded)
 }
 
