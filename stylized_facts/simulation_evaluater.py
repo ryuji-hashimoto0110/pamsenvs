@@ -55,6 +55,7 @@ class SimulationEvaluater:
         resample_rule: str = "1min",
         resample_mid: bool = True,
         is_bybit: bool = False,
+        is_mood_aware: bool = False,
         tick_dfs_path: Optional[Path | str] = None,
         ohlcv_dfs_path: Optional[Path | str] = None,
         all_time_ohlcv_dfs_path: Optional[Path | str] = None,
@@ -79,6 +80,7 @@ class SimulationEvaluater:
             resample_rule (str): resample frequency.
             resample_mid (bool): whether to resample mid price.
             is_bybit (bool): whether to save data as bybit format.
+            is_mood_aware (bool): Whether to record mood.
             tick_dfs_path (Path | str, optional): folder path to store executions csvs.
                 Ex) 'pamsenvs/datas/artificial_datas/flex_csv/asymmetric_volatility/volatility_feedback_alpha010'
             ohlcv_dfs_path (Path | str, optional): folder path to store preprocessed OHLCV csvs.
@@ -102,6 +104,7 @@ class SimulationEvaluater:
         self.resample_rule: str = resample_rule
         self.resample_mid: bool = resample_mid
         self.is_bybit: bool = is_bybit
+        self.is_mood_aware: bool = is_mood_aware
         self.freq_ohlcv_size_dic: dict[str, int] = bybit_freq_ohlcv_size_dic \
             if is_bybit else flex_freq_ohlcv_size_dic
         self.tick_dfs_path: Optional[Path] = self._convert_str2path(tick_dfs_path, mkdir=True)
@@ -312,7 +315,8 @@ class SimulationEvaluater:
             print(f"txts-> {str(self.txts_path)} tick csvs-> {str(self.tick_dfs_path)}")
         processor = FlexProcessor(
             txt_datas_path=self.txts_path,
-            csv_datas_path=self.tick_dfs_path
+            csv_datas_path=self.tick_dfs_path,
+            is_mood_aware=self.is_mood_aware
         )
         processor.convert_all_txt2csv(
             is_bybit_format=self.is_bybit, is_display_path=False
@@ -394,8 +398,7 @@ class SimulationEvaluater:
                 / f"{self.specific_name}_{start_date_str}_{end_date_str}.csv"
             )
             check_asymmetry_command: str = f"Rscript {check_asymmetry_path} " + \
-            f"{str(all_time_ohlcv_df_path)} {self.resample_rule} " + \
-            f"{self.freq_ohlcv_size_dic[self.resample_rule]-1} close"
+            f"{str(all_time_ohlcv_df_path)} {self.resample_rule} close"
             _ = subprocess.run(check_asymmetry_command, shell=True)
         if self.show_process:
             print("[green]==stylized facts checking process ended==[green]")
