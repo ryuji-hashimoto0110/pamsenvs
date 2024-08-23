@@ -96,11 +96,6 @@ class CARAFCNAgent(Agent):
             settings=settings, accessible_markets_ids=accessible_markets_ids
         )
         self._convert_exp2pareto(settings)
-        for order in self.unexecuted_orders:
-            if not order.is_buy:
-                self.asset_volumes[order.market_id] += order.volume
-            else:
-                self.cash_amount += order.volume * order.price
         if 2 <= len(accessible_markets_ids):
             warnings.warn(
                 "order decision for multiple assets has not implemented yet."
@@ -114,7 +109,7 @@ class CARAFCNAgent(Agent):
             json_random.random(json_value=settings["timeWindowSize"])
         )
         self.is_cara: bool = settings["isCARA"]
-        if self.is_cara is False:
+        if not self.is_cara:
             if "orderMargin" not in settings:
                 raise ValueError(
                     "orderMargin must be set when isCARA is false."
