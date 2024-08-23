@@ -6,12 +6,12 @@
     ],
     "3": [
         ["Agent", "moodWeight"],
-        [{"expon": [0.00001]}, {"expon": [0.00005]},
-         {"expon": [0.00010]}, {"expon": [0.00020]}]
+        [{"uniform": [0,0.00001]}, {"uniform": [0.00005]},
+         {"uniform": [0,0.00010]}, {"uniform": [0.00020]}]
     ],
     "3_": [
         ["Agent", "moodSensitivity"],
-        [0.25, 0.5, 0.75]
+        [0.2, 0.5, 0.8]
     ],
     "4": [
         ["Agent", "riskAversionTerm"],
