@@ -3,7 +3,6 @@
         ["Agent", "paretoVariables"],
         [
             {
-                "assetVolume": {"alpha": 16.67, "beta": 1.5},
                 "cashAmount": {"alpha": 5000, "beta": 1.5}
             }
         ]

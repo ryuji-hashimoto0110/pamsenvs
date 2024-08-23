@@ -50,10 +50,9 @@
 		"isCARA": true,
         "numAgents": 200,
 		"markets": ["Market"],
-		"assetVolume": {"expon": [1]},
+		"assetVolume": {"uniform": [0,50]},
 		"cashAmount": {"expon": [1]},
         "paretoVariables": {
-			"assetVolume": {"alpha": 16.67, "beta": 1.5},
 			"cashAmount": {"alpha": 5000, "beta": 1.5}
 		},
 		"fundamentalWeight": {"expon": [10.0]},

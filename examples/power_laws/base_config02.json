@@ -50,7 +50,7 @@
 		"isCARA": true,
         "numAgents": 200,
 		"markets": ["Market"],
-		"assetVolume": {"uniform": [0,100]},
+		"assetVolume": {"uniform": [0,50]},
 		"cashAmount": {"uniform": [0,30000]},
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [0.0]},
