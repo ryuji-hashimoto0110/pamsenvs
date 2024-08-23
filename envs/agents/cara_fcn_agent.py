@@ -1,3 +1,4 @@
+from pams.logs.base import ExecutionLog
 from ..markets import TotalTimeAwareMarket
 from ..markets import YesterdayAwareMarket
 import math
@@ -356,7 +357,7 @@ class CARAFCNAgent(Agent):
         )
         assert self.is_finite(expected_log_return)
         expected_future_price: float = market_price * math.exp(
-            expected_log_return * self.time_window_size
+            expected_log_return * time_window_size
         )
         return expected_future_price
 
