@@ -30,6 +30,7 @@ class OTGridSearcher:
         target_variables_config: Optional[dict[str, Any]] = None,
         target_variables_config_path: Optional[str | Path] = None,
         use_simulator_given_runner: bool = False,
+        is_mood_aware: bool = False,
         num_simulations: int = 1500,
         temp_txts_path: Optional[str | Path] = None,
         temp_tick_dfs_path: Optional[str | Path] = None,
@@ -83,6 +84,7 @@ class OTGridSearcher:
         self.var_ids: list[VarID] = list(self.id2var_dic.keys())
         self.result_df: DataFrame = self._create_result_df()
         self.use_simulator_given_runner: bool = use_simulator_given_runner
+        self.is_mood_aware: bool = is_mood_aware
         self.num_simulations: int = num_simulations
         self.temp_txts_path: Optional[Path] = self._convert_str2path(
             temp_txts_path, mkdir=True
@@ -258,6 +260,7 @@ class OTGridSearcher:
                 config=specific_config,
                 specific_name="temp",
                 resample_mid=True,
+                is_mood_aware=self.is_mood_aware,
                 txts_path=self.temp_txts_path,
                 tick_dfs_path=self.temp_tick_dfs_path,
                 ohlcv_dfs_path=self.temp_ohlcv_dfs_path,
