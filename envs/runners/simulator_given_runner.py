@@ -23,7 +23,7 @@ class SimulatorGivenRunner(SequentialRunner):
         if previous_simulator is not None:
             self.simulator = previous_simulator
             self._initialize_times()
-            #self._re_setup_agents()
+            self._re_setup_agents()
         else:
             super()._setup()
             self._pending_setups = []
@@ -44,15 +44,9 @@ class SimulatorGivenRunner(SequentialRunner):
         for agent in self.simulator.agents:
             if not hasattr(agent, "settings"):
                 raise AttributeError("Please remain 'settings' in agents.")
-            if not hasattr(agent, "accessible_markets_ids"):
-                raise AttributeError(
-                    "Please remain 'accessible_markets_ids' in agents."
-                )
-            for market_id in agent.accessible_markets_ids:
-                del agent.asset_volumes[market_id]
             agent.setup(
                 settings=agent.settings,
-                accessible_markets_ids=agent.accessible_markets_ids,
+                accessible_markets_ids=[],
             )
 
     def _assign_new_logger_to_all_classes(self, new_logger):
