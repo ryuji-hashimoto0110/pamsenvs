@@ -48,11 +48,12 @@
     "Agent": {
         "class": "CARAFCNAgent",
 		"isCARA": true,
-        "numAgents": 200,
+        "numAgents": 500,
 		"markets": ["Market"],
-		"assetVolume": {"uniform": [0,50]},
+		"assetVolume": {"expon": [1]},
 		"cashAmount": {"expon": [1]},
         "paretoVariables": {
+			"assetVolume": {"alpha": 16.67, "beta": 1.5},
 			"cashAmount": {"alpha": 5000, "beta": 1.5}
 		},
 		"fundamentalWeight": {"expon": [10.0]},
