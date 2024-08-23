@@ -41,4 +41,5 @@ python ../search_simulation_configs.py \
 --session2_transactions_file_name ${session2_transactions_file_name} \
 --num_points ${num_points} \
 --results_save_path ${results_save_path} \
---show_process
+--show_process \
+--is_mood_aware
