@@ -1,4 +1,4 @@
-initial_seed=10042
+initial_seed=42
 significant_figures=10
 config_path="wo.json"
 specific_name="wo"
