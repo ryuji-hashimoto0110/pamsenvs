@@ -49,7 +49,7 @@
         "class": "CARAFCNAgent",
 		"isCARA": true,
         "yesterdayAware": true,
-        "numAgents": 5000,
+        "numAgents": 500,
 		"markets": ["Market"],
 		"assetVolume": {"uniform": [0,100]},
 		"cashAmount": {"uniform": [0,30000]},
