@@ -49,7 +49,7 @@
     "Agent": {
         "class": "MoodAwareCARAFCNAgent",
 		"isCARA": true,
-        "numAgents": 500,
+        "numAgents": 200,
 		"markets": ["Market"],
 		"assetVolume": {"expon": [1]},
 		"cashAmount": {"expon": [1]},
