@@ -243,7 +243,8 @@ class CARAFCNAgent(Agent):
         assert self.is_finite(expected_volatility)
         orders.extend(
             self._create_order(
-                market, expected_future_price, expected_volatility, risk_aversion_term
+                market, expected_future_price, expected_volatility,
+                time_window_size, risk_aversion_term
             )
         )
         return orders
@@ -395,18 +396,19 @@ class CARAFCNAgent(Agent):
         market: Market,
         expected_future_price: float,
         expected_volatility: float,
+        time_window_size: int,
         risk_aversion_term: float
     ) -> list[Order | Cancel]:
         """create new orders.
         """
         if self.is_cara:
             orders: list[Order | Cancel] = self._create_order_cara(
-                market, expected_future_price,
-                expected_volatility, risk_aversion_term
+                market, expected_future_price, expected_volatility,
+                time_window_size, risk_aversion_term
             )
         else:
             orders: list[Order | Cancel] = self._create_order_wo_cara(
-                market, expected_future_price
+                market, expected_future_price, time_window_size
             )
         for order in orders:
             if isinstance(order, Order):
@@ -418,6 +420,7 @@ class CARAFCNAgent(Agent):
         market: Market,
         expected_future_price: float,
         expected_volatility: float,
+        time_window_size: int,
         risk_aversion_term: float
     ) -> list[Order | Cancel]:
         """create new orders w/ CARA utility.
@@ -507,7 +510,7 @@ class CARAFCNAgent(Agent):
                     kind=order_kind,
                     volume=order_volume,
                     price=price,
-                    ttl=self.time_window_size
+                    ttl=time_window_size
                 )
             )
         return orders
@@ -613,7 +616,8 @@ class CARAFCNAgent(Agent):
     def _create_order_wo_cara(
         self,
         market: Market,
-        expected_future_price: float
+        expected_future_price: float,
+        time_window_size: int
     ) -> list[Order | Cancel]:
         """create new orders w/o CARA utility.
 
@@ -644,7 +648,7 @@ class CARAFCNAgent(Agent):
                 kind=order_kind,
                 volume=order_volume,
                 price=order_price,
-                ttl=self.time_window_size
+                ttl=time_window_size
             )
         )
         return orders
