@@ -401,6 +401,8 @@ class CARAFCNAgent(Agent):
     ) -> list[Order | Cancel]:
         """create new orders.
         """
+        if time_window_size < 1:
+            time_window_size = self.time_window_size
         if self.is_cara:
             orders: list[Order | Cancel] = self._create_order_cara(
                 market, expected_future_price, expected_volatility,
