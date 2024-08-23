@@ -103,6 +103,10 @@ class CARAFCNAgent(Agent):
             )
         json_random: JsonRandom = JsonRandom(prng=self.prng)
         self.w_f: float = json_random.random(json_value=settings["fundamentalWeight"])
+        if "averageCashAmount" in settings:
+            average_cash_amount: float = settings["averageCashAmount"]
+            cash_amount: float = self.cash_amount
+            self.w_f *= cash_amount / average_cash_amount
         self.w_c: float = json_random.random(json_value=settings["chartWeight"])
         self.w_n: float = json_random.random(json_value=settings["noiseWeight"])
         self.noise_scale: float = json_random.random(json_value=settings["noiseScale"])
