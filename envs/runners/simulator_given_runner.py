@@ -23,7 +23,7 @@ class SimulatorGivenRunner(SequentialRunner):
         if previous_simulator is not None:
             self.simulator = previous_simulator
             self._initialize_times()
-            self._re_setup_agents()
+            #self._re_setup_agents()
         else:
             super()._setup()
             self._pending_setups = []
