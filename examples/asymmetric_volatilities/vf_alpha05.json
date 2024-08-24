@@ -55,7 +55,7 @@
 		"cashAmount": {"uniform": [0,30000]},
 		"averageCashAmount": 15000,
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [2.5]},
+		"chartWeight": {"expon": [2.0]},
 		"noiseWeight": {"expon": [1.0]},
         "riskAversionTerm": 0.05,
 		"noiseScale": 0.0001,
