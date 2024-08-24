@@ -6,8 +6,8 @@
     ],
     "3": [
         ["Agent", "moodWeight"],
-        [{"uniform": [0,0.00005]}, {"uniform": [0,0.00010]}, {"uniform": [0,0.00015]},
-         {"uniform": [0,0.00020]}, {"uniform": [0,0.00025]}, {"uniform": [0,0.00030]}]
+        [{"uniform": [0,0.00001]}, {"uniform": [0,0.00002]}, {"uniform": [0,0.00003]},
+         {"uniform": [0,0.00004]}, {"uniform": [0,0.00005]}]
     ],
     "3_": [
         ["Agent", "moodSensitivity"],
