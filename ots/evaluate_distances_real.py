@@ -109,15 +109,19 @@ def main(args):
     n_samples: int = all_args.n_samples
     print(f"Distance matrix will be saved at {str(distance_matrix_save_path)}")
     print(f"Number of samples: {n_samples}")
-    distance_matrix: Optional[ndarray] = evaluater.create_ot_distance_matrix(
-        n_samples, tickers, distance_matrix_save_path, return_distance_matrix=True
+    distance_matrix, pvalue_matrix = evaluater.create_ot_distance_matrix(
+        n_samples, tickers, distance_matrix_save_path,
+        return_distance_matrix=True, return_pvalue_matrix=True
     )
     figs_save_path: Optional[Path] = create_path(all_args.figs_save_path)
     if figs_save_path is not None and distance_matrix is not None:
         tree: Tree = Tree(str(figs_save_path))
         fig_distance_matrix_name: str = "distance_matrix.pdf"
+        fig_pvalue_matrix_name: str = "pvalue_matrix.pdf"
         tree.add(fig_distance_matrix_name)
+        tree.add(fig_pvalue_matrix_name)
         fig_distance_matrix_path: Path = figs_save_path / fig_distance_matrix_name
+        fig_pvalue_matrix_path: Path = figs_save_path / fig_pvalue_matrix_name
         fig_point_clouds_name: str = "point_clouds.pdf"
         tree.add(fig_point_clouds_name)
         fig_point_clouds_path: Path = figs_save_path / fig_point_clouds_name
@@ -125,6 +129,9 @@ def main(args):
         print(tree)
         evaluater.draw_distance_matrix(
             tickers, distance_matrix, fig_distance_matrix_path
+        )
+        evaluater.draw_distance_matrix(
+            tickers, pvalue_matrix, fig_pvalue_matrix_path, title="p-value matrix"
         )
         nrow_subplots: int = all_args.nrows_subolots
         ncol_subplots: int = all_args.ncols_subplots
