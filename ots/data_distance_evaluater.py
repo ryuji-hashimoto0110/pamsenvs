@@ -10,6 +10,7 @@ import ot
 import pandas as pd
 from pandas import DataFrame
 from pathlib import Path
+from scipy.stats import kstest
 from typing import Optional
 
 class DDEvaluater:
@@ -57,8 +58,9 @@ class DDEvaluater:
         self,
         point_cloud1: ndarray,
         point_cloud2: ndarray,
-        is_per_bit: bool = True
-    ) -> float:
+        is_per_bit: bool = True,
+        return_pvalue: bool = False
+    ) -> float | tuple[float, Optional[float]]:
         """Calculate the optimal transport distance between two point clouds.
 
         Args:
@@ -87,6 +89,12 @@ class DDEvaluater:
         ot_distance: float = np.sum(transport_plan * cost_matrix)
         if is_per_bit:
             ot_distance /= dim_points1
+        if return_pvalue:
+            if dim_points1 != 1:
+                pvalue = None
+            else:
+                _, pvalue = kstest(point_cloud1.flatten(), point_cloud2.flatten())
+            return ot_distance, pvalue
         return ot_distance
     
     @abstractmethod
@@ -137,27 +145,44 @@ class DDEvaluater:
         tickers: Optional[list[str | int]] = None,
         save_path: Optional[Path] = None,
         return_distance_matrix: bool = False,
-    ) -> Optional[ndarray]:
+        return_pvalue_matrix: bool = False
+    ) -> Optional[ndarray] | tuple[Optional[ndarray], Optional[ndarray]]:
         if tickers is None:
             tickers: list[str | int] = list(self.ticker_path_dic.keys())
         num_tickers: int = len(tickers)
         distance_matrix: ndarray = np.zeros(
             (num_tickers, num_tickers), dtype=np.float64
         )
+        if return_pvalue_matrix:
+            pvalue_matrix: ndarray = np.zeros(
+                (num_tickers, num_tickers), dtype=np.float64
+            )
         for i in range(num_tickers):
             for j in range(i+1, num_tickers):
                 ticker1: str | int = tickers[i]
                 ticker2: str | int = tickers[j]
                 point_cloud1: ndarray = self.get_point_cloud_from_ticker(ticker1, num_points)
                 point_cloud2: ndarray = self.get_point_cloud_from_ticker(ticker2, num_points)
-                ot_distance: float = self.calc_ot_distance(point_cloud1, point_cloud2)
+                if return_pvalue_matrix:
+                    ot_distance, pvalue = self.calc_ot_distance(
+                        point_cloud1, point_cloud2, return_pvalue=True
+                    )
+                else:
+                    ot_distance: float = self.calc_ot_distance(point_cloud1, point_cloud2)
                 distance_matrix[i, j] = ot_distance
                 distance_matrix[j, i] = ot_distance
+                if return_pvalue_matrix and pvalue is not None:
+                    pvalue_matrix[i, j] = pvalue
+                    pvalue_matrix[j, i] = pvalue
         if save_path is not None:
             distance_df: DataFrame = pd.DataFrame(distance_matrix, index=tickers, columns=tickers)
             distance_df.to_csv(save_path)
-        if return_distance_matrix:
+        if return_distance_matrix and return_pvalue_matrix:
+            return distance_matrix, pvalue_matrix
+        elif return_distance_matrix:
             return distance_matrix
+        elif return_pvalue_matrix:
+            return pvalue_matrix
         
     def draw_distance_matrix(
         self,
