@@ -93,7 +93,9 @@ class DDEvaluater:
             if dim_points1 != 1:
                 pvalue = None
             else:
-                _, pvalue = kstest(point_cloud1.flatten(), point_cloud2.flatten())
+                _, pvalue = kstest(
+                    point_cloud1.flatten(), point_cloud2.flatten(), N=num_points1
+                )
             return ot_distance, pvalue
         return ot_distance
     
