@@ -1,4 +1,5 @@
 from ..markets import YesterdayAwareMarket
+from pams.fundamentals import Fundamentals
 from pams.market import Market
 from pams.logs import Logger
 from pams.order import Order
@@ -22,6 +23,7 @@ class SimulatorGivenRunner(SequentialRunner):
     ) -> None:
         if previous_simulator is not None:
             self.simulator = previous_simulator
+            self._inherit_fundamentals()
             self._initialize_times()
             self._re_setup_agents()
         else:
@@ -39,6 +41,15 @@ class SimulatorGivenRunner(SequentialRunner):
             market._prng = random.Random(seed)
         for session in self.simulator.sessions:
             session.prng = random.Random(seed)
+
+    def _inherit_fundamentals(self) -> None:
+        fundamentals: Fundamentals = self.simulator.fundamentals
+        fundamentals._generated_until = 0
+        for market in self.simulator.markets:
+            market_id: int = market.market_id
+            fundamentals.initials[market_id] = market.get_fundamental_price()
+            fundamentals.prices[market_id] = [market.get_fundamental_price()]
+        self.simulator.fundamentals = fundamentals
 
     def _re_setup_agents(self) -> None:
         for agent in self.simulator.agents:
