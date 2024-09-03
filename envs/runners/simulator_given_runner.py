@@ -47,8 +47,16 @@ class SimulatorGivenRunner(SequentialRunner):
         fundamentals._generated_until = 0
         for market in self.simulator.markets:
             market_id: int = market.market_id
-            fundamentals.initials[market_id] = market.get_fundamental_price()
-            fundamentals.prices[market_id] = [market.get_fundamental_price()]
+            try:
+                fundamental_price: float = market.get_fundamental_price()
+            except Exception as e:
+                warnings.warn(
+                    f"got an error while getting fundamental price: {e}.\n" +
+                    f"fundamental price will be gotten directory through fundamentals."
+                )
+                fundamental_price = fundamentals.prices[market_id][-1]
+            fundamentals.initials[market_id] = fundamental_price
+            fundamentals.prices[market_id] = [fundamental_price]
         self.simulator.fundamentals = fundamentals
 
     def _re_setup_agents(self) -> None:
