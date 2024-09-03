@@ -52,6 +52,7 @@ class SimulatorGivenRunner(SequentialRunner):
             except Exception as e:
                 warnings.warn(
                     f"got an error while getting fundamental price: {e}.\n" +
+                    f"length of fundamental prices is: {len(fundamentals.prices[market_id])}" +
                     f"fundamental price will be gotten directory through fundamentals."
                 )
                 fundamental_price = fundamentals.prices[market_id][-1]
