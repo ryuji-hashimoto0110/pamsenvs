@@ -43,7 +43,9 @@
     "Market": {
         "class": "YesterdayAwareMarket",
 		"tickSize": 0.0001,
-		"marketPrice": 300.0
+		"marketPrice": 300.0,
+		"fundamentalDrift": 0.0,
+		"fundamentalVolatility": 0.0001
     },
     "Agent": {
         "class": "CARAFCNAgent",
@@ -54,7 +56,7 @@
 		"assetVolume": {"uniform": [0,100]},
 		"cashAmount": {"uniform": [0,30000]},
 		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.75]},
+		"chartWeight": {"expon": [2.5]},
 		"noiseWeight": {"expon": [1.0]},
         "riskAversionTerm": 0.20,
 		"noiseScale": 0.0001,
