@@ -122,10 +122,11 @@ class CARAFCNAgent(Agent):
             base_order_margin: float = json_random.random(
                 json_value=settings["orderMargin"]
             )
-            if "averageTimeWindowSize" in settings:
-                average_tau: float = settings["averageTimeWindowSize"]
+            if "averageCashAmount" in settings:
+                average_cash_amount: float = settings["averageCashAmount"]
+                cash_amount: float = self.cash_amount
                 self.order_margin: float = base_order_margin * (
-                    self.time_window_size / average_tau
+                    cash_amount / average_cash_amount
                 )
             else:
                 self.order_margin: float = base_order_margin
