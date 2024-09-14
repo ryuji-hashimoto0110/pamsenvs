@@ -119,9 +119,16 @@ class CARAFCNAgent(Agent):
                 raise ValueError(
                     "orderMargin must be set when isCARA is false."
                 )
-            self.order_margin: float = json_random.random(
+            base_order_margin: float = json_random.random(
                 json_value=settings["orderMargin"]
             )
+            if "averageTimeWindowSize" in settings:
+                average_tau: float = settings["averageTimeWindowSize"]
+                self.order_margin: float = base_order_margin * (
+                    self.time_window_size / average_tau
+                )
+            else:
+                self.order_margin: float = base_order_margin
         if "riskAversionTerm" in settings:
             self.risk_aversion_term: float = json_random.random(
                 json_value=settings["riskAversionTerm"]
