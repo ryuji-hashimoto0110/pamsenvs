@@ -13,6 +13,7 @@ import scipy.stats as stats
 import sys
 sys.path.append(str(parent_path))
 from stylized_facts import StylizedFactsChecker
+plt.rcParams["font.size"] = 20
 
 def get_config():
     parser = argparse.ArgumentParser()

@@ -1,4 +1,5 @@
 import argparse
+from matplotlib import pyplot as plt
 import pathlib
 from pathlib import Path
 curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
@@ -8,6 +9,7 @@ import sys
 sys.path.append(str(parent_path))
 from stylized_facts import StylizedFactsChecker
 from typing import Optional
+plt.rcParams["font.size"] = 20
 
 def get_config():
     parser = argparse.ArgumentParser()
