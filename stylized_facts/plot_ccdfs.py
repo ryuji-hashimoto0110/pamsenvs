@@ -63,7 +63,7 @@ def main(args):
             ax=ax, label=label, color=color
         )
     plot_ccdf_gaussian(ax=ax, color="red")
-    ax.legend()
+    plt.legend(fontsize=10)
     ax.set_xlim([1, 40])
     ax.set_ylim([1e-06, 1])
     fig_save_path: Path =  pathlib.Path(all_args.fig_save_path).resolve()
