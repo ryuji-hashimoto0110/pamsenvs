@@ -18,6 +18,7 @@ from scipy.stats import kurtosistest
 from tqdm import tqdm
 from typing import Optional
 import warnings
+plt.rcParams["font.size"] = 20
 
 bybit_freq_ohlcv_size_dic: dict[str, int] = {
     "1min": 1440
