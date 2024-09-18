@@ -21,6 +21,7 @@ def get_config():
     parser.add_argument("--use_simulator_given_runner", action="store_true")
     parser.add_argument("--resample_rule", type=str, default="1min")
     parser.add_argument("--resample_mid", action="store_true")
+    parser.add_argument("--is_mood_aware", action="store_true")
     parser.add_argument("--tick_dfs_path", type=str, default=None)
     parser.add_argument("--ohlcv_dfs_path", type=str, default=None)
     parser.add_argument("--all_time_ohlcv_dfs_path", type=str, default=None)
@@ -43,6 +44,7 @@ def main(args):
     txts_path: Optional[str] = all_args.txts_path
     resample_rule: Optional[str] = all_args.resample_rule
     resample_mid: bool = all_args.resample_mid
+    is_mood_aware: bool = all_args.is_mood_aware
     num_simulations: int = all_args.num_simulations
     use_simulator_given_runner: bool = all_args.use_simulator_given_runner
     tick_dfs_path: Optional[str] = all_args.tick_dfs_path
@@ -58,7 +60,8 @@ def main(args):
     evaluater = SimulationEvaluater(
         initial_seed=initial_seed, significant_figures=significant_figures,
         config_path=config_path, specific_name=specific_name,
-        txts_path=txts_path, resample_rule=resample_rule, resample_mid=resample_mid,
+        txts_path=txts_path, resample_rule=resample_rule,
+        resample_mid=resample_mid, is_mood_aware=is_mood_aware,
         tick_dfs_path=tick_dfs_path, ohlcv_dfs_path=ohlcv_dfs_path,
         all_time_ohlcv_dfs_path=all_time_ohlcv_dfs_path, transactions_path=transactions_path,
         session1_transactions_file_name=session1_transactions_file_name,
