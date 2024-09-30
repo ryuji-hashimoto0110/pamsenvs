@@ -624,8 +624,9 @@ class StylizedFactsChecker:
             if self.volume_arr is None:
                 self.volume_arr: ndarray = self._stack_dfs(self.ohlcv_dfs, "volume")
             volume_arr_flatten: ndarray = self.volume_arr.flatten()[np.newaxis,:]
+            sorted_volume_arr_flatten: ndarray = np.sort(volume_arr_flatten, axis=1)
             volume_tail_arr: ndarray = self._calc_hill_indices(
-                volume_arr_flatten, cut_off_th
+                sorted_volume_arr_flatten, cut_off_th
             )
         else:
             warnings.warn(
@@ -640,8 +641,9 @@ class StylizedFactsChecker:
                     ]
                 )
             volume_arr_flatten = volume_arr_flatten[np.newaxis,:]
+            sorted_volume_arr_flatten: ndarray = np.sort(volume_arr_flatten, axis=1)
             volume_tail_arr: ndarray = self._calc_hill_indices(
-                volume_arr_flatten, cut_off_th
+                sorted_volume_arr_flatten, cut_off_th
             )
         return volume_tail_arr
 
