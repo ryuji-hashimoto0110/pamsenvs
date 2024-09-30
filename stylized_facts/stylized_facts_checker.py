@@ -613,6 +613,36 @@ class StylizedFactsChecker:
                 return_arr_flatten, cut_off_th
             )
         return left_tail_arr, right_tail_arr, abs_tail_arr
+    
+    def check_hill_index_volume(
+        self,
+        cut_off_th: float = 0.05
+    ) -> ndarray:
+        assert 0 < cut_off_th and cut_off_th < 1
+        if self._is_stacking_possible(self.ohlcv_dfs, "volume"):
+            if self.volume_arr is None:
+                self.volume_arr: ndarray = self._stack_dfs(self.ohlcv_dfs, "volume")
+            volume_arr_flatten: ndarray = self.volume_arr.flatten()[np.newaxis,:]
+            volume_tail_arr: ndarray = self._calc_hill_indices(
+                volume_arr_flatten, cut_off_th
+            )
+        else:
+            warnings.warn(
+                "Could not stack dataframe. Maybe the lengths of dataframes differ. Following procedure may takes time..."
+            )
+            volume_arr_flatten: ndarray = np.array([], dtype=np.float32)
+            for ohlcv_df in self.ohlcv_dfs:
+                volume_arr_flatten: ndarray = np.concatenate(
+                    [
+                        volume_arr_flatten,
+                        ohlcv_df["volume"].dropna().values
+                    ]
+                )
+            volume_arr_flatten = volume_arr_flatten[np.newaxis,:]
+            volume_tail_arr: ndarray = self._calc_hill_indices(
+                volume_arr_flatten, cut_off_th
+            )
+        return volume_tail_arr
 
     def _calc_hill_indices(
         self,
@@ -955,6 +985,8 @@ class StylizedFactsChecker:
             left_lrls_tail_arr = np.repeat(left_lrls_tail_arr, repeats=kurtosis_arr.shape[0])
             right_lrls_tail_arr = np.repeat(right_lrls_tail_arr, repeats=kurtosis_arr.shape[0])
             abs_lrls_tail_arr = np.repeat(abs_lrls_tail_arr, repeats=kurtosis_arr.shape[0])
+            volume_tail_arr = self.check_hill_index_volume()
+            volume_tail_arr = np.repeat(volume_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
             acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
                 [lag for lag in range(1,31)]
@@ -968,6 +1000,7 @@ class StylizedFactsChecker:
                 "lrls tail (left)": left_lrls_tail_arr.flatten(),
                 "lrls tail (right)": right_lrls_tail_arr.flatten(),
                 "lrls tail (abs)": abs_lrls_tail_arr.flatten(),
+                "hill tail (volume)": volume_tail_arr.flatten(),
                 "vv_corr": volume_volatility_correlation.flatten()
             }
             for lag, acorr in acorr_dic.items():
