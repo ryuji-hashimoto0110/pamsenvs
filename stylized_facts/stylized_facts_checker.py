@@ -127,6 +127,7 @@ class StylizedFactsChecker:
                 figs_save_path.mkdir(parents=True)
         self.figs_save_path: Optional[Path] = figs_save_path
         self.return_arr: Optional[ndarray] = None
+        self.volume_arr: Optional[ndarray] = None
         self.abs_hill_index: Optional[float] = None
 
     def _read_csvs(
