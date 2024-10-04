@@ -1341,4 +1341,36 @@ class StylizedFactsChecker:
         ax2.set_xlim([0,1])
         save_path: Path = self.figs_save_path / img_save_name
         plt.savefig(str(save_path), dpi=200)
+
+    def plot_acorrs(
+        self,
+        lags: list[int],
+        ax: Optional[Axes] = None,
+        color: str = "black",
+        label: str = "autocorrelation",
+        img_save_name: Optional[str] = None,
+        is_loglog: bool = True
+    ):
+        acorr_dic: dict[int, ndarray] = self.check_autocorrelation(lags)
+        acorrs: list[float] = [
+            max(0, np.mean(acorr_dic[lag])) for lag in lags
+        ]
+        if ax is None:
+            fig: Figure = plt.figure(figsize=(10,6))
+            ax: Axes = fig.add_subplot(1,1,1)
+        ax.plot(lags, acorrs, color=color, label=label)
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlabel("lag")
+        ax.set_ylabel("autocorrelation")
+        ax.set_xlim([1, 110])
+        ax.set_ylim([1e-06, 1])
+        if img_save_name is not None:
+            if self.figs_save_path is None:
+                raise ValueError(
+                    "specify directory: self.figs_save_path"
+                )
+            save_path: Path = self.figs_save_path / img_save_name
+            plt.savefig(str(save_path), dpi=200)
+        
         
