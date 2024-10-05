@@ -848,7 +848,7 @@ class StylizedFactsChecker:
         print()
         return left_tail_arr, right_tail_arr, abs_tail_arr
 
-    def check_autocorrelation(self, lags: list[int]) -> dict[int, ndarray]:
+    def check_autocorrelation(self, lags: list[int], keepdim: bool = True) -> dict[int, ndarray | float]:
         """_summary_
 
         Args:
@@ -862,7 +862,7 @@ class StylizedFactsChecker:
                     self.ohlcv_dfs, "close", norm=True
                 )
             acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
-                np.abs(self.return_arr), lags
+                np.abs(self.return_arr), lags, keepdim=keepdim
             )
         else:
             warnings.warn(
@@ -874,7 +874,7 @@ class StylizedFactsChecker:
                     ohlcv_df, "close", norm=True
                 )
                 acorr_dic_: dict[int, float] = self._calc_autocorrelation(
-                    np.abs(return_arr), lags
+                    np.abs(return_arr), lags, keepdim=keepdim
                 )
                 for lag in lags:
                     acorr_l_dic[lag].append(acorr_dic_[lag].item())
@@ -886,8 +886,9 @@ class StylizedFactsChecker:
     def _calc_autocorrelation(
         self,
         abs_return_arr: ndarray,
-        lags: list[int]
-    ) -> dict[int, ndarray]:
+        lags: list[int],
+        keepdim: bool = True
+    ) -> dict[int, ndarray | float]:
         """_summary_
 
         Args:
@@ -899,12 +900,18 @@ class StylizedFactsChecker:
         """
         acorr_dic: list[int, ndarray] = {}
         for lag in lags:
-            abs_mean: ndarray = np.mean(abs_return_arr, axis=1, keepdims=True)
-            acov: ndarray = np.mean(
+            abs_mean: float | ndarray = np.mean(
+                abs_return_arr, axis=1, keepdims=True
+            ) if keepdim else np.mean(abs_return_arr)
+            acov: ndarray | float = np.mean(
                 (abs_return_arr[:,lag:]-abs_mean)*(abs_return_arr[:,:-lag]-abs_mean),
                 axis=1, keepdims=True
+            ) if keepdim else np.mean(
+                (abs_return_arr[:,lag:]-abs_mean)*(abs_return_arr[:,:-lag]-abs_mean)
             )
-            var: ndarray = np.var(abs_return_arr, axis=1, keepdims=True)
+            var: ndarray | float = np.var(
+                abs_return_arr, axis=1, keepdims=True
+            )  if keepdim else np.var(abs_return_arr)
             acorr_dic[lag] = acov / (var + 1e-10)
         return acorr_dic
 
@@ -1351,10 +1358,8 @@ class StylizedFactsChecker:
         img_save_name: Optional[str] = None,
         is_loglog: bool = True
     ):
-        acorr_dic: dict[int, ndarray] = self.check_autocorrelation(lags)
-        acorrs: list[float] = [
-            np.mean(acorr_dic[lag]) for lag in lags
-        ]
+        acorr_dic: dict[int, float] = self.check_autocorrelation(lags, keepdim=False)
+        acorrs: list[float] = acorr_dic.items()
         if ax is None:
             fig: Figure = plt.figure(figsize=(10,6))
             ax: Axes = fig.add_subplot(1,1,1)
