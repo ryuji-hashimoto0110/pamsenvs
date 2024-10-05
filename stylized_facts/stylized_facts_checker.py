@@ -1363,7 +1363,7 @@ class StylizedFactsChecker:
         ax.set_yscale("log")
         ax.set_xlabel("lag")
         ax.set_ylabel("autocorrelation")
-        ax.set_xlim([1, 50])
+        ax.set_xlim([1, 100])
         ax.set_ylim([0, 1])
         if img_save_name is not None:
             if self.figs_save_path is None:
