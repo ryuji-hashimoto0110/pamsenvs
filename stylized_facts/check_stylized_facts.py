@@ -125,7 +125,7 @@ def main(args):
         print("saving images to figs_save_path...")
         checker.plot_ccdf(img_save_name="ccdf.pdf")
         checker.plot_acorrs(
-            lags=[lag for lag in range(1, 121)],
+            lags=[lag for lag in range(1, 61)],
             img_save_name="acorrs.pdf"
         )
         checker.scatter_cumulative_transactions(
