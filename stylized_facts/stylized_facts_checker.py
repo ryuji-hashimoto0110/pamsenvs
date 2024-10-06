@@ -1359,7 +1359,7 @@ class StylizedFactsChecker:
         is_loglog: bool = True
     ):
         acorr_dic: dict[int, float] = self.check_autocorrelation(lags, keepdim=False)
-        acorrs: list[float] = acorr_dic.items()
+        acorrs: list[float] = acorr_dic.values()
         if ax is None:
             fig: Figure = plt.figure(figsize=(10,6))
             ax: Axes = fig.add_subplot(1,1,1)
