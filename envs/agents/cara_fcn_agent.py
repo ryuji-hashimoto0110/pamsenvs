@@ -113,6 +113,10 @@ class CARAFCNAgent(Agent):
         self.time_window_size = int(
             json_random.random(json_value=settings["timeWindowSize"])
         )
+        if "heterogeneousTimeWindowSize" in settings:
+            self.heterogeneous_time_window_size: bool = settings["heterogeneousTimeWindowSize"]
+        else:
+            self.heterogeneous_time_window_size: bool = True
         self.is_cara: bool = settings["isCARA"]
         if not self.is_cara:
             if "orderMargin" not in settings:
@@ -302,11 +306,14 @@ class CARAFCNAgent(Agent):
         Returns:
             temporal_time_window_size (int): calculated the agent's temporal time horizon.
         """
-        time_window_size: int = int(
-            self.time_window_size * (
-                (1 + fundamental_weight) / (1 + chart_weight + noise_weight)
+        if self.heterogeneous_time_window_size:
+            time_window_size: int = int(
+                self.time_window_size * (
+                    (1 + fundamental_weight) / (1 + chart_weight)
+                )
             )
-        )
+        else:
+            time_window_size: int = self.time_window_size
         if self.is_yesterday_aware:
             return time_window_size
         else:
@@ -328,7 +335,7 @@ class CARAFCNAgent(Agent):
             risk_aversion_term (float): calculated the agent's temporal risk aversion term.
         """
         risk_aversion_term: float = self.risk_aversion_term * (
-            (1 + fundamental_weight) / (1 + chart_weight + noise_weight)
+            (1 + fundamental_weight) / (1 + chart_weight)
         )
         return risk_aversion_term
 
