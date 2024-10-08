@@ -17,6 +17,7 @@ from stylized_facts import bybit_freq_ohlcv_size_dic
 from stylized_facts import flex_freq_ohlcv_size_dic
 from scipy import stats
 from typing import Optional
+plt.rcParams["font.size"] = 20
 
 class ReturnDDEvaluater(DDEvaluater):
     """ReturnDDEvaluater class."""
@@ -326,22 +327,28 @@ class RVsDDEvaluater(DDEvaluater):
             np.log(price_arr[:, 1:]) - np.log(price_arr[:, :-1])
         ) * 100
         daily_return_arr: ndarray = np.sum(intraday_return_arr, axis=1).flatten()
+        daily_return_arr = (
+            daily_return_arr - np.mean(daily_return_arr)
+        ) / (np.std(daily_return_arr) + 1e-10)
+        #daily_return_arr = np.clip(daily_return_arr, -7, 7)
         assert num_days == len(daily_return_arr)
         daily_rv_arr: ndarray = np.sum(intraday_return_arr**2, axis=1).flatten()
         daily_log_rv_arr: ndarray = np.log(daily_rv_arr)
+        daily_log_rv_arr = (
+            daily_log_rv_arr - np.mean(daily_log_rv_arr)
+        ) / (np.std(daily_log_rv_arr) + 1e-10)
         assert num_days == len(daily_log_rv_arr)
         point_cloud: ndarray = np.concatenate(
             [
-                daily_rv_arr[:-1].reshape(-1, 1),
+                daily_log_rv_arr[:-1].reshape(-1, 1),
                 daily_return_arr[:-1].reshape(-1, 1),
-                daily_rv_arr[1:].reshape(-1, 1),
-                daily_return_arr[1:].reshape(-1, 1),
+                daily_log_rv_arr[1:].reshape(-1, 1),
             ],
             axis=1
         )
-        assert point_cloud.shape == (num_days-1, 4)
+        assert point_cloud.shape == (num_days-1, 3)
         indices: ndarray = self.prng.choice(
             np.arange(num_days-1), num_points, replace=False
         )
-        point_cloud: ndarray = point_cloud[indices, :]
+        point_cloud: ndarray = point_cloud[indices]
         return point_cloud

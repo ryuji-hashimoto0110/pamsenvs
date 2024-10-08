@@ -12,6 +12,7 @@ from pandas import DataFrame
 from pathlib import Path
 from scipy.stats import kstest
 from typing import Optional
+plt.rcParams["font.size"] = 20
 
 class DDEvaluater:
     """DDEvaluater class.
@@ -242,7 +243,7 @@ class DDEvaluater:
         """
         assert point_cloud1d.ndim == 1
         ax.hist(
-            point_cloud1d, bins=100, alpha=0.5,
+            point_cloud1d, bins=40, alpha=0.5,
             label=label, color=color
         )
         
