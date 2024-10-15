@@ -42,7 +42,7 @@ def create_path(folder_name: Optional[str]) -> Optional[Path]:
         parent_path.mkdir(parents=True)
     return folder_path
 
-def create_ddevaluater(all_args, show_args: bool = True) -> DDEvaluater:
+def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
     """
     all_args must contain:
         - seed: int
@@ -86,25 +86,28 @@ def create_ddevaluater(all_args, show_args: bool = True) -> DDEvaluater:
             seed=seed, resample_rule=resample_rule, 
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
+        evaluaters: list[DDEvaluater] = [evaluater]
     elif point_cloud_type == "tail_return":
         evaluater: DDEvaluater = TailReturnDDEvaluater(
             seed=seed, resample_rule=resample_rule,
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
+        evaluaters: list[DDEvaluater] = [evaluater]
     elif point_cloud_type == "rv_returns":
         evaluater: DDEvaluater = RVsDDEvaluater(
             seed=seed, resample_rule=resample_rule, 
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
+        evaluaters: list[DDEvaluater] = [evaluater]
     else:
         raise NotImplementedError(f"{point_cloud_type} is not implemented.")
-    return evaluater
+    return evaluaters
 
 def main(args):
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
     tickers: list[str | int] = all_args.tickers
-    evaluater: DDEvaluater = create_ddevaluater(all_args)
+    evaluater: DDEvaluater = create_ddevaluaters(all_args)
     distance_matrix_save_path: Optional[Path] = create_path(all_args.distance_matrix_save_path)
     n_samples: int = all_args.n_samples
     print(f"Distance matrix will be saved at {str(distance_matrix_save_path)}")
