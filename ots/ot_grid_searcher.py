@@ -23,7 +23,7 @@ class OTGridSearcher:
     def __init__(
         self,
         initial_seed: int,
-        dd_evaluater: DDEvaluater,
+        dd_evaluaters: list[DDEvaluater],
         show_process: bool = True,
         base_config: Optional[dict[str, Any]] = None,
         base_config_path: Optional[str | Path] = None,
@@ -46,7 +46,7 @@ class OTGridSearcher:
 
         Args:
             initial_seed (int): initial seed.
-            dd_evaluater (DDEvaluater): DDEvaluater which has point clouds of real datas.
+            dd_evaluaters (list[DDEvaluater]): list of DDEvaluater which has point clouds of real datas.
             base_config (dict[str, Any], optional): Base config. Defaults to None.
             base_config_path (Path, optional): Base config path. Defaults to None.
             target_variables_config (dict[str, Any], optional): Target variables config. Defaults to None.
@@ -66,9 +66,13 @@ class OTGridSearcher:
             num_points (int, optional): Number of points to calculate OT distances. Defaults to 1000.
         """
         self.initial_seed: int = initial_seed
-        self.real_tickers: list[int] = list(dd_evaluater.ticker_path_dic.keys())
-        self.dd_evaluater: DDEvaluater = dd_evaluater
-        self.statistics_names: list[str] = dd_evaluater.get_statistics()
+        self.real_tickers: list[int] = list(dd_evaluaters[0].ticker_path_dic.keys())
+        if len(dd_evaluaters) == 0:
+            raise ValueError("specify at least 1 DDEvaluater.")
+        self.dd_evaluaters: list[DDEvaluater] = dd_evaluaters
+        self.statistics_names: list[str] = []
+        for dd_evaluater in dd_evaluaters:
+            self.statistics_names.extend(dd_evaluater.get_statistics())
         self.show_process: bool = show_process
         self.base_config: dict[str, Any] = self._get_config(
             config=base_config,
@@ -218,7 +222,14 @@ class OTGridSearcher:
         This method creates a DataFrame to store the results of the simulations.
         """
         idvars: list[str] = [f"{var_id}:{self.id2var_dic[var_id]}" for var_id in self.var_ids]
-        ottickers: list[str] = [f"ot({ticker})" for ticker in self.real_tickers]
+        if len(self.dd_evaluaters) == 1:
+            ottickers: list[str] = [f"ot({ticker})" for ticker in self.real_tickers]
+        else:
+            ottickers: list[str] = []
+            for i in range(len(self.dd_evaluaters)):
+                ottickers.extend(
+                    [f"ot{i+1}({ticker})" for ticker in self.real_tickers]
+                )
         columns: list[str] = ["simulation id"] + idvars + self.statistics_names + ottickers
         result_df: DataFrame = pd.DataFrame(columns=columns)
         result_df: DataFrame = result_df.set_index("simulation id")
@@ -291,23 +302,27 @@ class OTGridSearcher:
                 raise ValueError(
                     "path_to_calc_point_clouds must be identical with either temp_ohlcv_dfs_path or temp_all_time_ohlcv_dfs_path."
                 )
-            self.dd_evaluater.add_ticker_path(
-                ticker="temp", path=self.path_to_calc_point_clouds
-            )
-            try:
-                art_point_cloud, statistics = self.dd_evaluater.get_point_cloud_from_ticker(
-                    ticker="temp", num_points=self.num_points,
-                    save2dic=False, return_statistics=True
+            for dd_evaluater in self.dd_evaluaters:
+                dd_evaluater.add_ticker_path(
+                    ticker="temp", path=self.path_to_calc_point_clouds
                 )
+            try:
+                statistics: list[float] = []
                 ot_distances: list[float] = []
-                for ticker in self.real_tickers:
-                    real_point_cloud: ndarray = self.dd_evaluater.get_point_cloud_from_ticker(
-                        ticker=ticker, num_points=self.num_points, save2dic=True
+                for dd_evaluater in self.dd_evaluaters:
+                    art_point_cloud, statistics_ = dd_evaluater.get_point_cloud_from_ticker(
+                        ticker="temp", num_points=self.num_points,
+                        save2dic=False, return_statistics=True
                     )
-                    ot_distance: float = self.dd_evaluater.calc_ot_distance(
-                        art_point_cloud, real_point_cloud, is_per_bit=True
-                    )
-                    ot_distances.append(ot_distance)
+                    statistics.extend(statistics_)
+                    for ticker in self.real_tickers:
+                        real_point_cloud: ndarray = dd_evaluater.get_point_cloud_from_ticker(
+                            ticker=ticker, num_points=self.num_points, save2dic=True
+                        )
+                        ot_distance: float = dd_evaluater.calc_ot_distance(
+                            art_point_cloud, real_point_cloud, is_per_bit=True
+                        )
+                        ot_distances.append(ot_distance)
                 new_results: list[int | float] = variable_values + statistics + ot_distances
                 assert len(self.result_df.columns) == len(new_results)
                 self.result_df.loc[sim_id] = new_results
