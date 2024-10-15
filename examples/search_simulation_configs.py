@@ -5,7 +5,7 @@ curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
 root_path: Path = curr_path.parents[0]
 import sys
 sys.path.append(str(root_path))
-from ots.evaluate_distances_real import create_ddevaluater
+from ots.evaluate_distances_real import create_ddevaluaters
 from ots import DDEvaluater
 from ots import OTGridSearcher
 from rich import print
@@ -48,7 +48,7 @@ def get_config():
 
 def create_otsearcher(
     all_args,
-    dd_evaluater: DDEvaluater,
+    dd_evaluaters: list[DDEvaluater],
     show_args: bool = True
 ) -> OTGridSearcher:
     initial_seed: int = all_args.initial_seed
@@ -91,7 +91,7 @@ def create_otsearcher(
         print()
     ot_searcher: OTGridSearcher = OTGridSearcher(
         initial_seed=initial_seed,
-        dd_evaluater=dd_evaluater,
+        dd_evaluaters=dd_evaluaters,
         base_config_path=base_config_path,
         target_variables_config_path=target_variables_config_path,
         use_simulator_given_runner=use_simulator_given_runner,
@@ -112,9 +112,9 @@ def create_otsearcher(
 def main(args):
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
-    dd_evaluater: DDEvaluater = create_ddevaluater(all_args)
+    dd_evaluaters: DDEvaluater = create_ddevaluaters(all_args)
     show_process: bool = all_args.show_process
-    ot_searcher: OTGridSearcher = create_otsearcher(all_args, dd_evaluater, show_process)
+    ot_searcher: OTGridSearcher = create_otsearcher(all_args, dd_evaluaters, show_process)
     results_save_path: Optional[str] = all_args.results_save_path
     print(f"results_save_path: {results_save_path}")
     print("start searching.")
