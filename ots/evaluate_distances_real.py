@@ -162,7 +162,7 @@ def main(args):
         elif isinstance(evaluater, ReturnTSDDEvaluater):
             lag: int = evaluater.lag
             evaluater.draw_points(
-                tickers, n_samples, xlim=[0, 10], ylim=[0, 10],
+                tickers, n_samples, xlim=[0, 20], ylim=[0, 20],
                 xlabel="Abs Log-return", ylabel=f"Abs Log-return (lag={lag})",
                 is_all_in_one_subplot=False, save_path=fig_point_clouds_path,
                 subplots_arrangement=(nrow_subplots, ncol_subplots)
