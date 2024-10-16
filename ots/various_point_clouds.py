@@ -146,7 +146,9 @@ class ReturnDDEvaluater(DDEvaluater):
         tickers: list[str | int],
         num_points: int,
         xlim: list[float, float],
+        ylim: list[float, float],
         xlabel: str,
+        ylabel: str,
         save_path: Path,
         is_all_in_one_subplot: bool = True,
         subplots_arrangement: tuple[int, int] = (1, 1),
@@ -176,6 +178,7 @@ class ReturnDDEvaluater(DDEvaluater):
             if not is_all_in_one_subplot:
                 ax = fig.add_subplot(nrows, ncols, i+1)
             ax.set_xlim(xlim)
+            ax.set_ylim(ylim)
             self._draw_points(
                 ax, point_cloud, draw_dims=None, label=ticker + f" stat={statistics[0]:.2f}"
             )
@@ -183,7 +186,7 @@ class ReturnDDEvaluater(DDEvaluater):
                 is_all_in_one_subplot or
                 i % ncols == 0
             ):
-                ax.set_ylabel("Frequency")
+                ax.set_ylabel(ylabel)
             if (
                 is_all_in_one_subplot or
                 ncols * (nrows-1) <= i
