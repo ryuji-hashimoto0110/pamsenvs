@@ -43,5 +43,4 @@ python ../search_simulation_configs.py \
 --num_points ${num_points} \
 --results_save_path ${results_save_path} \
 --lags ${lags} \
---show_process \
---is_mood_aware
+--show_process
