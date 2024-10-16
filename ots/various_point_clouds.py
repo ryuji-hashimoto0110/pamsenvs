@@ -311,7 +311,6 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
             self._calc_return_arr_from_df(df, "close", norm=True) for df in ohlcv_dfs
         ]
         return_arr: ndarray = np.stack(return_arrs, axis=0)
-        print(f"{ohlcv_dfs_path.name}: {np.min(return_arr):.2f} {np.max(return_arr):.2f}")
         assert return_arr.shape == (len(ohlcv_dfs), len(return_arrs[0]))
         abs_return_arr: ndarray = np.abs(return_arr)
         abs_return_arr0: ndarray = abs_return_arr[:,:-self.lag].flatten()
