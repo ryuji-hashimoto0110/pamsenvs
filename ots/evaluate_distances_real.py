@@ -10,6 +10,7 @@ import sys
 sys.path.append(str(parent_path))
 from ots import DDEvaluater
 from ots import ReturnDDEvaluater
+from ots import ReturnTSDDEvaluater
 from ots import RVsDDEvaluater
 from ots import TailReturnDDEvaluater
 from typing import Optional
@@ -23,8 +24,10 @@ def get_config():
     parser.add_argument("--tickers", type=str, nargs="+", default=None)
     parser.add_argument("--resample_rule", type=str, default="1min")
     parser.add_argument("--is_bybit", action="store_true")
+    parser.add_argument("--lag", type=int, default=10)
     parser.add_argument(
-        "--point_cloud_type", type=str, choices=["return", "tail_return", "rv_returns"]
+        "--point_cloud_type", type=str,
+        choices=["return", "tail_return", "return_ts", "rv_returns"]
     )
     parser.add_argument("--distance_matrix_save_path", type=str, default=None)
     parser.add_argument("--n_samples", type=int, default=100)
@@ -99,6 +102,14 @@ def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
         evaluaters: list[DDEvaluater] = [evaluater]
+    elif point_cloud_type == "return_ts":
+        lag: int = all_args.lag
+        print(f"lag: {lag}")
+        evaluater: DDEvaluater = ReturnTSDDEvaluater(
+            lag=lag,
+            seed=seed, resample_rule=resample_rule,
+            is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
+        )
     else:
         raise NotImplementedError(f"{point_cloud_type} is not implemented.")
     return evaluaters
