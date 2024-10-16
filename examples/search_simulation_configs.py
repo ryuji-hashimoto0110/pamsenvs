@@ -23,8 +23,10 @@ def get_config():
     parser.add_argument("--tickers", type=str, nargs="+", default=None)
     parser.add_argument("--resample_rule", type=str, default=None)
     parser.add_argument("--is_bybit", action="store_true")
+    parser.add_argument("--lags", type=int, nargs="+", default=[10])
     parser.add_argument(
-        "--point_cloud_type", type=str,choices=["return", "tail_return", "rv_returns"]
+        "--point_cloud_type", type=str,
+        choices=["return", "tail_return", "rv_returns", "return_ts"]
     )
     # for OTGridSearcher
     parser.add_argument("--initial_seed", type=int, default=42)
