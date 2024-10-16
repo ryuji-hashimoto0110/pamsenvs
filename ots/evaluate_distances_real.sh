@@ -15,6 +15,7 @@ resample_rule="1min"
 point_cloud_type="return_ts"
 distance_matrix_save_path="distance_matrices/distance_matrix_return_ts_real.csv"
 n_samples=1000
+lag=1
 figs_save_path="../imgs/ots/return_ts/real"
 nrows_subplots=3
 ncols_subplots=6
@@ -27,6 +28,7 @@ python evaluate_distances_real.py \
 --point_cloud_type ${point_cloud_type} \
 --distance_matrix_save_path ${distance_matrix_save_path} \
 --n_samples ${n_samples} \
+--lag ${lag} \
 --figs_save_path ${figs_save_path} \
 --nrows_subolots ${nrows_subplots} \
 --ncols_subplots ${ncols_subplots}
