@@ -24,7 +24,7 @@ def get_config():
     parser.add_argument("--tickers", type=str, nargs="+", default=None)
     parser.add_argument("--resample_rule", type=str, default="1min")
     parser.add_argument("--is_bybit", action="store_true")
-    parser.add_argument("--lag", type=int, default=10)
+    parser.add_argument("--lags", type=int, nargs="+", default=[10])
     parser.add_argument(
         "--point_cloud_type", type=str,
         choices=["return", "tail_return", "return_ts", "rv_returns"]
@@ -89,27 +89,32 @@ def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
             seed=seed, resample_rule=resample_rule, 
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
+        evaluaters: list[DDEvaluater] = [evaluater]
     elif point_cloud_type == "tail_return":
         evaluater: DDEvaluater = TailReturnDDEvaluater(
             seed=seed, resample_rule=resample_rule,
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
+        evaluaters: list[DDEvaluater] = [evaluater]
     elif point_cloud_type == "rv_returns":
         evaluater: DDEvaluater = RVsDDEvaluater(
             seed=seed, resample_rule=resample_rule, 
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
+        evaluaters: list[DDEvaluater] = [evaluater]
     elif point_cloud_type == "return_ts":
-        lag: int = all_args.lag
-        print(f"lag: {lag}")
-        evaluater: DDEvaluater = ReturnTSDDEvaluater(
-            lag=lag,
-            seed=seed, resample_rule=resample_rule,
-            is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
-        )
+        lags: list[int] = all_args.lags
+        print(f"lags: {lags}")
+        evaluaters: list[DDEvaluater] = []
+        for lag in lags:
+            evaluater: DDEvaluater = ReturnTSDDEvaluater(
+                lag=int(lag),
+                seed=seed, resample_rule=resample_rule,
+                is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
+            )
+            evaluaters.append(evaluater)
     else:
         raise NotImplementedError(f"{point_cloud_type} is not implemented.")
-    evaluaters: list[DDEvaluater] = [evaluater]
     return evaluaters
 
 def main(args):
