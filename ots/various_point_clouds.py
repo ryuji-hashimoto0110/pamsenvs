@@ -270,6 +270,57 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         point_cloud: ndarray = point_cloud.reshape(-1, 1)
         return point_cloud
     
+class ReturnTSDDEvaluater(ReturnDDEvaluater):
+    """ReturnTSDDEvaluater class."""
+    def __init__(
+        self,
+        lag: int,
+        seed: int = 42,
+        is_bybit: bool = False,
+        resample_rule: str = "1min",
+        ticker_path_dic: dict[str | int, Path] = {},
+    ) -> None:
+        """initialization."""
+        super().__init__(seed, is_bybit, resample_rule, ticker_path_dic)
+        self.lag: int = lag
+
+    def get_statistics(self) -> list[str]:
+        return [f"acorr({self.lag})"]
+
+    def calc_statistics(self, point_cloud: ndarray) -> list[float]:
+        corr_coef_arr: ndarray = np.corrcoef(
+            point_cloud, rowvar=False
+        )
+        assert len(corr_coef_arr) == 2
+        statistics: list[float] = [corr_coef_arr[0, 1]]
+        return statistics
+
+    def get_point_cloud_from_path(
+        self,
+        num_points: int,
+        ohlcv_dfs_path: Path,
+        choose_full_size_df: bool = True
+    ) -> ndarray:
+        ohlcv_dfs: list[DataFrame] = self._read_csvs(
+            ohlcv_dfs_path, choose_full_size_df
+        )
+        return_arrs: list[ndarray] = [
+            self._calc_return_arr_from_df(df, "close", norm=True) for df in ohlcv_dfs
+        ]
+        return_arr: ndarray = np.stack(return_arrs, axis=0)
+        assert return_arr.shape == (len(ohlcv_dfs), len(return_arrs[0]))
+        abs_return_arr: ndarray = np.abs(return_arr)
+        abs_return_arr0: ndarray = abs_return_arr[:,:-self.lag].flatten()
+        abs_return_arr1: ndarray = abs_return_arr[:,self.lag:].flatten()
+        assert len(abs_return_arr0) == len(abs_return_arr1)
+        abs_return_arr = np.stack([abs_return_arr0, abs_return_arr1], axis=1)
+        assert abs_return_arr.shape == (len(abs_return_arr0), 2)
+        indices: ndarray = self.prng.choice(
+            np.arange(len(abs_return_arr)), num_points, replace=False
+        )
+        point_cloud: ndarray = abs_return_arr[indices]
+        return point_cloud
+
 class RVsDDEvaluater(DDEvaluater):
     """RVsDDEvaluater class."""
     def __init__(
