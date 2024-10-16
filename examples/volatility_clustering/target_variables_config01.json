@@ -1,0 +1,15 @@
+{
+    "1": [
+        ["Agent", "heterogeneousTimeWindowSize"],
+        [false, true]
+    ],
+    "3": [
+        ["Agent", "chartWeight"],
+        [{"expon": [0.0]}, {"expon": [1.50]}, {"expon": [1.75]},
+         {"expon": [2.0]}, {"expon": [2.25]}, {"expon": [2.50]}]
+    ],
+    "4": [
+        ["Agent", "timeWindowSize"],
+        [50, 100, 120, 140, 160, 180, 200, 250]
+    ]
+}
