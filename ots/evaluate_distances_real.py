@@ -149,13 +149,23 @@ def main(args):
         ncol_subplots: int = all_args.ncols_subplots
         if isinstance(evaluater, TailReturnDDEvaluater):
             evaluater.draw_points(
-                tickers, n_samples, xlim=[0, 2], xlabel="Abs Log-return ratio (Top 5%)",
+                tickers, n_samples, xlim=[0, 2], ylim=[0,70],
+                xlabel="Abs Log-return ratio (Top 5%)", ylabel="Frequency",
+                is_all_in_one_subplot=False, save_path=fig_point_clouds_path,
+                subplots_arrangement=(nrow_subplots, ncol_subplots)
+            )
+        elif isinstance(evaluater, ReturnTSDDEvaluater):
+            lag: int = evaluater.lag
+            evaluater.draw_points(
+                tickers, n_samples, xlim=[0, 10], ylim=[0, 10],
+                xlabel="Abs Log-return", ylabel=f"Abs Log-return (lag={lag})",
                 is_all_in_one_subplot=False, save_path=fig_point_clouds_path,
                 subplots_arrangement=(nrow_subplots, ncol_subplots)
             )
         elif isinstance(evaluater, ReturnDDEvaluater):
             evaluater.draw_points(
-                tickers, n_samples, xlim=[-10, 10], xlabel="Log-return",
+                tickers, n_samples, xlim=[-10, 10], ylim=[0,70],
+                xlabel="Log-return", ylabel="Frequency",
                 is_all_in_one_subplot=False, save_path=fig_point_clouds_path,
                 subplots_arrangement=(nrow_subplots, ncol_subplots)
             )
