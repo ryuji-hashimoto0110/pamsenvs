@@ -277,7 +277,7 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
     """ReturnTSDDEvaluater class."""
     def __init__(
         self,
-        lag: int,
+        lags: list[int],
         seed: int = 42,
         is_bybit: bool = False,
         resample_rule: str = "1min",
@@ -285,17 +285,23 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
     ) -> None:
         """initialization."""
         super().__init__(seed, is_bybit, resample_rule, ticker_path_dic)
-        self.lag: int = lag
+        self.lags: list[int] = lags
+        self.lags.sort()
+
 
     def get_statistics(self) -> list[str]:
-        return [f"acorr({self.lag})"]
+        return [
+            f"acorr({lag})" for lag in self.lags
+        ]
 
     def calc_statistics(self, point_cloud: ndarray) -> list[float]:
-        corr_coef_arr: ndarray = np.corrcoef(
-            point_cloud, rowvar=False
-        )
-        assert len(corr_coef_arr) == 2
-        statistics: list[float] = [corr_coef_arr[0, 1]]
+        statistics: list[float] = []
+        for j in range(1, len(self.lags)+1):
+            corr_coef_arr: ndarray = np.corrcoef(
+                point_cloud[:,0], point_cloud[:,j]
+            )
+            assert len(corr_coef_arr) == 2
+            statistics.append(corr_coef_arr[0, 1])
         return statistics
 
     def get_point_cloud_from_path(
@@ -313,11 +319,15 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
         return_arr: ndarray = np.stack(return_arrs, axis=0)
         assert return_arr.shape == (len(ohlcv_dfs), len(return_arrs[0]))
         abs_return_arr: ndarray = np.abs(return_arr)
-        abs_return_arr0: ndarray = abs_return_arr[:,:-self.lag].flatten()
-        abs_return_arr1: ndarray = abs_return_arr[:,self.lag:].flatten()
-        assert len(abs_return_arr0) == len(abs_return_arr1)
-        abs_return_arr = np.stack([abs_return_arr0, abs_return_arr1], axis=1)
-        assert abs_return_arr.shape == (len(abs_return_arr0), 2)
+        abs_return_arrs: list[ndarray] = []
+        abs_return_arrs.append(
+            abs_return_arr[:,:-self.lags[-1]].flatten()
+        )
+        for lag in self.lags:
+            abs_return_arrs.append(
+                abs_return_arr[:,lag:-self.lags[-1]+lag].flatten()
+            )
+        abs_return_arr = np.stack(abs_return_arrs, axis=1)
         indices: ndarray = self.prng.choice(
             np.arange(len(abs_return_arr)), num_points, replace=False
         )
