@@ -323,10 +323,13 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
         abs_return_arrs.append(
             abs_return_arr[:,:-self.lags[-1]].flatten()
         )
-        for lag in self.lags:
+        for lag in self.lags[:-1]:
             abs_return_arrs.append(
                 abs_return_arr[:,lag:-self.lags[-1]+lag].flatten()
             )
+        abs_return_arrs.append(
+            abs_return_arr[:,self.lags[-1]:].flatten()
+        )
         abs_return_arr = np.stack(abs_return_arrs, axis=1)
         indices: ndarray = self.prng.choice(
             np.arange(len(abs_return_arr)), num_points, replace=False
