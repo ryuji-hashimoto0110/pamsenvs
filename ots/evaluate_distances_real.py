@@ -108,14 +108,14 @@ def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
         evaluaters: list[DDEvaluater] = []
         if 2 <= len(lags):
             evaluater: DDEvaluater = ReturnTSDDEvaluater(
-                lag=lags,
+                lags=lags,
                 seed=seed, resample_rule=resample_rule,
                 is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
             )
             evaluaters.append(evaluater)
         for lag in lags:
             evaluater: DDEvaluater = ReturnTSDDEvaluater(
-                lag=[int(lag)],
+                lags=[int(lag)],
                 seed=seed, resample_rule=resample_rule,
                 is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
             )
