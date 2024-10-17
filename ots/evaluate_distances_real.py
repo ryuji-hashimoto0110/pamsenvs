@@ -106,9 +106,16 @@ def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
         lags: list[int] = all_args.lags
         print(f"lags: {lags}")
         evaluaters: list[DDEvaluater] = []
+        if 2 <= len(lags):
+            evaluater: DDEvaluater = ReturnTSDDEvaluater(
+                lag=lags,
+                seed=seed, resample_rule=resample_rule,
+                is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
+            )
+            evaluaters.append(evaluater)
         for lag in lags:
             evaluater: DDEvaluater = ReturnTSDDEvaluater(
-                lag=int(lag),
+                lag=[int(lag)],
                 seed=seed, resample_rule=resample_rule,
                 is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
             )
@@ -160,13 +167,15 @@ def main(args):
                 subplots_arrangement=(nrow_subplots, ncol_subplots)
             )
         elif isinstance(evaluater, ReturnTSDDEvaluater):
-            lag: int = evaluater.lag
-            evaluater.draw_points(
-                tickers, n_samples, xlim=[0, 20], ylim=[0, 20],
-                xlabel="Abs Log-return", ylabel=f"Abs Log-return (lag={lag})",
-                is_all_in_one_subplot=False, save_path=fig_point_clouds_path,
-                subplots_arrangement=(nrow_subplots, ncol_subplots)
-            )
+            lags: list[int] = evaluater.lags
+            if len(lags) == 1:
+                lag: int = lags[0]
+                evaluater.draw_points(
+                    tickers, n_samples, xlim=[0, 20], ylim=[0, 20],
+                    xlabel="Abs Log-return", ylabel=f"Abs Log-return (lag={lag})",
+                    is_all_in_one_subplot=False, save_path=fig_point_clouds_path,
+                    subplots_arrangement=(nrow_subplots, ncol_subplots)
+                )
         elif isinstance(evaluater, ReturnDDEvaluater):
             evaluater.draw_points(
                 tickers, n_samples, xlim=[-10, 10], ylim=[0,70],
