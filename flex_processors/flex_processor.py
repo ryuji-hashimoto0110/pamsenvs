@@ -82,6 +82,7 @@ class FlexProcessor:
         quote_num: int = 10,
         is_execution_only: bool = True,
         is_mood_aware: bool = False,
+        is_wc_rate_aware: bool = False,
         session1_end_time_str: str = "11:30:00.000000",
         session2_start_time_str: str = "12:30:00.000000"
     ) -> None:
@@ -106,6 +107,7 @@ class FlexProcessor:
         self.quote_num: int = quote_num
         self.is_execution_only: bool = is_execution_only
         self.is_mood_aware: bool = is_mood_aware
+        self.is_wc_rate_aware: bool = is_wc_rate_aware
         self.session1_end_time: Timestamp = pd.to_datetime(session1_end_time_str).time()
         self.session2_start_time: Timestamp = pd.to_datetime(session2_start_time_str).time()
 
@@ -160,6 +162,8 @@ class FlexProcessor:
             ]
         if self.is_mood_aware:
             column_names.append("mood")
+        if self.is_wc_rate_aware:
+            column_names.append("wc_rate")
         return column_names
 
     def convert_all_txt2csv(
@@ -206,6 +210,7 @@ class FlexProcessor:
                         ] = json.loads(line.replace("'", '"'))
                         log_columns: list[str] = self._extract_info_from_log(log_dic)
                         log_columns = self._add_mood(log_dic, log_columns)
+                        log_columns = self._add_wc_rate(log_dic, log_columns)
                     except Exception as e:
                         print(e)
                         print(line)
@@ -345,5 +350,20 @@ class FlexProcessor:
             if "mood" in log_dic["Data"]:
                 warnings.warn(
                     "set not to write mood even though mood is recorded in simulation log."
+                )
+        return log_columns
+    
+    def _add_wc_rate(
+        self,
+        log_dic: dict[str, dict[str, dict[str, list | dict, str]]],
+        log_columns: list[str]
+    ) -> list[str]:
+        if self.is_wc_rate_aware:
+            wc_rate: float = float(log_dic["Data"]["wc_rate"])
+            log_columns.append(wc_rate)
+        else:
+            if "wc_rate" in log_dic["Data"]:
+                warnings.warn(
+                    "set not to write wc_rate even though wc_rate is recorded in simulation log."
                 )
         return log_columns
