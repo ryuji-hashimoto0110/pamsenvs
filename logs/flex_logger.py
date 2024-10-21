@@ -2,7 +2,7 @@ import pathlib
 from pathlib import Path
 curr_path: Path = pathlib.Path(__file__).resolve()
 root_path: Path = curr_path.parents[1]
-print(root_path)
+from envs.markets import FCWeightsAwareMarket
 from envs.markets import MoodAwareMarket
 from pams.logs import CancelLog
 from pams.logs import ExecutionLog
@@ -289,6 +289,10 @@ class FlexSaver(Logger):
             mood: float = market.get_market_mood()
             mood_str: str = f"{mood:.3f}"
             log_dic["Data"]["mood"] = mood_str
+        if isinstance(market, FCWeightsAwareMarket):
+            wc_rate: float = market.wc_rate
+            wc_rate_str: str = f"{wc_rate:.3f}"
+            log_dic["Data"]["wc_rate"] = wc_rate_str
         market_price: Optional[float | str] = market.get_last_executed_price()
         log_dic["Data"]["market_price"] = self._convert_price2str(market_price)
         best_buy_price: Optional[float | str] = market.get_best_buy_price()
