@@ -10,6 +10,7 @@ from datetime import timedelta
 from envs.agents import aFCNAgent
 from envs.agents import CARAFCNAgent
 from envs.agents import MoodAwareCARAFCNAgent
+from envs.markets import FCWeightsAwareMarket
 from envs.markets import MoodAwareMarket
 from envs.markets import TotalTimeAwareMarket
 from envs.markets import YesterdayAwareMarket
@@ -56,6 +57,7 @@ class SimulationEvaluater:
         resample_mid: bool = True,
         is_bybit: bool = False,
         is_mood_aware: bool = False,
+        is_wc_rate_aware: bool = False,
         tick_dfs_path: Optional[Path | str] = None,
         ohlcv_dfs_path: Optional[Path | str] = None,
         all_time_ohlcv_dfs_path: Optional[Path | str] = None,
@@ -81,6 +83,7 @@ class SimulationEvaluater:
             resample_mid (bool): whether to resample mid price.
             is_bybit (bool): whether to save data as bybit format.
             is_mood_aware (bool): Whether to record mood.
+            is_wc_rate_aware (bool): Whether to record WC rate.
             tick_dfs_path (Path | str, optional): folder path to store executions csvs.
                 Ex) 'pamsenvs/datas/artificial_datas/flex_csv/asymmetric_volatility/volatility_feedback_alpha010'
             ohlcv_dfs_path (Path | str, optional): folder path to store preprocessed OHLCV csvs.
@@ -105,6 +108,7 @@ class SimulationEvaluater:
         self.resample_mid: bool = resample_mid
         self.is_bybit: bool = is_bybit
         self.is_mood_aware: bool = is_mood_aware
+        self.is_wc_rate_aware: bool = is_wc_rate_aware
         self.freq_ohlcv_size_dic: dict[str, int] = bybit_freq_ohlcv_size_dic \
             if is_bybit else flex_freq_ohlcv_size_dic
         self.tick_dfs_path: Optional[Path] = self._convert_str2path(tick_dfs_path, mkdir=True)
@@ -203,6 +207,8 @@ class SimulationEvaluater:
         runner.class_register(CARAFCNAgent) if CARAFCNAgent not in runner.registered_classes else ...
         runner.class_register(MoodAwareCARAFCNAgent) \
             if MoodAwareCARAFCNAgent not in runner.registered_classes else ...
+        runner.class_register(FCWeightsAwareMarket) \
+            if FCWeightsAwareMarket not in runner.registered_classes else ...
         runner.class_register(MoodAwareMarket) if MoodAwareMarket not in runner.registered_classes else ...
         runner.class_register(TotalTimeAwareMarket) \
             if TotalTimeAwareMarket not in runner.registered_classes else ...
@@ -316,7 +322,8 @@ class SimulationEvaluater:
         processor = FlexProcessor(
             txt_datas_path=self.txts_path,
             csv_datas_path=self.tick_dfs_path,
-            is_mood_aware=self.is_mood_aware
+            is_mood_aware=self.is_mood_aware,
+            is_wc_rate_aware=self.is_wc_rate_aware,
         )
         processor.convert_all_txt2csv(
             is_bybit_format=self.is_bybit, is_display_path=False
