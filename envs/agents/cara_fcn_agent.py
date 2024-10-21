@@ -167,6 +167,18 @@ class CARAFCNAgent(Agent):
             )[0]
         else:
             self.is_chart_following: bool = True
+        if "isAdaptive" in settings:
+            self.is_adaptive: bool = settings["isAdaptive"]
+            if self.is_adaptive:
+                if "learningRate" not in settings:
+                    raise ValueError(
+                        "learningRate must be set when isAdaptive is true."
+                    )
+                self.learning_rate: float = json_random.random(
+                    json_value=settings["learningRate"]
+                )
+        else:
+            self.is_adaptive: bool = False
 
     def get_percentile(
         self,
@@ -315,6 +327,12 @@ class CARAFCNAgent(Agent):
     ) -> list[float]:
         """calculate temporal FCN weights.
 
+        If the agent is adaptive, the agent's weights are updated by the following procedure.
+            1. calculate the predicted and observed returns of both fundamental and chartist component:
+               pred_r_f, obs_r_f, pred_r_c, obs_r_c.
+            2. update the agent's weights by the following rule:
+               w_f = max(w_f_max, min(0, w_f + learning_rate * sign(pred_r_f * obs_r_f))) 
+               w_c = max(w_c_max, min(0, w_c + learning_rate * sign(pred_r_c * obs_r_c)))
         Args:
             market (Market): market to order.
             time_window_size (int): time window size
@@ -322,6 +340,31 @@ class CARAFCNAgent(Agent):
         Returns:
             weights(list[float]): weights list. [fundamental weight, chartist weight, noise weight]
         """
+        if self.is_adaptive:
+            time: int = market.get_time()
+            p_t: float = market.get_market_price()
+            p_f_tauf: float = market.get_fundamental_price(
+                min(0, time-self.mean_reversion_time)
+            )
+            p_t_tauf: float = market.get_market_price(
+                min(0, time-self.mean_reversion_time)
+            )
+            p_t_tau: float = market.get_market_price(
+                min(0, time-self.time_window_size)
+            )
+            p_t_2tau: float = market.get_market_price(
+                min(0, time-2*self.time_window_size)
+            )
+            pred_r_f: float = np.log(p_f_tauf / p_t_tauf)
+            obs_r_f: float = np.log(p_t / p_t_tauf)
+            pred_r_c: float = np.log(p_t_tau / p_t_2tau)
+            obs_r_c: float = np.log(p_t / p_t_tau)
+            self.w_f = max(
+                self.w_f_max, min(0, self.w_f + self.learning_rate * np.sign(pred_r_f * obs_r_f))
+            )
+            self.w_c = max(
+                self.w_c_max, min(0, self.w_c + self.learning_rate * np.sign(pred_r_c * obs_r_c))
+            )
         weights: list[float] = [self.w_f, self.w_c, self.w_n]
         return weights
 
