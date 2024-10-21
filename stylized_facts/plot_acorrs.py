@@ -43,7 +43,7 @@ def main(args):
     print(f"[white]labels: {labels}[white]")
     colors: list[str] = all_args.colors
     print(f"[white]colors: {colors}[white]")
-    fig: Figure = plt.figure(figsize=(10,6))
+    fig: Figure = plt.figure(figsize=(15,6))
     ax: Axes = fig.add_subplot(1,1,1)
     for ohlcv_dfs_path, resample_rule, label, color in zip(
         ohlcv_dfs_paths, resample_rules, labels, colors
@@ -53,11 +53,11 @@ def main(args):
             resample_rule=resample_rule
         )
         checker.plot_acorrs(
-            lags=[lag for lag in range(1, 101)],
+            lags=[lag for lag in range(1, 201)],
             ax=ax, label=label, color=color
         )
     plt.legend(fontsize=10)
-    ax.set_xlim([1, 100])
+    ax.set_xlim([1, 200])
     ax.set_ylim([0, 1])
     fig_save_path: Path =  pathlib.Path(all_args.fig_save_path).resolve()
     print(f"[white]fig_save_path: {fig_save_path}[white]")
