@@ -103,11 +103,17 @@ class CARAFCNAgent(Agent):
             )
         json_random: JsonRandom = JsonRandom(prng=self.prng)
         self.w_f: float = json_random.random(json_value=settings["fundamentalWeight"])
+        self.w_f_max: float = self.get_percentile(
+            json_value=settings["fundamentalWeight"], upper_prob=0.001
+        )
         if "averageCashAmount" in settings:
             average_cash_amount: float = settings["averageCashAmount"]
             cash_amount: float = self.cash_amount
             self.w_f *= cash_amount / average_cash_amount
         self.w_c: float = json_random.random(json_value=settings["chartWeight"])
+        self.w_c_max: float = self.get_percentile(
+            json_value=settings["chartWeight"], upper_prob=0.001
+        )
         self.w_n: float = json_random.random(json_value=settings["noiseWeight"])
         self.noise_scale: float = json_random.random(json_value=settings["noiseScale"])
         self.time_window_size = int(
@@ -161,6 +167,43 @@ class CARAFCNAgent(Agent):
             )[0]
         else:
             self.is_chart_following: bool = True
+
+    def get_percentile(
+        self,
+        setting: float | list[float] | dict[str, float | list[float]],
+        upper_prob: float = 0.01
+    ) -> float:
+        """get percentile.
+        
+        This method is usually used to get the maximum value of the distribution of any variable.
+        
+        Args:
+            setting (float | list[float] | dict[str, float | list[float]]): setting of the distribution.
+                Ex: 1.0, [0, 10], {"expon": [1.0]}, {"uniform": [0, 10]}
+            upper_prob (float): upper probability. Defaults to 0.01.
+        """
+        if isinstance(setting, float):
+            if upper_prob != 0.00:
+                warnings.warn(
+                    "upper_prob is ignored when setting is not a probability distribution."
+                )
+            return setting
+        elif isinstance(setting, list):
+            assert len(setting) == 2
+            umin, umax = setting
+            return umax - (umax - umin) * upper_prob
+        elif isinstance(setting, dict):
+            if "expon" in setting:
+                lam: float = setting["expon"][0]
+                return - lam * np.log(upper_prob)
+            elif "uniform" in setting:
+                assert len(setting["uniform"]) == 2
+                umin, umax = setting["uniform"]
+                return umax - (umax - umin) * upper_prob
+            else:
+                raise NotImplementedError
+        else:
+            raise NotImplementedError
 
     def _convert_exp2pareto(self, settings: dict[str, Any]) -> None:
         """convert Exponential distribution to Pareto distribution.
