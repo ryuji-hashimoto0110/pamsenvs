@@ -344,16 +344,16 @@ class CARAFCNAgent(Agent):
             time: int = market.get_time()
             p_t: float = market.get_market_price()
             p_f_tauf: float = market.get_fundamental_price(
-                min(0, time-self.mean_reversion_time)
+                max(0, time-self.mean_reversion_time)
             )
             p_t_tauf: float = market.get_market_price(
-                min(0, time-self.mean_reversion_time)
+                max(0, time-self.mean_reversion_time)
             )
             p_t_tau: float = market.get_market_price(
-                min(0, time-self.time_window_size)
+                max(0, time-self.time_window_size)
             )
             p_t_2tau: float = market.get_market_price(
-                min(0, time-2*self.time_window_size)
+                max(0, time-2*self.time_window_size)
             )
             pred_r_f: float = np.log(p_f_tauf / p_t_tauf)
             obs_r_f: float = np.log(p_t / p_t_tauf)
