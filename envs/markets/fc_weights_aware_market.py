@@ -1,4 +1,3 @@
-from ..agents import CARAFCNAgent
 from pams.agents import Agent
 from pams.logs import Logger
 from pams.logs.base import OrderLog
@@ -38,7 +37,7 @@ class FCWeightsAwareMarket(Market):
     def _add_order(self, order: Order) -> OrderLog:
         agent_id: AgentID = order.agent_id
         agent: Agent = self.simulator.id2agent[agent_id]
-        if isinstance(agent, CARAFCNAgent):
+        if hasattr(agent, "w_f") and hasattr(agent, "w_c"):
             self.agent_id2wf_dic[agent_id] = agent.w_f
             self.agent_id2wc_dic[agent_id] = agent.w_c
         total_wc: float = sum(list(self.agent_id2wc_dic.values()))
