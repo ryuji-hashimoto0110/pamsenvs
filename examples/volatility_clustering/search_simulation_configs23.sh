@@ -4,7 +4,7 @@ ticker_folder_names="2802 3382 4063 4452 4568 4578 6501 6502 7203 7267 8001 8035
 tickers="2802 3382 4063 4452 4568 4578 6501 6502 7203 7267 8001 8035 8058 8306 8411 9202 9613 9984"
 resample_rule="1min"
 point_cloud_type="return_ts"
-lags="1 10 20 30 50 70 100 200" 
+lags="1 10 20 30 50 70 100" 
 
 initial_seed=42
 base_config_path="base_config23.json"
