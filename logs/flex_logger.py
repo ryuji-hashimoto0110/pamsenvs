@@ -291,7 +291,7 @@ class FlexSaver(Logger):
             log_dic["Data"]["mood"] = mood_str
         if isinstance(market, FCWeightsAwareMarket):
             wc_rate: float = market.wc_rate
-            wc_rate_str: str = f"{wc_rate:.3f}"
+            wc_rate_str: str = f"{wc_rate:.5f}"
             log_dic["Data"]["wc_rate"] = wc_rate_str
         market_price: Optional[float | str] = market.get_last_executed_price()
         log_dic["Data"]["market_price"] = self._convert_price2str(market_price)
