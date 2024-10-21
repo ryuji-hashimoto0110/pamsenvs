@@ -40,6 +40,7 @@ def get_config():
     parser.add_argument("--num_simulations", type=int, default=1500)
     parser.add_argument("--use_simulator_given_runner", action="store_true")
     parser.add_argument("--is_mood_aware", action="store_true")
+    parser.add_argument("--is_wc_rate_aware", action="store_true")
     parser.add_argument("--transactions_path", type=str, default=None)
     parser.add_argument("--session1_transactions_file_name", type=str, default=None)
     parser.add_argument("--session2_transactions_file_name", type=str, default=None)
@@ -57,13 +58,14 @@ def create_otsearcher(
     show_process: bool = all_args.show_process
     use_simulator_given_runner: bool = all_args.use_simulator_given_runner
     is_mood_aware: bool = all_args.is_mood_aware
+    is_wc_rate_aware: bool = all_args.is_wc_rate_aware
     num_simulations: int = all_args.num_simulations
     num_points: int = all_args.num_points
     if show_args:
         print(f"initial_seed: {initial_seed} show_process: {show_process}")
         print(f"num_points: {num_points} num_simulations: {num_simulations}")
         print(f"use_simulator_given_runner: {use_simulator_given_runner}")
-        print(f"is_mood_aware: {is_mood_aware}")
+        print(f"is_mood_aware: {is_mood_aware} is_wc_rate_aware: {is_wc_rate_aware}")
     base_config_path: Optional[str] = all_args.base_config_path
     target_variables_config_path: Optional[str] = all_args.target_variables_config_path
     temp_txts_path: Optional[str] = all_args.temp_txts_path
@@ -98,6 +100,7 @@ def create_otsearcher(
         target_variables_config_path=target_variables_config_path,
         use_simulator_given_runner=use_simulator_given_runner,
         is_mood_aware=is_mood_aware,
+        is_wc_rate_aware=is_wc_rate_aware,
         num_simulations=num_simulations,
         temp_txts_path=temp_txts_path,
         temp_tick_dfs_path=temp_tick_dfs_path,
