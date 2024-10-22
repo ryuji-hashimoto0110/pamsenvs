@@ -6,6 +6,7 @@ root_path: Path = curr_path.parents[0]
 import sys
 sys.path.append(str(root_path))
 from datetime import date
+import numpy as np
 from numpy import ndarray
 from ots import DDEvaluater
 from ots.evaluate_distances_real import create_ddevaluaters
@@ -154,6 +155,8 @@ def main(args):
             ot_distance_dic[ticker] = ot_distance
         print(f"OT distances:")
         print(ot_distance_dic)
+        ot_distances: list[float] = list(ot_distance_dic.values())
+        print(f"ot(average):{np.mean(ot_distances):.5f} ot(std):{np.std(ot_distances):.5f}")
         
 if __name__ == "__main__":
     main(sys.argv[1:])
