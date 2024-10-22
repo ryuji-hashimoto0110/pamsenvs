@@ -6,12 +6,16 @@ root_path: Path = curr_path.parents[0]
 import sys
 sys.path.append(str(root_path))
 from datetime import date
+from numpy import ndarray
+from ots import DDEvaluater
+from ots.evaluate_distances_real import create_ddevaluaters
 from stylized_facts import SimulationEvaluater
 from typing import Any
 from typing import Optional
 
 def get_config():
     parser = argparse.ArgumentParser()
+    # SimulationEvaluater
     parser.add_argument("--initial_seed", type=int, default=42)
     parser.add_argument("--significant_figures", type=int, default=10)
     parser.add_argument("--config_path", type=str, default=None)
@@ -33,6 +37,19 @@ def get_config():
     parser.add_argument("--results_save_path", type=str, default=None)
     parser.add_argument("--check_asymmetry", action="store_true")
     parser.add_argument("--check_asymmetry_path", type=str, default="check_asymmetry.R")
+    # DDEvaluater
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--ohlcv_folder_path", type=str, default=None)
+    parser.add_argument("--ticker_folder_names", type=str, nargs="*", default=None)
+    parser.add_argument("--ticker_file_names", type=str, nargs="*", default=None)
+    parser.add_argument("--tickers", type=str, nargs="+", default=None)
+    parser.add_argument("--is_bybit", action="store_true")
+    parser.add_argument("--lags", type=int, nargs="+", default=[10])
+    parser.add_argument(
+        "--point_cloud_type", type=str,
+        choices=["return", "tail_return", "return_ts", "rv_returns"]
+    )
+    parser.add_argument("--n_samples", type=int, default=100)
     return parser
 
 def main(args):
@@ -112,6 +129,31 @@ def main(args):
                 evaluater.concat_ohlcv(
                     start_date=start_date, end_date=end_date
                 )
+    if all_args.ohlcv_folder_path is not None:
+        dd_evaluater: DDEvaluater = create_ddevaluaters(all_args)[0]
+        n_samples: int = all_args.n_samples
+        real_tickers: list[str | int] = list(dd_evaluater.ticker_path_dic.keys())
+        start_date_str: str = start_date.strftime(format='%Y%m%d')
+        end_date_str: str = end_date.strftime(format='%Y%m%d')
+        all_time_ohlcv_df_path: Path = pathlib.Path(all_time_ohlcv_dfs_path).resolve() / \
+            f"{specific_name}_{start_date_str}_{end_date_str}.csv"
+        dd_evaluater.add_ticker_path(
+            ticker=specific_name, path=all_time_ohlcv_df_path
+        )
+        art_point_cloud: ndarray = dd_evaluater.get_point_cloud_from_ticker(
+            ticker=specific_name, num_points=n_samples, save2dic=False, return_statistics=False
+        )
+        ot_distance_dic: dict[int | str, float] = {}
+        for ticker in real_tickers:
+            real_point_cloud: ndarray = dd_evaluater.get_point_cloud_from_ticker(
+                ticker=ticker, num_points=n_samples, save2dic=False, return_statistics=False
+            )
+            ot_distance: float = dd_evaluater.calc_ot_distance(
+                art_point_cloud, real_point_cloud, is_per_bit=True
+            )
+            ot_distance_dic[ticker] = ot_distance
+        print(f"OT distances:")
+        print(ot_distance_dic)
         
 if __name__ == "__main__":
     main(sys.argv[1:])
