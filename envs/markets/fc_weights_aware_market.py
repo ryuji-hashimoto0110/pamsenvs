@@ -13,7 +13,7 @@ from typing import TypeVar
 AgentID = TypeVar("AgentID")
 
 class FCWeightsAwareMarket(Market):
-    """F and C weight-aware Market class.
+    """F, C and time_window_size-aware Market class.
     """
     def __init__(
         self,
