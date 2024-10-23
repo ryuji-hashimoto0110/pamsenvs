@@ -164,6 +164,7 @@ class FlexProcessor:
             column_names.append("mood")
         if self.is_wc_rate_aware:
             column_names.append("wc_rate")
+            column_names.append("time_window_size")
         return column_names
 
     def convert_all_txt2csv(
@@ -361,9 +362,15 @@ class FlexProcessor:
         if self.is_wc_rate_aware:
             wc_rate: float = float(log_dic["Data"]["wc_rate"])
             log_columns.append(wc_rate)
+            time_window_size: int = int(log_dic["Data"]["time_window_size"])
+            log_columns.append(time_window_size)
         else:
             if "wc_rate" in log_dic["Data"]:
                 warnings.warn(
                     "set not to write wc_rate even though wc_rate is recorded in simulation log."
+                )
+            if "time_window_size" in log_dic["Data"]:
+                warnings.warn(
+                    "set not to write time_window_size even though time_window_size is recorded in simulation log."
                 )
         return log_columns
