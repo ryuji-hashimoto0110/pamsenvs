@@ -146,6 +146,10 @@ class CARAFCNAgent(Agent):
             )
         else:
             self.risk_aversion_term: float = 0.1
+        if "heterogeneousRiskAversionTerm" in settings:
+            self.heterogeneous_risk_aversion_term: bool = settings["heterogeneousRiskAversionTerm"]
+        else:
+            self.heterogeneous_risk_aversion_term: bool = False
         if "meanReversionTime" in settings:
             self.mean_reversion_time: int = int(
                 json_random.random(json_value=settings["meanReversionTime"])
@@ -420,9 +424,12 @@ class CARAFCNAgent(Agent):
         Returns:
             risk_aversion_term (float): calculated the agent's temporal risk aversion term.
         """
-        risk_aversion_term: float = self.risk_aversion_term * (
-            (1 + fundamental_weight) / (1 + chart_weight)
-        )
+        if self.heterogeneous_risk_aversion_term:
+            risk_aversion_term: float = self.risk_aversion_term * (
+                (1 + fundamental_weight) / (1 + chart_weight)
+            )
+        else:
+            risk_aversion_term: float = self.risk_aversion_term
         return risk_aversion_term
 
     def _calc_expected_future_price(
