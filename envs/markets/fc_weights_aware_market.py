@@ -33,6 +33,7 @@ class FCWeightsAwareMarket(Market):
         self.agent_id2wf_dic: dict[AgentID, float] = {}
         self.agent_id2wc_dic: dict[AgentID, float] = {}
         self.wc_rate: float = 0.0
+        self.previous_time_window_size: int = 0
         
     def _add_order(self, order: Order) -> OrderLog:
         agent_id: AgentID = order.agent_id
@@ -40,6 +41,11 @@ class FCWeightsAwareMarket(Market):
         if hasattr(agent, "w_f") and hasattr(agent, "w_c"):
             self.agent_id2wf_dic[agent_id] = agent.w_f
             self.agent_id2wc_dic[agent_id] = agent.w_c
+            self.previous_time_window_size = agent._calc_temporal_time_window_size(
+                time=self.time,
+                fundamental_weight=self.w_f, chart_weight=self.w_c,
+                market=self
+            )
         total_wc: float = sum(list(self.agent_id2wc_dic.values()))
         total_wf: float = sum(list(self.agent_id2wf_dic.values()))
         if not total_wc + total_wf == 0:
