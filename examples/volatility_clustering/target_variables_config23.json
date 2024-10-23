@@ -9,7 +9,7 @@
     ],
     "3": [
         ["Agent", "chartWeight"],
-        [{"expon": [0.00]}, {"expon": [1.50]}, {"expon": [2.00]}, {"expon": [2.50]}]
+        [{"expon": [1.00]}, {"expon": [1.50]}, {"expon": [2.00]}, {"expon": [2.50]}]
     ],
     "4": [
         ["Agent", "timeWindowSize"],
