@@ -270,6 +270,7 @@ class StylizedFactsChecker:
         volumes: list[int] = []
         num_events: list[int] = []
         moods: list[float] = []
+        wc_rates: list[float] = []
         num_pre_transactions: int = 0
         price_column: str = "mid_price" if resample_mid else "market_price"
         for num_cur_transactions in cumsum_transactions:
@@ -283,6 +284,8 @@ class StylizedFactsChecker:
                 num_events.append(len(cur_df))
                 if "mood" in cur_df.columns:
                     moods.append(cur_df["mood"].mean())
+                if "wc_rate" in cur_df.columns:
+                    wc_rates.append(cur_df["wc_rate"].mean())
             else:
                 opens.append(None)
                 highes.append(None)
@@ -292,6 +295,8 @@ class StylizedFactsChecker:
                 num_events.append(0)
                 if "mood" in cur_df.columns:
                     moods.append(None)
+                if "wc_rate" in cur_df.columns:
+                    wc_rates.append(None)
             num_pre_transactions = num_cur_transactions
         session_resampled_df: DataFrame = pd.DataFrame(
             data={
@@ -304,6 +309,9 @@ class StylizedFactsChecker:
         if len(session_resampled_df) == len(moods):
             session_resampled_df["mood"] = moods
             session_resampled_df["mood"] = session_resampled_df["mood"].ffill().bfill()
+        if len(session_resampled_df) == len(wc_rates):
+            session_resampled_df["wc_rate"] = wc_rates
+            session_resampled_df["wc_rate"] = session_resampled_df["wc_rate"].ffill().bfill()
         return session_resampled_df
 
     def _read_tick_dfs(self, tick_dfs_path: Path) -> None:
