@@ -43,7 +43,7 @@ class FCWeightsAwareMarket(Market):
             self.agent_id2wc_dic[agent_id] = agent.w_c
             self.previous_time_window_size = agent._calc_temporal_time_window_size(
                 time=self.time,
-                fundamental_weight=self.w_f, chart_weight=self.w_c,
+                fundamental_weight=agent.w_f, chart_weight=agent.w_c,
                 market=self
             )
         total_wc: float = sum(list(self.agent_id2wc_dic.values()))
