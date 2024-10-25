@@ -34,6 +34,14 @@ class FCWeightsAwareMarket(Market):
         self.agent_id2wc_dic: dict[AgentID, float] = {}
         self.wc_rate: float = 0.0
         self.previous_time_window_size: int = 0
+
+    def _update_time(self, next_fundamental_price: float) -> None:
+        super()._update_time(next_fundamental_price)
+        if self.time == 1:
+            for agent in self.simulator.agents:
+                if hasattr(agent, "w_f") and hasattr(agent, "w_c"):
+                    self.agent_id2wf_dic[agent.agent_id] = agent.w_f
+                    self.agent_id2wc_dic[agent.agent_id] = agent.w_c
         
     def _add_order(self, order: Order) -> OrderLog:
         agent_id: AgentID = order.agent_id
