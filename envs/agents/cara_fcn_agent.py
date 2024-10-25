@@ -370,10 +370,10 @@ class CARAFCNAgent(Agent):
             pred_r_c: float = np.log(p_t_tau / p_t_2tau)
             obs_r_c: float = np.log(p_t / p_t_tau)
             w_f = min(
-                self.w_f_max, max(1e-08, self._update_weight(self.w_f, pred_r_f, obs_r_f))
+                self.w_f_max, max(0, self._update_weight(self.w_f, pred_r_f, obs_r_f))
             )
             w_c = min(
-                self.w_c_max, max(1e-08, self._update_weight(self.w_c, pred_r_c, obs_r_c))
+                self.w_c_max, max(0, self._update_weight(self.w_c, pred_r_c, obs_r_c))
             )
             self.w_f = self.total_w_fc * w_f / (w_f + w_c + 1e-08)
             self.w_c = self.total_w_fc * w_c / (w_f + w_c + 1e-08)
