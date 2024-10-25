@@ -1,11 +1,7 @@
 {
     "1": [
         ["Agent", "heterogeneousTimeWindowSize"],
-        [true]
-    ],
-    "2": [
-        ["Agent", "tauDiff"],
-        [1, 3, 5, 10, 20]
+        [false]
     ],
     "3": [
         ["Agent", "learningRate"],
