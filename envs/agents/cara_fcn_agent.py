@@ -114,6 +114,7 @@ class CARAFCNAgent(Agent):
         self.w_c_max: float = self.get_percentile(
             setting=settings["chartWeight"], upper_prob=0.001
         )
+        self.total_w_fc: float = self.w_f + self.w_c
         self.w_n: float = json_random.random(json_value=settings["noiseWeight"])
         self.noise_scale: float = json_random.random(json_value=settings["noiseScale"])
         self.time_window_size = int(
@@ -121,6 +122,11 @@ class CARAFCNAgent(Agent):
         )
         if "heterogeneousTimeWindowSize" in settings:
             self.heterogeneous_time_window_size: bool = settings["heterogeneousTimeWindowSize"]
+            if "tauDiff" not in settings:
+                raise ValueError(
+                    "tauDiff must be set when heterogeneousTimeWindowSize is true."
+                )
+            self.tau_diff: int = int(json_random.random(json_value=settings["tauDiff"]))
         else:
             self.heterogeneous_time_window_size: bool = True
         self.is_cara: bool = settings["isCARA"]
@@ -354,23 +360,44 @@ class CARAFCNAgent(Agent):
                 max(0, time-self.mean_reversion_time)
             )
             p_t_tau: float = market.get_market_price(
-                max(0, time-self.time_window_size)
+                max(0, time-time_window_size)
             )
             p_t_2tau: float = market.get_market_price(
-                max(0, time-2*self.time_window_size)
+                max(0, time-2*time_window_size)
             )
             pred_r_f: float = np.log(p_f_tauf / p_t_tauf)
             obs_r_f: float = np.log(p_t / p_t_tauf)
             pred_r_c: float = np.log(p_t_tau / p_t_2tau)
             obs_r_c: float = np.log(p_t / p_t_tau)
-            self.w_f = min(
-                self.w_f_max, max(0, self.w_f + self.learning_rate * np.sign(pred_r_f * obs_r_f))
+            w_f = min(
+                self.w_f_max, max(1e-08, self._update_weight(self.w_f, pred_r_f, obs_r_f))
             )
-            self.w_c = min(
-                self.w_c_max, max(0, self.w_c + self.learning_rate * np.sign(pred_r_c * obs_r_c))
+            w_c = min(
+                self.w_c_max, max(1e-08, self._update_weight(self.w_c, pred_r_c, obs_r_c))
             )
+            self.w_f = self.total_w_fc * w_f / w_f + w_c + 1e-08
+            self.w_c = self.total_w_fc * w_c / w_f + w_c + 1e-08
         weights: list[float] = [self.w_f, self.w_c, self.w_n]
         return weights
+    
+    def _update_weight(
+        self,
+        current_w: float,
+        pred_r: float,
+        obs_r: float
+    ) -> float:
+        """update weight by the adaptive rule.
+        """
+        pred_acc: float = np.sign(pred_r * obs_r)
+        if pred_acc == 1:
+            updated_w: float = current_w + self.learning_rate * 100 * np.abs(pred_r - obs_r)
+        elif pred_acc == -1:
+            updated_w: float = current_w - self.learning_rate * 100 * np.abs(pred_r + obs_r)
+        elif pred_acc == 0:
+            updated_w: float = current_w
+        else:
+            raise ValueError(f"pred_acc must be 1, -1, or 0 but found {pred_acc}.")
+        return updated_w
 
     def _calc_temporal_time_window_size(
         self,
@@ -398,7 +425,7 @@ class CARAFCNAgent(Agent):
         if self.heterogeneous_time_window_size:
             time_window_size: int = int(
                 self.time_window_size * (
-                    (1 + fundamental_weight) / (1 + chart_weight)
+                    (self.tau_diff + fundamental_weight) / (self.tau_diff + chart_weight)
                 )
             )
         else:
