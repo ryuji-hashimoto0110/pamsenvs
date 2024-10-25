@@ -61,6 +61,7 @@
         "heterogeneousTimeWindowSize": false,
 		"tauDiff": 1,
 		"heterogeneousRiskAversionTerm": false,
+		"learningRate": 0.0,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1
     }
