@@ -369,14 +369,14 @@ class CARAFCNAgent(Agent):
             obs_r_f: float = np.log(p_t / p_t_tauf)
             pred_r_c: float = np.log(p_t_tau / p_t_2tau)
             obs_r_c: float = np.log(p_t / p_t_tau)
-            w_f = min(
+            self.w_f = min(
                 self.w_f_max,
                 max(
                     0,
                     self.w_f + self.learning_rate * np.sign(pred_r_f * obs_r_f)
                 )
             )
-            w_c = min(
+            self.w_c = min(
                 self.w_c_max,
                 max(
                     0,
@@ -391,8 +391,8 @@ class CARAFCNAgent(Agent):
             #)
             #self.w_c = min(self.total_w_fc, w_c)
             #self.w_f = self.total_w_fc - self.w_c
-            self.w_f = self.total_w_fc * w_f / (w_f + w_c + 1e-08)
-            self.w_c = self.total_w_fc * w_c / (w_f + w_c + 1e-08)
+            #self.w_f = self.total_w_fc * w_f / (w_f + w_c + 1e-08)
+            #self.w_c = self.total_w_fc * w_c / (w_f + w_c + 1e-08)
         weights: list[float] = [self.w_f, self.w_c, self.w_n]
         return weights
     
