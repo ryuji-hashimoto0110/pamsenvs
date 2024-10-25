@@ -375,8 +375,8 @@ class CARAFCNAgent(Agent):
             w_c = min(
                 self.w_c_max, max(1e-08, self._update_weight(self.w_c, pred_r_c, obs_r_c))
             )
-            self.w_f = self.total_w_fc * w_f / w_f + w_c + 1e-08
-            self.w_c = self.total_w_fc * w_c / w_f + w_c + 1e-08
+            self.w_f = self.total_w_fc * w_f / (w_f + w_c + 1e-08)
+            self.w_c = self.total_w_fc * w_c / (w_f + w_c + 1e-08)
         weights: list[float] = [self.w_f, self.w_c, self.w_n]
         return weights
     
