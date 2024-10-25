@@ -62,7 +62,7 @@
 		"timeWindowSize": 100,
         "heterogeneousTimeWindowSize": false,
 		"tauDiff": 1,
-		"heterogeneousRiskAversionTerm": true,
+		"heterogeneousRiskAversionTerm": false,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1
     }
