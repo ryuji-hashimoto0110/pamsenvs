@@ -4,6 +4,10 @@
         [false]
     ],
     "3_": [
+        ["Market", "class"],
+        ["FCWeightsAwareMarket"]
+    ],
+    "3__": [
         ["Agent", "isAdaptive"],
         [true]
     ],
