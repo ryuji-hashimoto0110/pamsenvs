@@ -5,11 +5,11 @@
     ],
     "4": [
         ["Agent", "chartWeight"],
-        [{"expon": [1.00]}, {"expon": [1.50]}, {"expon": [2.00]}, {"expon": [2.50]}]
+        [{"expon": [1.00]}, {"expon": [1.50]}, {"expon": [1.75]}, {"expon": [2.00]}]
     ],
     "5": [
         ["Agent", "timeWindowSize"],
-        [60, 100, 120, 140, 200]
+        [50, 100, 150, 200]
     ],
     "6": [
         ["Agent", "riskAversionTerm"],
