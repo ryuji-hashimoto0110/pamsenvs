@@ -4,6 +4,7 @@ from pams.logs.base import OrderLog
 from pams.market import Market
 from pams.order import Order
 import random
+from .range_regulated_market import RangeRegulatedMarket
 from typing import Any
 from typing import Dict
 from typing import Literal
@@ -12,7 +13,7 @@ from typing import TypeVar
 
 AgentID = TypeVar("AgentID")
 
-class FCWeightsAwareMarket(Market):
+class FCWeightsAwareMarket(RangeRegulatedMarket):
     """F, C and time_window_size-aware Market class.
     """
     def __init__(

@@ -1,9 +1,10 @@
 from pams import Market
 from pams.logs import Logger
 import random
+from .range_regulated_market import RangeRegulatedMarket
 from typing import Optional
 
-class TotalTimeAwareMarket(Market):
+class TotalTimeAwareMarket(RangeRegulatedMarket):
     """Total-time-aware Market class.
     """
     def __init__(
