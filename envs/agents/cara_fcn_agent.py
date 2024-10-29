@@ -406,9 +406,9 @@ class CARAFCNAgent(Agent):
         """
         pred_acc: float = np.sign(pred_r * obs_r)
         if pred_acc == 1:
-            updated_w: float = current_w + self.learning_rate * 100 * np.power(pred_r-obs_r, 2)
+            updated_w: float = current_w + self.learning_rate * 100 * np.abs(pred_r-obs_r)
         elif pred_acc == -1:
-            updated_w: float = current_w - self.learning_rate * 100 * np.power(pred_r+obs_r, 2)
+            updated_w: float = current_w - self.learning_rate * 100 * np.abs(pred_r+obs_r)
         elif pred_acc == 0:
             updated_w: float = current_w
         else:
