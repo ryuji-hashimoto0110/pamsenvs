@@ -12,6 +12,7 @@ from envs.agents import CARAFCNAgent
 from envs.agents import MoodAwareCARAFCNAgent
 from envs.markets import FCWeightsAwareMarket
 from envs.markets import MoodAwareMarket
+from envs.markets import RangeRegulatedMarket
 from envs.markets import TotalTimeAwareMarket
 from envs.markets import YesterdayAwareMarket
 from envs.runners import SimulatorGivenRunner
@@ -210,6 +211,8 @@ class SimulationEvaluater:
         runner.class_register(FCWeightsAwareMarket) \
             if FCWeightsAwareMarket not in runner.registered_classes else ...
         runner.class_register(MoodAwareMarket) if MoodAwareMarket not in runner.registered_classes else ...
+        runner.class_register(RangeRegulatedMarket) \
+            if RangeRegulatedMarket not in runner.registered_classes else ...
         runner.class_register(TotalTimeAwareMarket) \
             if TotalTimeAwareMarket not in runner.registered_classes else ...
         runner.class_register(YesterdayAwareMarket) \
