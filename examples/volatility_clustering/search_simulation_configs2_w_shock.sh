@@ -19,7 +19,7 @@ transactions_path="../../datas/real_datas/intraday/flex_transactions/1min/7203"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
 num_points=1000
-results_save_path="ot_result2.csv"
+results_save_path="ot_result2_w_shock.csv"
 
 python ../search_simulation_configs.py \
 --seed ${seed} \
