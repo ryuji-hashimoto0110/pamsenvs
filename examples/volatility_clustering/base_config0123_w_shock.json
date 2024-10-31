@@ -1,0 +1,77 @@
+{
+    "simulation": {
+		"markets": ["Market"],
+		"agents": ["Agent"],
+		"sessions": [
+			{	
+				"sessionName": "0",
+				"iterationSteps": 100,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0
+			},
+			{	
+				"sessionName": "1",
+				"iterationSteps": 1000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0,
+				"events": ["FundamentalPriceShock"]
+			},
+            {	
+				"sessionName": "00",
+				"iterationSteps": 10,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0
+			},
+            {	
+				"sessionName": "2",
+				"iterationSteps": 1000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0
+			}
+		]
+	},
+	"FundamentalPriceShock": {
+		"class": "FundamentalPriceShock",
+		"target": "Market",
+		"triggerTime": 500,
+		"priceChangeRate": 0.05
+	},
+    "Market": {
+        "class": "RangeRegulatedMarket",
+		"regulationRange": 1.0,
+		"tickSize": 0.0001,
+		"marketPrice": 300.0
+    },
+    "Agent": {
+        "class": "CARAFCNAgent",
+		"isCARA": true,
+        "numAgents": 200,
+		"markets": ["Market"],
+		"assetVolume": {"uniform": [0,100]},
+		"cashAmount": {"uniform": [0,30000]},
+		"averageCashAmount": 15000,
+		"fundamentalWeight": {"expon": [10.0]},
+		"chartWeight": {"expon": [0.0]},
+		"noiseWeight": {"expon": [1.0]},
+        "riskAversionTerm": 0.1,
+		"noiseScale": 0.0001,
+		"timeWindowSize": 100,
+        "heterogeneousTimeWindowSize": false,
+		"tauDiff": 1,
+		"heterogeneousRiskAversionTerm": false,
+		"isAdaptive": false,
+		"learningRate": 0.0,
+		"meanReversionTime": 200,
+		"chartFollowRate": 1
+    }
+}
