@@ -44,7 +44,7 @@
 		"class": "FundamentalPriceShock",
 		"target": "Market",
 		"triggerTime": 500,
-		"priceChangeRate": 0.05
+		"priceChangeRate": 0.01
 	},
     "Market": {
         "class": "RangeRegulatedMarket",
