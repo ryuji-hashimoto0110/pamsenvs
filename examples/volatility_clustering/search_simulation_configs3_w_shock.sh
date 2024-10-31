@@ -8,7 +8,7 @@ lags="1 10 20 30 40 50 60 70"
 
 initial_seed=42
 base_config_path="base_config0123_w_shock.json"
-target_variables_config_path="target_variables_config3_w_shock.json"
+target_variables_config_path="target_variables_config3.json"
 temp_txts_path="../../datas/artificial_datas/flex_txt/temp3_w_shock"
 temp_tick_dfs_path="../../datas/artificial_datas/flex_csv/temp3_w_shock"
 temp_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp3_w_shock"
