@@ -1017,7 +1017,7 @@ class StylizedFactsChecker:
             volume_tail_arr = np.repeat(volume_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
             acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
-                [lag for lag in range(1,31)]
+                [lag for lag in range(1,71)]
             )
             data_dic: dict[str, ndarray]= {
                 "kurtosis": kurtosis_arr.flatten(),
