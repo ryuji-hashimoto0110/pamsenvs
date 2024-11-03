@@ -56,7 +56,7 @@ def main(args):
             lags=[lag for lag in range(1, 201)],
             ax=ax, label=label, color=color
         )
-    plt.legend(fontsize=10)
+    ax.legend(loc="upper left", bbox_to_anchor=(1,1), fontsize=10)
     ax.set_xlim([1, 200])
     ax.set_ylim([0, 1])
     fig_save_path: Path =  pathlib.Path(all_args.fig_save_path).resolve()
