@@ -26,7 +26,7 @@ labels="2802 3382 4063 4452 4568 4578 6501 6502 7203 7267 "\
 "8001 8035 8058 8306 8411 9202 9613 9984 Sim0 Sim1 Sim2 Sim3"
 colors="teal darkcyan darkturquoise cadetblue powderblue lightblue deepskyblue "\
 "steelblue lightslategray slategray midnightblue navy darkblue mediumblue "\
-"slateblue mediumslateblue rebeccapurple black red lime orange"
+"slateblue mediumslateblue rebeccapurple indigo black red lime orange"
 fig_save_path="../imgs/acorrs_real_syn_all.pdf"
 python plot_acorrs.py \
 --ohlcv_dfs_paths ${ohlcv_dfs_paths} \
