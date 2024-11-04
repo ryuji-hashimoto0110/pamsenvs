@@ -14,6 +14,7 @@ session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
 figs_save_path="../../imgs/asymmetric_volatility/afcn_vf_af30_alpha05"
 results_save_path="../../stylized_facts/results/asymmetric_volatility/afcn_vf_af30_alpha05.csv"
 check_asymmetry_path="../../stylized_facts/check_asymmetry.R"
+seed=42
 ohlcv_folder_path="../../datas/real_datas/intraday/flex_ohlcv/all_time"
 ticker_file_names="2802_20150105_20210820.csv "\
 "3382_20150105_20210820.csv "\
