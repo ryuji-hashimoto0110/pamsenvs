@@ -156,7 +156,7 @@ def main(args):
         print(f"OT distances:")
         print(ot_distance_dic)
         ot_distances: list[float] = list(ot_distance_dic.values())
-        print(f"ot(average):{np.mean(ot_distances):.5f} ot(std):{np.std(ot_distances):.5f}")
+        print(f"ot(median):{np.median(ot_distances):.5f} ot(average):{np.mean(ot_distances):.5f} ot(std):{np.std(ot_distances):.5f}")
         
 if __name__ == "__main__":
     main(sys.argv[1:])
