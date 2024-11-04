@@ -63,7 +63,7 @@
         "noiseAsymmetry": 0.0, 
 		"riskAversionTerm": 0.30,
 		"noiseScale": 0.0001,
-		"timeWindowSize": 60,
+		"timeWindowSize": 100,
 		"heterogeneousTimeWindowSize": true,
 		"tauDiff": 10,
 		"heterogeneousRiskAversionTerm": false,
