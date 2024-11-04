@@ -56,4 +56,9 @@ python ../evaluate_simulations.py \
 --results_save_path ${results_save_path} \
 --check_asymmetry \
 --check_asymmetry_path ${check_asymmetry_path} \
+--seed ${seed} \
+--ohlcv_folder_path ${ohlcv_folder_path} \
+--ticker_file_names ${ticker_file_names} \
+--tickers ${tickers} \
+--resample_rule ${resample_rule} \
 --point_cloud_type ${point_cloud_type}
