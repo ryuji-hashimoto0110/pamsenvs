@@ -15,7 +15,7 @@ figs_save_path="../../imgs/asymmetric_volatility/wo"
 results_save_path="../../stylized_facts/results/asymmetric_volatility/wo.csv"
 check_asymmetry_path="../../stylized_facts/check_asymmetry.R"
 seed=42
-ohlcv_folder_path="../datas/real_datas/intraday/flex_ohlcv/all_time"
+ohlcv_folder_path="../../datas/real_datas/intraday/flex_ohlcv/all_time"
 ticker_file_names="2802_20150105_20210820.csv "\
 "3382_20150105_20210820.csv "\
 "4063_20150105_20210820.csv "\
