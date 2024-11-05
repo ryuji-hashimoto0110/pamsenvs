@@ -9,7 +9,7 @@ class RangeRegulatedMarket(Market):
         if "regulationRange" in settings:
             self.range: float = settings["regulationRange"]
         else:
-            self.range: float = 0.1
+            self.range: float = 1.0
 
     def _add_order(self, order: Order) -> OrderLog:
         order: Order = self._regulate_order(order)
