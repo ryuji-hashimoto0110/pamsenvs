@@ -888,7 +888,7 @@ class StylizedFactsChecker:
                     self.ohlcv_dfs, "close", norm=True
                 )
             acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
-                np.abs(self.return_arr), lags, keepdim=True
+                np.abs(self.return_arr), lags, keepdim=False
             )
         else:
             warnings.warn(
