@@ -916,10 +916,9 @@ class StylizedFactsChecker:
             acorr_mean: float = np.mean(acorr_dic[lag])
             if acorr_mean < 0:
                 first_negative_lag = lag
-                break
             else:
                 log_lags.append(np.log(lag))
-                log_acorrs.append(np.log(acorr_mean))
+                log_acorrs.append(np.log(max(0, acorr_mean)))
         if first_negative_lag == 0:
             return [
                 np.zeros(1)[:,np.newaxis],
