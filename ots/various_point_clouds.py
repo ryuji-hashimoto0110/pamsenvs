@@ -13,6 +13,7 @@ curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
 parent_path: Path = curr_path.parents[0]
 import sys
 sys.path.append(str(parent_path))
+from scipy.stats import linregress
 from stylized_facts import bybit_freq_ohlcv_size_dic
 from stylized_facts import flex_freq_ohlcv_size_dic
 from scipy import stats
@@ -288,20 +289,74 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
         self.lags: list[int] = lags
         self.lags.sort()
 
+    def _calc_autocorrelation(
+        self,
+        abs_return_arr: ndarray,
+        lags: list[int],
+        keepdim: bool = True,
+    ) -> dict[int, ndarray | float]:
+        """_summary_
 
+        Args:
+            return_arr (ndarray): _description_
+            lags (list[int]): _description_
+
+        Returns:
+            dict[int, ndarray]: _description_
+        """
+        acorr_dic: list[int, ndarray] = {}
+        for lag in lags:
+            abs_mean: float | ndarray = np.mean(
+                abs_return_arr, axis=1, keepdims=True
+            ) if keepdim else np.mean(abs_return_arr)
+            acov: ndarray | float = np.mean(
+                (abs_return_arr[:,lag:]-abs_mean)*(abs_return_arr[:,:-lag]-abs_mean),
+                axis=1, keepdims=True
+            ) if keepdim else np.mean(
+                (abs_return_arr[:,lag:]-abs_mean)*(abs_return_arr[:,:-lag]-abs_mean)
+            )
+            var: ndarray | float = np.var(
+                abs_return_arr, axis=1, keepdims=True
+            )  if keepdim else np.var(abs_return_arr)
+            acorr_dic[lag] = acov / (var + 1e-10)
+        return acorr_dic
+    
     def get_statistics(self) -> list[str]:
-        return [
-            f"acorr({lag})" for lag in self.lags
-        ]
+        if len(self.lags) == 1:
+            return [f"acorr({self.lags[0]})"]
+        else:
+            return ["tail (acorr)", "first negative lag"]
 
     def calc_statistics(self, point_cloud: ndarray) -> list[float]:
         statistics: list[float] = []
-        for j in range(1, len(self.lags)+1):
-            corr_coef_arr: ndarray = np.corrcoef(
-                point_cloud[:,0], point_cloud[:,j]
+        if len(self.lags) == 1:
+            acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
+                np.abs(self.return_arr), self.lags, keepdim=False
             )
-            assert len(corr_coef_arr) == 2
-            statistics.append(corr_coef_arr[0, 1])
+            statistics.append(float(acorr_dic[self.lags[0]]))
+        else:
+            lags: list[int] = [lag for lag in range(1,121)]
+            acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
+                np.abs(self.return_arr), lags, keepdim=False
+            )
+            first_negative_lag: int = -1
+            log_lags: list[float] = []
+            log_acorrs: list[float] = []
+            for i, lag in enumerate(lags):
+                acorr_mean: float = np.mean(acorr_dic[lag])
+                if acorr_mean < 0:
+                    first_negative_lag = lag
+                else:
+                    log_lags.append(np.log(lag))
+                    log_acorrs.append(np.log(acorr_mean))
+            if first_negative_lag == 0:
+                statistics.extend([-1, -1])
+            else:
+                log_lag_arr: ndarray = np.array(log_lags)
+                log_acorr_arr: ndarray = np.array(log_acorrs)
+                lr = linregress(log_lag_arr, log_acorr_arr)
+                tail: float = - lr.slope
+                statistics.extend([tail, first_negative_lag])
         return statistics
 
     def get_point_cloud_from_path(
@@ -316,9 +371,9 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
         return_arrs: list[ndarray] = [
             self._calc_return_arr_from_df(df, "close", norm=True) for df in ohlcv_dfs
         ]
-        return_arr: ndarray = np.stack(return_arrs, axis=0)
-        assert return_arr.shape == (len(ohlcv_dfs), len(return_arrs[0]))
-        abs_return_arr: ndarray = np.abs(return_arr)
+        self.return_arr: ndarray = np.stack(return_arrs, axis=0)
+        assert self.return_arr.shape == (len(ohlcv_dfs), len(return_arrs[0]))
+        abs_return_arr: ndarray = np.abs(self.return_arr)
         abs_return_arrs: list[ndarray] = []
         abs_return_arrs.append(
             abs_return_arr[:,:-self.lags[-1]].flatten()
