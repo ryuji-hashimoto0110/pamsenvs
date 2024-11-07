@@ -930,8 +930,8 @@ class StylizedFactsChecker:
             log_acorr_arr: ndarray = np.array(log_acorrs)
             lr = linregress(log_lag_arr, log_acorr_arr)
             tail: float = - lr.slope
-            tail_arr: ndarray = np.array(tail)[:,np.newaxis]
-            first_negative_lag_arr: ndarray = np.array(first_negative_lag)[:,np.newaxis]
+            tail_arr: ndarray = np.array([tail])[:,np.newaxis]
+            first_negative_lag_arr: ndarray = np.array([first_negative_lag])[:,np.newaxis]
             return [tail_arr, first_negative_lag_arr] 
 
     def _calc_autocorrelation(
