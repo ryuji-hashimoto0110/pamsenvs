@@ -165,8 +165,6 @@ class StylizedFactsChecker:
                 minmax_return: float = np.max(market_prices) / np.min(market_prices)
                 if 1.5 < minmax_return:
                     store_df = False
-                else:
-                    store_df = True
             if store_df:
                 csv_names.append(csv_name)
                 dfs.append(df)
@@ -909,32 +907,32 @@ class StylizedFactsChecker:
             acorr_dic: dict[int, ndarray] = {}
             for lag, acorrs in acorr_l_dic.items():
                 acorr_dic[lag] = np.array(acorrs)[:,np.newaxis]
-            if not return_tail:
-                return acorr_dic
-            first_negative_lag: int = -1
-            log_lags: list[float] = []
-            log_acorrs: list[float] = []
-            for i, lag in enumerate(lags):
-                acorr_mean: float = np.mean(acorr_dic[lag])
-                if acorr_mean < 0:
-                    first_negative_lag = lag
-                    break
-                else:
-                    log_lags.append(np.log(lag))
-                    log_acorrs.append(np.log(acorr_mean))
-            if first_negative_lag == 0:
-                return [
-                    np.zeros(1)[:,np.newaxis],
-                    np.zeros(1)[:,np.newaxis]
-                ]
+        if not return_tail:
+            return acorr_dic
+        first_negative_lag: int = -1
+        log_lags: list[float] = []
+        log_acorrs: list[float] = []
+        for i, lag in enumerate(lags):
+            acorr_mean: float = np.mean(acorr_dic[lag])
+            if acorr_mean < 0:
+                first_negative_lag = lag
+                break
             else:
-                log_lag_arr: ndarray = np.array(log_lags)
-                log_acorr_arr: ndarray = np.array(log_acorrs)
-                lr = linregress(log_lag_arr, log_acorr_arr)
-                tail: float = - lr.slope
-                tail_arr: ndarray = np.array(tail)[:,np.newaxis]
-                first_negative_lag_arr: ndarray = np.array(first_negative_lag)[:,np.newaxis]
-                return [tail_arr, first_negative_lag_arr] 
+                log_lags.append(np.log(lag))
+                log_acorrs.append(np.log(acorr_mean))
+        if first_negative_lag == 0:
+            return [
+                np.zeros(1)[:,np.newaxis],
+                np.zeros(1)[:,np.newaxis]
+            ]
+        else:
+            log_lag_arr: ndarray = np.array(log_lags)
+            log_acorr_arr: ndarray = np.array(log_acorrs)
+            lr = linregress(log_lag_arr, log_acorr_arr)
+            tail: float = - lr.slope
+            tail_arr: ndarray = np.array(tail)[:,np.newaxis]
+            first_negative_lag_arr: ndarray = np.array(first_negative_lag)[:,np.newaxis]
+            return [tail_arr, first_negative_lag_arr] 
 
     def _calc_autocorrelation(
         self,
