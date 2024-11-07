@@ -1413,7 +1413,7 @@ class StylizedFactsChecker:
         img_save_name: Optional[str] = None,
         is_loglog: bool = True
     ):
-        acorr_dic: dict[int, float] = self.check_autocorrelation(lags, keepdim=False)
+        acorr_dic: dict[int, float] = self.check_autocorrelation(lags, return_tail=False)
         acorrs: list[float] = acorr_dic.values()
         if ax is None:
             fig: Figure = plt.figure(figsize=(10,6))
