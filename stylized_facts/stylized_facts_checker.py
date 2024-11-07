@@ -440,6 +440,8 @@ class StylizedFactsChecker:
         norm: bool
     ) -> ndarray:
         """convert price time series to return time series from 1 dataframe.
+
+        return_arr: (1, length of intraday time series)
         """
         price_arr: ndarray = ohlcv_df[colname].dropna().values
         assert np.sum((price_arr <= 0)) == 0
@@ -460,6 +462,8 @@ class StylizedFactsChecker:
         norm: bool = True
     ) -> ndarray:
         """convert price time series to return time series from dataframes list.
+
+        return_arr: (number of days, length of intraday time series)
         """
         price_arr: ndarray = self._stack_dfs(ohlcv_dfs, colname)
         assert np.sum((price_arr <= 0)) == 0
@@ -866,13 +870,19 @@ class StylizedFactsChecker:
         print()
         return left_tail_arr, right_tail_arr, abs_tail_arr
 
-    def check_autocorrelation(self, lags: list[int], keepdim: bool = True) -> dict[int, ndarray | float]:
-        """_summary_
+    def check_autocorrelation(
+        self,
+        lags: list[int],
+        return_tail: bool = False
+    ) -> dict[int, ndarray] | list[ndarray]:
+        """check the dynamics of the autocorrelation of given price time series.
 
-        Args:
-            lags (list[int]): _description_
+        Absolute returns are said to have long memory property. That is,
+        the autocorrelation of absolute returns has a power-law decay: 
+            Corr(|r_t|, |r_{t+lag}|) ~ lag^(-zeta)
 
-        Returns:
+        This method estimates zeta through the following OLS model:
+            log(Corr(|r_t|, |r_{t+lag}|)) = log(lag) * zeta + noise
         """
         if self._is_stacking_possible(self.ohlcv_dfs, "close"):
             if self.return_arr is None:
@@ -880,7 +890,7 @@ class StylizedFactsChecker:
                     self.ohlcv_dfs, "close", norm=True
                 )
             acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
-                np.abs(self.return_arr), lags, keepdim=keepdim
+                np.abs(self.return_arr), lags, keepdim=True
             )
         else:
             warnings.warn(
@@ -892,20 +902,45 @@ class StylizedFactsChecker:
                     ohlcv_df, "close", norm=True
                 )
                 acorr_dic_: dict[int, float] = self._calc_autocorrelation(
-                    np.abs(return_arr), lags, keepdim=keepdim
+                    np.abs(return_arr), lags, keepdim=False
                 )
                 for lag in lags:
                     acorr_l_dic[lag].append(acorr_dic_[lag].item())
             acorr_dic: dict[int, ndarray] = {}
             for lag, acorrs in acorr_l_dic.items():
                 acorr_dic[lag] = np.array(acorrs)[:,np.newaxis]
-        return acorr_dic
+            if not return_tail:
+                return acorr_dic
+            first_negative_lag: int = -1
+            log_lags: list[float] = []
+            log_acorrs: list[float] = []
+            for i, lag in enumerate(lags):
+                acorr_mean: float = np.mean(acorr_dic[lag])
+                if acorr_mean < 0:
+                    first_negative_lag = lag
+                    break
+                else:
+                    log_lags.append(np.log(lag))
+                    log_acorrs.append(np.log(acorr_mean))
+            if first_negative_lag == 0:
+                return [
+                    np.zeros(1)[:,np.newaxis],
+                    np.zeros(1)[:,np.newaxis]
+                ]
+            else:
+                log_lag_arr: ndarray = np.array(log_lags)
+                log_acorr_arr: ndarray = np.array(log_acorrs)
+                lr = linregress(log_lag_arr, log_acorr_arr)
+                tail: float = - lr.slope
+                tail_arr: ndarray = np.array(tail)[:,np.newaxis]
+                first_negative_lag_arr: ndarray = np.array(first_negative_lag)[:,np.newaxis]
+                return [tail_arr, first_negative_lag_arr] 
 
     def _calc_autocorrelation(
         self,
         abs_return_arr: ndarray,
         lags: list[int],
-        keepdim: bool = True
+        keepdim: bool = True,
     ) -> dict[int, ndarray | float]:
         """_summary_
 
@@ -1016,8 +1051,12 @@ class StylizedFactsChecker:
             volume_tail_arr = self.check_hill_index_volume()
             volume_tail_arr = np.repeat(volume_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
-            acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
-                [lag for lag in range(1,31)]
+            acorr_tail_arr, first_negative_lag_arr = self.check_autocorrelation(
+                [lag for lag in range(1,121)], return_tail=True
+            )
+            acorr_tail_arr = np.repeat(acorr_tail_arr, repeats=kurtosis_arr.shape[0])
+            first_negative_lag_arr = np.repeat(
+                first_negative_lag_arr, repeats=kurtosis_arr.shape[0]
             )
             data_dic: dict[str, ndarray]= {
                 "kurtosis": kurtosis_arr.flatten(),
@@ -1029,10 +1068,10 @@ class StylizedFactsChecker:
                 "lrls tail (right)": right_lrls_tail_arr.flatten(),
                 "lrls tail (abs)": abs_lrls_tail_arr.flatten(),
                 "hill tail (volume)": volume_tail_arr.flatten(),
-                "vv_corr": volume_volatility_correlation.flatten()
+                "vv_corr": volume_volatility_correlation.flatten(),
+                "tail (acorr)": acorr_tail_arr.flatten(),
+                "first negative lag": first_negative_lag_arr.flatten()
             }
-            for lag, acorr in acorr_dic.items():
-                data_dic[f"acorr lag{lag}"] = acorr.flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
             if print_results:
                 self.print_results(stylized_facts_df)
