@@ -342,7 +342,8 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
             first_negative_lag: int = -1
             log_lags: list[float] = []
             log_acorrs: list[float] = []
-            for i, lag in enumerate(lags):
+            for lag in lags:
+                print(acorr_dic[lag])
                 acorr_mean: float = np.mean(acorr_dic[lag])
                 if acorr_mean < 0:
                     first_negative_lag = lag
