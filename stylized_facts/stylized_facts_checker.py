@@ -1050,7 +1050,7 @@ class StylizedFactsChecker:
             volume_tail_arr = np.repeat(volume_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
             acorr_tail_arr, first_negative_lag_arr = self.check_autocorrelation(
-                [lag for lag in range(1,121)], return_tail=True
+                [lag for lag in range(1,71)], return_tail=True
             )
             acorr_tail_arr = np.repeat(acorr_tail_arr, repeats=kurtosis_arr.shape[0])
             first_negative_lag_arr = np.repeat(

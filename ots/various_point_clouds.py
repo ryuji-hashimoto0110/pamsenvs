@@ -335,7 +335,7 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
             )
             statistics.append(float(acorr_dic[self.lags[0]]))
         else:
-            lags: list[int] = [lag for lag in range(1,121)]
+            lags: list[int] = [lag for lag in range(1,71)]
             acorr_dic: dict[int, ndarray] = self._calc_autocorrelation(
                 np.abs(self.return_arr), lags, keepdim=False
             )
