@@ -52,7 +52,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Your trading history is also provided as a following format. " + \
                 "Negative volume means that you sold the stock.\\n" + \
                 "[Your trading history]market id: {}, price: {} volume: {}\\n\\n"
-            answer_format: str = "Decide your investment in the following JSON format. " + \
+            self.answer_format: str = "Decide your investment in the following JSON format. " + \
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
                 "order volume means the number of units you want to buy or sell the stock. " + \
@@ -61,7 +61,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Please provide the following details in JSON format. " + \
                 "Make sure to enclose each property in double quotes. " + \
                 '{<market_id>: <order volume>, <market_id>: <order volume>, ...}'
-            self.base_prompt: str = premise + instruction + answer_format
+            self.base_prompt: str = premise + instruction
     
     def _create_portfolio_info(self) -> str:
         """create a portfolio information."""
@@ -101,7 +101,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 else:
                     raise ValueError("The agent id does not match the buy agent id or the sell agent id.")
                 trading_history_info += f"[Your trading history]market id: {market_id}, " + \
-                    f"price: {price:.1f}, volume: {volume:.1f}\\n"
+                    f"price: {price:.1f}, volume: {volume:.1f}\\n\\n"
         return trading_history_info
     
     def create_prompt(self, markets: list[Market]) -> str:
@@ -110,7 +110,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         portfolio_info: str = self._create_portfolio_info()
         market_condition_info: str = self._create_market_condition_info(markets=markets)
         trading_history_info: str = self._create_trading_history_info()
-        prompt: str = self.base_prompt + portfolio_info + market_condition_info + trading_history_info
+        prompt: str = self.base_prompt + portfolio_info + \
+            market_condition_info + trading_history_info + self.answer_format
         print("[green]==prompt==[green]")
         print(prompt)
         return prompt
