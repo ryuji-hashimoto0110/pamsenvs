@@ -111,9 +111,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         market_condition_info: str = self._create_market_condition_info(markets=markets)
         trading_history_info: str = self._create_trading_history_info()
         prompt: str = self.base_prompt + portfolio_info + market_condition_info + trading_history_info
-        #print("[green]==prompt==[green]")
-        #print(prompt)
-        #print()
+        print("[green]==prompt==[green]")
+        print(prompt)
         return prompt
         
     def convert_llm_output2orders(
@@ -124,6 +123,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         """convert the LLM output to orders."""
         success: bool = False
         order_dic: dict[MarketID, int] = json.loads(llm_output)
+        print("[green]==llm output==[green]")
+        print(order_dic)
         orders: list[Order | Cancel] = []
         for market_id, order_volume in order_dic.items():
             try:
