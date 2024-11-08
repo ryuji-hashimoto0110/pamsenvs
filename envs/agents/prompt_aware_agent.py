@@ -99,7 +99,7 @@ class PromptAwareAgent(Agent):
             if success:
                 break
         if not success:
-            raise ValueError(f"Failed to convert the LLM output to orders.")
+            raise ValueError(f"Failed to convert the LLM output to orders: {llm_output}.")
         return orders
     
     def executed_order(self, log: ExecutionLog) -> None:
