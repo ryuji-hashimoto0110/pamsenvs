@@ -74,4 +74,5 @@ class PortfolioSaver(Logger):
             with open(csv_path, mode="w") as f:
                 writer = csv.writer(f)
                 for row in rows:
+                    print(row)
                     writer.writerow(row)
