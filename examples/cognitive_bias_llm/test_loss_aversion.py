@@ -11,7 +11,7 @@ root_path: Path = curr_path.parents[1]
 import sys
 sys.path.append(str(root_path))
 from envs.agents import LiquidityProviderAgent
-from envs.agents import PromptAwareAgent
+from envs.agents import HistoryAwareLLMAgent
 from typing import Any
 from typing import Optional
 
@@ -34,7 +34,7 @@ def main(args):
         logger=saver
     )
     runner.class_register(LiquidityProviderAgent)
-    runner.class_register(PromptAwareAgent)
+    runner.class_register(HistoryAwareLLMAgent)
     runner.main()
 
 if __name__ == "__main__":
