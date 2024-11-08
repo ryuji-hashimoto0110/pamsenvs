@@ -14,6 +14,7 @@ from typing import Literal
 from typing import Optional
 from typing import TypeVar
 import subprocess
+from rich import print
 
 AgentID = TypeVar("AgentID")
 MarketID = TypeVar("MarketID")
