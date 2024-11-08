@@ -119,19 +119,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         markets: list[Market]
     ) -> list[Order | Cancel]:
         """convert the LLM output to orders."""
-        print("[green]==output==[green]")
-        print(llm_output)
         success: bool = False
-        for _ in range(10):
-            try:
-                order_dic: dict[MarketID, int] = json.loads(llm_output)
-                success = True
-            except json.JSONDecodeError:
-                continue
-            if success:
-                break
-        if not success:
-            raise ValueError("Failed to convert the LLM output to a dictionary.")
+        order_dic: dict[MarketID, int] = json.loads(llm_output)
         orders: list[Order | Cancel] = []
         for market_id, order_volume in order_dic.items():
             try:

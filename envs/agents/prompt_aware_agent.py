@@ -87,9 +87,19 @@ class PromptAwareAgent(Agent):
         llm_output: str = fetch_llm_output(
             prompt=prompt, llm_name=self.llm_name
         )
-        orders: list[Order | Cancel] = self.convert_llm_output2orders(
-            llm_output=llm_output, markets=markets
-        )
+        success: bool = False
+        for _ in range(10):
+            try:
+                orders: list[Order | Cancel] = self.convert_llm_output2orders(
+                    llm_output=llm_output, markets=markets
+                )
+                success = True
+            except Exception:
+                continue
+            if success:
+                break
+        if not success:
+            raise ValueError(f"Failed to convert the LLM output to orders: {llm_output}.")
         return orders
     
     def executed_order(self, log: ExecutionLog) -> None:
