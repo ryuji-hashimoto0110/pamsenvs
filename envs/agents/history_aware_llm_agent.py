@@ -57,7 +57,6 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "and do not add any additional words to your response outside of the format. " + \
                 "order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
-                "If you want to do nothing, please do not include the market id in your response. " + \
                 "Short selling is not allowed. " + \
                 "Please provide the following details in JSON format. " + \
                 "Fill in the <> blank. Your response must begin with { and end with }.\\n" + \
