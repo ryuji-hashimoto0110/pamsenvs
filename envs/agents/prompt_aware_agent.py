@@ -28,10 +28,12 @@ def fetch_llm_output(
         f'{{"text":{prompt}}}',
         f'http://hpc15.socsim.t.u-tokyo.ac.jp:8000/{llm_name}'
     ]
-    raw_llm_output: str = subprocess.run(
+    #raw_llm_output: str = subprocess.run(
+    #    commands, capture_output=True, text=True
+    #).stdout
+    subprocess.run(
         commands, capture_output=True, text=True
     ).stdout
-    print(raw_llm_output)
     llm_output_dic: dict[str, str] = json.loads(raw_llm_output)
     llm_output: str = llm_output_dic["response"]
     return llm_output
