@@ -40,7 +40,7 @@ def main(args):
         sorted(
             map(
                 lambda x: (x["market_time"], x["market_price"]),
-                filter(lambda x: x["market_time"] >= 100, saver.market_step_logs)
+                filter(lambda x: x["market_time"] >= 0, saver.market_step_logs)
             )
         )
     )
