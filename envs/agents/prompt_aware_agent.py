@@ -22,7 +22,7 @@ def fetch_llm_output(
     prompt: str,
     llm_name: Literal["gpt-4o-mini", "gpt-4o", "llama", "finllama"]
 ) -> str:
-    print(f'{{"text":{prompt}}}')
+    print(f'{{\"text\":\"{prompt}\"}}')
     commands: list[str] = [
         'curl', '-X', 'POST', '-H',
         'Content-Type: application/json', '-d', 
