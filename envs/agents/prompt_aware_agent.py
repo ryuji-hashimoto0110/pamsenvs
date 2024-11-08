@@ -22,6 +22,7 @@ def fetch_llm_output(
     prompt: str,
     llm_name: Literal["gpt-4o-mini", "gpt-4o", "llama", "finllama"]
 ) -> str:
+    print(prompt)
     commands: list[str] = [
         'curl', '-X', 'POST', '-H',
         'Content-Type: application/json', '-d', 
@@ -31,6 +32,7 @@ def fetch_llm_output(
     raw_llm_output: str = subprocess.run(
         commands, capture_output=True, text=True
     ).stdout
+    print(raw_llm_output)
     llm_output_dic: dict[str, str] = json.loads(raw_llm_output)
     llm_output: str = llm_output_dic["response"]
     return llm_output
