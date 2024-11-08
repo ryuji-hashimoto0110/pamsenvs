@@ -40,32 +40,32 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             warnings.warn("basePrompt will be ignored.")
         else:
             premise: str = "You are an individual investor in stock markets. " + \
-                "Decide whether to buy or sell stocks to each market or do nothing.\n\n"
-            instruction: str = "Your current portfolio is provided as a following format.\n" + \
-                "[Your portfolio]cash: {}\n" + \
-                "[Your portfolio]market id: {}, volume: {}\n\n" +\
-                "Each market condition is provided as a following format.\n" + \
+                "Decide whether to buy or sell stocks to each market or do nothing.\\n\\n"
+            instruction: str = "Your current portfolio is provided as a following format.\\n" + \
+                "[Your portfolio]cash: {}\\n" + \
+                "[Your portfolio]market id: {}, volume: {}\\n\\n" +\
+                "Each market condition is provided as a following format.\\n" + \
                 "[Market condition]market id: {}, current market price: {}, " + \
-                "all time high price: {}, all time low price: {}\n\n" + \
+                "all time high price: {}, all time low price: {}\\n\\n" + \
                 "Your trading history is also provided as a following format. " + \
-                "Negative volume means that you sold the stock.\n" + \
-                "[Your trading history]market id: {}, price: {} volume: {}\n\n"
+                "Negative volume means that you sold the stock.\\n" + \
+                "[Your trading history]market id: {}, price: {} volume: {}\\n\\n"
             answer_format: str = "Please answer in the following dictionary format. " + \
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
                 "order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
                 "If you want to do nothing, please do not include the market id in your response. " + \
-                "Short selling is not allowed.\n" + \
-                "{{market id}: {order volume}, {market id}: {order volume}, ...}\n\n"
+                "Short selling is not allowed.\\n" + \
+                "{{market id}: {order volume}, {market id}: {order volume}, ...}\\n\\n"
             self.base_prompt: str = premise + instruction + answer_format
     
     def _create_portfolio_info(self) -> str:
         """create a portfolio information."""
         cash_amount: float = self.get_cash_amount()
-        portfolio_info: str = f"[Your portfolio]cash: {cash_amount:.1f}\n"
+        portfolio_info: str = f"[Your portfolio]cash: {cash_amount:.1f}\\n"
         for market_id, volume in self.asset_volumes.items():
-            portfolio_info += f"[Your portfolio]market id: {market_id}, volume: {volume}\n"
+            portfolio_info += f"[Your portfolio]market id: {market_id}, volume: {volume}\\n"
         return portfolio_info
     
     def _create_market_condition_info(self, markets: list[Market]) -> str:
@@ -80,7 +80,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             market_condition_info += f"[Market condition]market id: {market_id}, " + \
                 f"current market price: {current_market_price:.1f}, " + \
                 f"all time high price: {all_time_high_price:.1f}, " + \
-                f"all time low price: {all_time_low_price:.1f}\n"
+                f"all time low price: {all_time_low_price:.1f}\\n"
         return market_condition_info
     
     def _create_trading_history_info(self) -> str:
@@ -98,7 +98,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 else:
                     raise ValueError("The agent id does not match the buy agent id or the sell agent id.")
                 trading_history_info += f"[Your trading history]market id: {market_id}, " + \
-                    f"price: {price:.1f}, volume: {volume:.1f}\n"
+                    f"price: {price:.1f}, volume: {volume:.1f}\\n"
         return trading_history_info
     
     def create_prompt(self, markets: list[Market]) -> str:
