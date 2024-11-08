@@ -57,12 +57,11 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             self.answer_format: str = "Decide your investment in the following JSON format. " + \
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
+                "Make sure to enclose each property in double quotes. " + \
+                '{"<market_id>": "<order volume>", "<market_id>": "<order volume>", ...}\\n' + \
                 "order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
-                "Short selling is not allowed. " + \
-                "Please provide the following details in JSON format. " + \
-                "Make sure to enclose each property in double quotes. " + \
-                '{<market_id>: <order volume>, <market_id>: <order volume>, ...}'
+                "Short selling is not allowed."
             self.base_prompt: str = premise + instruction
     
     def _create_portfolio_info(self) -> str:
