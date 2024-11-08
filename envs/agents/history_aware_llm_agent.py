@@ -10,6 +10,7 @@ from typing import Any
 from typing import Optional
 from typing import TypeVar
 import warnings
+import rich
 
 AgentID = TypeVar("AgentID")
 MarketID = TypeVar("MarketID")
@@ -108,6 +109,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         market_condition_info: str = self._create_market_condition_info(markets=markets)
         trading_history_info: str = self._create_trading_history_info()
         prompt: str = self.base_prompt + portfolio_info + market_condition_info + trading_history_info
+        print("[green]==prompt==[green]")
         print(prompt)
         return prompt
         
@@ -117,6 +119,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         markets: list[Market]
     ) -> list[Order | Cancel]:
         """convert the LLM output to orders."""
+        print("[green]==output==[green]")
         print(llm_output)
         success: bool = False
         for _ in range(10):
