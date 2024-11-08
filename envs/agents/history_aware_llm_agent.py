@@ -112,6 +112,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         prompt: str = self.base_prompt + portfolio_info + market_condition_info + trading_history_info
         print("[green]==prompt==[green]")
         print(prompt)
+        print()
         return prompt
         
     def convert_llm_output2orders(

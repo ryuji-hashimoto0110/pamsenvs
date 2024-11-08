@@ -90,6 +90,8 @@ class PromptAwareAgent(Agent):
                 llm_output: str = fetch_llm_output(
                     prompt=prompt, llm_name=self.llm_name
                 )
+                print("[green]==llm output==[green]")
+                print(llm_output)
                 orders: list[Order | Cancel] = self.convert_llm_output2orders(
                     llm_output=llm_output, markets=markets
                 )
