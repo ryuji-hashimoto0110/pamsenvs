@@ -51,16 +51,15 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Your trading history is also provided as a following format. " + \
                 "Negative volume means that you sold the stock.\\n" + \
                 "[Your trading history]market id: {}, price: {} volume: {}\\n\\n"
-            answer_format: str = "Decide your investment in the following dictionary format. " + \
+            answer_format: str = "Decide your investment in the following JSON format. " + \
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
                 "order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
                 "If you want to do nothing, please do not include the market id in your response. " + \
-                "Short selling is not allowed." + \
-                "{{market id}: {order volume}, {market id}: {order volume}, ...}\\n\\n" + \
-                "For example, if you want to buy 1 unit of market 0 and sell 2 units of market 1, " + \
-                "your response should be {0: 1, 1: -2}.\\n\\n"
+                "Short selling is not allowed. " + \
+                "Please provide the following details in JSON format: \\n" + \
+                '{<market id>: <order volume>, ...}'
             self.base_prompt: str = premise + instruction + answer_format
     
     def _create_portfolio_info(self) -> str:
