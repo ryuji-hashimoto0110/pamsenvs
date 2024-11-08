@@ -58,7 +58,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Negative order volume means that you want to sell the stock. " + \
                 "If you want to do nothing, please do not include the market id in your response. " + \
                 "Short selling is not allowed. " + \
-                "Please provide the following details in JSON format. Fill in the <> blank.\\n" + \
+                "Please provide the following details in JSON format. " + \
+                "Fill in the <> blank. Your response must begin with { and end with }.\\n" + \
                 '{<market_id>: <order volume>, <market_id>: <order volume>, ...}'
             self.base_prompt: str = premise + instruction + answer_format
     
