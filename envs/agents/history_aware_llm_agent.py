@@ -58,7 +58,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
                 "Make sure to enclose each property in double quotes.\\n" + \
-                "{<market_id>: <order volume>, <market_id>: <order volume>, ...}\\n\\n" + \
+                "{<market id>: <order volume>, <market id>: <order volume>, ...}\\n\\n" + \
                 "order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
                 "Short selling is not allowed."
