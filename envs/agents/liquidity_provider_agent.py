@@ -55,7 +55,7 @@ class LiquidityProviderAgent(HighFrequencyAgent):
             agent_id=self.agent_id,
             market_id=market.market_id,
             is_buy=True,
-            price=min(0, fundamental_price-self.half_spread),
+            price=max(0, fundamental_price-self.half_spread),
             volume=self.order_volume,
             kind=LIMIT_ORDER,
             ttl=1
@@ -64,7 +64,7 @@ class LiquidityProviderAgent(HighFrequencyAgent):
             agent_id=self.agent_id,
             market_id=market.market_id,
             is_buy=False,
-            price=fundamental_price+self.half_spread,
+            price=max(0, fundamental_price+self.half_spread),
             volume=self.order_volume,
             kind=LIMIT_ORDER,
             ttl=1
