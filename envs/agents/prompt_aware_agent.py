@@ -93,8 +93,8 @@ class PromptAwareAgent(Agent):
                 )
                 if llm_output[:7] == "```json" and llm_output[-3:] == "```":
                     llm_output = llm_output[7:-3]
-                print("[green]==llm output==[green]")
-                print(llm_output)
+                #print("[green]==llm output==[green]")
+                #print(llm_output)
                 orders: list[Order | Cancel] = self.convert_llm_output2orders(
                     llm_output=llm_output, markets=markets
                 )
