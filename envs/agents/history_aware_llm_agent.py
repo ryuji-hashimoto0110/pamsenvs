@@ -114,7 +114,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
     def convert_llm_output2orders(
         self,
         llm_output: str,
-        market: Market
+        markets: list[Market]
     ) -> list[Order | Cancel]:
         """convert the LLM output to orders."""
         print(llm_output)
