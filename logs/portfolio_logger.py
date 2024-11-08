@@ -33,7 +33,7 @@ class PortfolioSaver(Logger):
         simulator: Simulator = log.simulator
         for market in simulator.markets:
             market_id: MarketID = market.market_id
-            self.market_id2rows_dic[market_id] = self._create_columns()
+            self.market_id2rows_dic[market_id] = [self._create_columns()]
             csv_path: Path = self.dfs_save_path / f"{market_id}.csv"
             self.market_id2path_dic[market_id] = csv_path
             for agent in simulator.agents:
@@ -74,5 +74,4 @@ class PortfolioSaver(Logger):
             with open(csv_path, mode="w") as f:
                 writer = csv.writer(f)
                 for row in rows:
-                    print(row)
                     writer.writerow(row)
