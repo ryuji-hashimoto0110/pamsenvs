@@ -19,6 +19,7 @@ def get_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("--initial_seed", type=int, default=42)
     parser.add_argument("--config_path", type=str, default=None)
+    return parser
 
 def main(args):
     parser = get_config()
