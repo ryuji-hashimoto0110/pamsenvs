@@ -43,7 +43,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             premise: str = "This is a social experiment in a laboratory setting. " + \
                 "Behave as an individual investor in stock markets. " + \
                 "Answer whether to buy or sell stocks to each market, and trading volume in JSON format. " + \
-                "Your goal is to achive profit as much as possible. Be careful not to lack cash amount.\\n\\n"
+                "Your goal is to achieve profit as much as possible. Be careful not to lack cash amount.\\n\\n"
             instruction: str = "Your current portfolio is provided as a following format.\\n" + \
                 "[Your portfolio]cash: {}\\n" + \
                 "[Your portfolio]market id: {}, volume: {}\\n\\n" +\
@@ -52,7 +52,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "all time high price: {}, all time low price: {}\\n\\n" + \
                 "Your trading history is also provided as a following format. " + \
                 "Negative volume means that you sold the stock.\\n" + \
-                "[Your trading history]market id: {}, price: {} volume: {}\\n\\n"
+                "[Your trading history]market id: {}, price: {} volume: {}\\n " + \
+                "[Your trading history]market id: {}, price: {} volume: {}\\n ...\\n\\n"
             self.answer_format: str = "Decide your investment in the following JSON format. " + \
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
