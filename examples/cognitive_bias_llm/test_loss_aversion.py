@@ -44,7 +44,7 @@ def main(args):
             )
         )
     )
-    print(market_price_dict.values())
+    print(list(market_price_dict.values()))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
