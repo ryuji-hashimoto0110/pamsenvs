@@ -32,6 +32,7 @@ def fetch_llm_output(
         commands, capture_output=True, text=True
     ).stdout
     llm_output_dic: dict[str, str] = json.loads(raw_llm_output)
+    print(llm_output_dic)
     llm_output: str = llm_output_dic["response"]
     return llm_output
 
