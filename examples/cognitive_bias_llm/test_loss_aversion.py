@@ -18,6 +18,7 @@ from typing import Optional
 def get_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("--initial_seed", type=int, default=42)
+    parser.add_argument("--num_simulations", type=int, default=1)
     parser.add_argument("--config_path", type=str)
     parser.add_argument("--csvs_path", type=str)
     return parser
@@ -28,16 +29,20 @@ def main(args):
     initial_seed: int = all_args.initial_seed
     config_path: Path = pathlib.Path(all_args.config_path).resolve()
     config: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
-    csvs_path: Path = pathlib.Path(all_args.csvs_path).resolve()
-    saver = PortfolioSaver(dfs_save_path=csvs_path)
-    runner: Runner = SequentialRunner(
-        settings=config,
-        prng=random.Random(initial_seed),
-        logger=saver
-    )
-    runner.class_register(LiquidityProviderAgent)
-    runner.class_register(HistoryAwareLLMAgent)
-    runner.main()
+    num_simulations: int = all_args.num_simulations
+    all_csvs_path: Path = pathlib.Path(all_args.csvs_path).resolve()
+    for i in range(num_simulations):
+        csvs_path: Path = all_csvs_path / f"{i}"
+        csvs_path.mkdir(parents=True)   
+        saver = PortfolioSaver(dfs_save_path=csvs_path)
+        runner: Runner = SequentialRunner(
+            settings=config,
+            prng=random.Random(initial_seed+i),
+            logger=saver
+        )
+        runner.class_register(LiquidityProviderAgent)
+        runner.class_register(HistoryAwareLLMAgent)
+        runner.main()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
