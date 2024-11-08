@@ -26,7 +26,7 @@ def fetch_llm_output(
     commands: list[str] = [
         'curl', '-X', 'POST', '-H',
         'Content-Type: application/json', '-d', 
-        f'{{"text":{prompt}}}',
+        f'{{"text":"{prompt}"}}',
         f'http://hpc15.socsim.t.u-tokyo.ac.jp:8000/{llm_name}'
     ]
     raw_llm_output: str = subprocess.run(
