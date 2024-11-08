@@ -43,7 +43,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             premise: str = "This is a social experiment in a laboratory setting. " + \
                 "Behave as an individual investor in stock markets. " + \
                 "Answer whether to buy or sell stocks to each market, and trading volume in JSON format. " + \
-                "Your goal is to achive profit as much as possible.\\n\\n"
+                "Your goal is to achive profit as much as possible. Be careful not to lack cash amount.\\n\\n"
             instruction: str = "Your current portfolio is provided as a following format.\\n" + \
                 "[Your portfolio]cash: {}\\n" + \
                 "[Your portfolio]market id: {}, volume: {}\\n\\n" +\
