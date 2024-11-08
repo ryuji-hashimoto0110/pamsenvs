@@ -59,7 +59,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "If you want to do nothing, please do not include the market id in your response. " + \
                 "Short selling is not allowed. " + \
                 "Please provide the following details in JSON format:\\n" + \
-                '{\"<market_id>\": \"<order volume>\", \"<market_id>\": \"<order volume>\", ...}'
+                '{\\"<market_id>\\": \\"<order volume>\\", \\"<market_id>\\": \\"<order volume>\\", ...}'
             self.base_prompt: str = premise + instruction + answer_format
     
     def _create_portfolio_info(self) -> str:
