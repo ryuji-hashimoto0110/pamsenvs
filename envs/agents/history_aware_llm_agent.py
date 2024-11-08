@@ -59,7 +59,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Negative order volume means that you want to sell the stock. " + \
                 "Short selling is not allowed. " + \
                 "Please provide the following details in JSON format. " + \
-                "Fill in the <> blank. Your response must begin with { and end with }.\\n" + \
+                "Fill in the <> blank. Enclose each property in double quotes. " + \
+                "Your response must begin with { and end with }.\\n" + \
                 '{<market_id>: <order volume>, <market_id>: <order volume>, ...}'
             self.base_prompt: str = premise + instruction + answer_format
     
@@ -124,7 +125,6 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         """convert the LLM output to orders."""
         success: bool = False
         order_dic: dict[MarketID, int] = json.loads(llm_output)
-        print(order_dic)
         orders: list[Order | Cancel] = []
         for market_id, order_volume in order_dic.items():
             print(type(market_id), type(order_volume))
