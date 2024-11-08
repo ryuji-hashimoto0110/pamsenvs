@@ -33,7 +33,8 @@ def main(args):
     all_csvs_path: Path = pathlib.Path(all_args.csvs_path).resolve()
     for i in range(num_simulations):
         csvs_path: Path = all_csvs_path / f"{i}"
-        csvs_path.mkdir(parents=True)   
+        if not csvs_path.exists():
+            csvs_path.mkdir(parents=True)   
         saver = PortfolioSaver(dfs_save_path=csvs_path)
         runner: Runner = SequentialRunner(
             settings=config,
