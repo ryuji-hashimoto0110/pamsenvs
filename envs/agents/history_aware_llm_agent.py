@@ -51,7 +51,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Your trading history is also provided as a following format. " + \
                 "Negative volume means that you sold the stock.\\n" + \
                 "[Your trading history]market id: {}, price: {} volume: {}\\n\\n"
-            answer_format: str = "Please answer in the following dictionary format. " + \
+            answer_format: str = "Decide your investment in the following dictionary format. " + \
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
                 "order volume means the number of units you want to buy or sell the stock. " + \
