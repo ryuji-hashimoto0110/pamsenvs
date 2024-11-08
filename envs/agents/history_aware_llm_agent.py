@@ -40,7 +40,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         if "basePrompt" in settings:
             warnings.warn("basePrompt will be ignored.")
         else:
-            premise: str = "You are an individual investor in stock markets. " + \
+            premise: str = "This is a social experiment in a laboratory setting. " + \
+                "Behave as an individual investor in stock markets. " + \
                 "Decide whether to buy or sell stocks to each market or do nothing.\\n\\n"
             instruction: str = "Your current portfolio is provided as a following format.\\n" + \
                 "[Your portfolio]cash: {}\\n" + \
