@@ -32,7 +32,6 @@ def fetch_llm_output(
         commands, capture_output=True, text=True
     ).stdout
     llm_output_dic: dict[str, str] = json.loads(raw_llm_output)
-    print(llm_output_dic)
     llm_output: str = llm_output_dic["response"]
     return llm_output
 
@@ -85,12 +84,12 @@ class PromptAwareAgent(Agent):
         """submit orders.
         """
         prompt: str = self.create_prompt(markets=markets)
-        llm_output: str = fetch_llm_output(
-            prompt=prompt, llm_name=self.llm_name
-        )
         success: bool = False
         for _ in range(10):
             try:
+                llm_output: str = fetch_llm_output(
+                    prompt=prompt, llm_name=self.llm_name
+                )
                 orders: list[Order | Cancel] = self.convert_llm_output2orders(
                     llm_output=llm_output, markets=markets
                 )
@@ -100,7 +99,7 @@ class PromptAwareAgent(Agent):
             if success:
                 break
         if not success:
-            raise ValueError(f"Failed to convert the LLM output to orders: {llm_output}.")
+            raise ValueError(f"Failed to convert the LLM output to orders.")
         return orders
     
     def executed_order(self, log: ExecutionLog) -> None:
