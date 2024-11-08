@@ -36,6 +36,15 @@ def main(args):
     runner.class_register(LiquidityProviderAgent)
     runner.class_register(HistoryAwareLLMAgent)
     runner.main()
+    market_price_dict = dict(
+        sorted(
+            map(
+                lambda x: (x["market_time"], x["market_price"]),
+                filter(lambda x: x["market_time"] >= 100, saver.market_step_logs)
+            )
+        )
+    )
+    print(market_price_dict.values())
 
 if __name__ == "__main__":
     main(sys.argv[1:])

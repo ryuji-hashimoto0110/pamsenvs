@@ -42,7 +42,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         else:
             premise: str = "This is a social experiment in a laboratory setting. " + \
                 "Behave as an individual investor in stock markets. " + \
-                "Decide whether to buy or sell stocks to each market or do nothing.\\n\\n"
+                "Answer whether to buy or sell stocks to each market or do nothing in JSON format.\\n\\n"
             instruction: str = "Your current portfolio is provided as a following format.\\n" + \
                 "[Your portfolio]cash: {}\\n" + \
                 "[Your portfolio]market id: {}, volume: {}\\n\\n" +\
@@ -59,8 +59,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Negative order volume means that you want to sell the stock. " + \
                 "Short selling is not allowed. " + \
                 "Please provide the following details in JSON format. " + \
-                "Fill in the <> blank. Enclose each property in double quotes. " + \
-                "Your response must begin with { and end with }.\\n" + \
+                "Make sure to enclose each property in double quotes. " + \
                 '{<market_id>: <order volume>, <market_id>: <order volume>, ...}'
             self.base_prompt: str = premise + instruction + answer_format
     
