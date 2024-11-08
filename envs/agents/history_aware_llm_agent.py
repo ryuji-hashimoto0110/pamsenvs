@@ -10,7 +10,7 @@ from typing import Any
 from typing import Optional
 from typing import TypeVar
 import warnings
-import rich
+from rich import print
 
 AgentID = TypeVar("AgentID")
 MarketID = TypeVar("MarketID")
@@ -74,8 +74,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         market_condition_info: str = ""
         for market in markets:
             market_id: int = market.market_id
-            current_market_price: float = market.get_market_price()
-            market_prices: list[float] = market.get_market_prices()
+            current_market_price: float = market.get_fundamental_price()
+            market_prices: list[float] = market.get_fundamental_prices()
             all_time_high_price: float = max(market_prices)
             all_time_low_price: float = min(market_prices)
             market_condition_info += f"[Market condition]market id: {market_id}, " + \
