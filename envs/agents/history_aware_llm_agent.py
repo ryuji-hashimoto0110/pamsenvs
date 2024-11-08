@@ -58,7 +58,9 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Negative order volume means that you want to sell the stock. " + \
                 "If you want to do nothing, please do not include the market id in your response. " + \
                 "Short selling is not allowed." + \
-                "{{market id}: {order volume}, {market id}: {order volume}, ...}"
+                "{{market id}: {order volume}, {market id}: {order volume}, ...}\\n\\n" + \
+                "For example, if you want to buy 1 unit of market 0 and sell 2 units of market 1, " + \
+                "your response should be {0: 1, 1: -2}.\\n\\n"
             self.base_prompt: str = premise + instruction + answer_format
     
     def _create_portfolio_info(self) -> str:
