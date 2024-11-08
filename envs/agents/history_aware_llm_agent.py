@@ -98,7 +98,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 else:
                     raise ValueError("The agent id does not match the buy agent id or the sell agent id.")
                 trading_history_info += f"[Your trading history]market id: {market_id}, " + \
-                    f"price: {price:.1f}, volume: {volume:.1f}\n"                
+                    f"price: {price:.1f}, volume: {volume:.1f}\n"
+        return trading_history_info
     
     def create_prompt(self, markets: list[Market]) -> str:
         """create a prompt for the agent."""
@@ -107,6 +108,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         market_condition_info: str = self._create_market_condition_info(markets=markets)
         trading_history_info: str = self._create_trading_history_info()
         prompt: str = self.base_prompt + portfolio_info + market_condition_info + trading_history_info
+        print(prompt)
         
     def convert_llm_output2orders(
         self,
@@ -114,7 +116,18 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         market: Market
     ) -> list[Order | Cancel]:
         """convert the LLM output to orders."""
-        order_dic: dict[MarketID, int] = json.loads(llm_output)
+        print(llm_output)
+        success: bool = False
+        for _ in range(10):
+            try:
+                order_dic: dict[MarketID, int] = json.loads(llm_output)
+                success = True
+            except json.JSONDecodeError:
+                continue
+            if success:
+                break
+        if not success:
+            raise ValueError("Failed to convert the LLM output to a dictionary.")
         orders: list[Order | Cancel] = []
         for market_id, order_volume in order_dic.items():
             try:
