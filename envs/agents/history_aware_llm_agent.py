@@ -101,7 +101,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 else:
                     raise ValueError("The agent id does not match the buy agent id or the sell agent id.")
                 trading_history_info += f"[Your trading history]market id: {market_id}, " + \
-                    f"price: {price:.1f}, volume: {volume:.1f}\\n\\n"
+                    f"price: {price:.1f}, volume: {volume:.1f}\\n"
+        trading_history_info += "\\n"
         return trading_history_info
     
     def create_prompt(self, markets: list[Market]) -> str:
