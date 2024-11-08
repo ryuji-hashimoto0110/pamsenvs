@@ -22,19 +22,18 @@ def fetch_llm_output(
     prompt: str,
     llm_name: Literal["gpt-4o-mini", "gpt-4o", "llama", "finllama"]
 ) -> str:
+    print(f'{{"text":{prompt}}}')
     commands: list[str] = [
         'curl', '-X', 'POST', '-H',
         'Content-Type: application/json', '-d', 
         f'{{"text":{prompt}}}',
         f'http://hpc15.socsim.t.u-tokyo.ac.jp:8000/{llm_name}'
     ]
-    #raw_llm_output: str = subprocess.run(
-    #    commands, capture_output=True, text=True
-    #).stdout
-    subprocess.run(
+    raw_llm_output: str = subprocess.run(
         commands, capture_output=True, text=True
     ).stdout
     llm_output_dic: dict[str, str] = json.loads(raw_llm_output)
+    print(llm_output_dic)
     llm_output: str = llm_output_dic["response"]
     return llm_output
 
