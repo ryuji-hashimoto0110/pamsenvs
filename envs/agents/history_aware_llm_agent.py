@@ -127,10 +127,11 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         print(order_dic)
         orders: list[Order | Cancel] = []
         for market_id, order_volume in order_dic.items():
+            print(type(market_id), type(order_volume))
             try:
                 market_id = int(market_id)
             except ValueError:
-                raise ValueError(f"The market id must be an integer but found {market_id}.")
+                raise ValueError(f"Failed to convert market_id to an integer {market_id}.")
             try:
                 order_volume = int(order_volume)
             except ValueError:

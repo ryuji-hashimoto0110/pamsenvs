@@ -97,7 +97,8 @@ class PromptAwareAgent(Agent):
                     llm_output=llm_output, markets=markets
                 )
                 success = True
-            except Exception:
+            except Exception as e:
+                print(e)
                 continue
             if success:
                 break
