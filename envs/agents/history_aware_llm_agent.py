@@ -124,6 +124,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         trading_history_info: str = self._create_trading_history_info()
         prompt: str = self.base_prompt + portfolio_info + \
             market_condition_info + trading_history_info + self.answer_format
+        prompt = json.dumps({"text": prompt}, ensure_ascii=False)
         return prompt
         
     def convert_llm_output2orders(
