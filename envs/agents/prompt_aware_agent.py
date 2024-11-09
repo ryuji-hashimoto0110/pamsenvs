@@ -89,19 +89,19 @@ class PromptAwareAgent(Agent):
         prompt: str = self.create_prompt(markets=markets)
         success: bool = False
         for _ in range(10):
-            try:
-                llm_output: str = fetch_llm_output(
-                    prompt=prompt, llm_name=self.llm_name
-                )
-                if llm_output[:7] == "```json" and llm_output[-3:] == "```":
-                    llm_output = llm_output[7:-3]
-                orders: list[Order | Cancel] = self.convert_llm_output2orders(
-                    llm_output=llm_output, markets=markets
-                )
-                success = True
-            except Exception as e:
-                print(e)
-                continue
+            #try:
+            llm_output: str = fetch_llm_output(
+                prompt=prompt, llm_name=self.llm_name
+            )
+            if llm_output[:7] == "```json" and llm_output[-3:] == "```":
+                llm_output = llm_output[7:-3]
+            orders: list[Order | Cancel] = self.convert_llm_output2orders(
+                llm_output=llm_output, markets=markets
+            )
+            success = True
+            #except Exception as e:
+            #   print(e)
+            #    continue
             if success:
                 break
         if not success:
