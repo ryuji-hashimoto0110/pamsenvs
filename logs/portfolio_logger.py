@@ -55,16 +55,20 @@ class PortfolioSaver(Logger):
         sell_agent: Agent = self.agent_id2agent_dic[sell_agent_id]
         execution_price: float = log.price
         execution_volume: int = log.volume
+        buy_agent_cash_amount: float = buy_agent.cash_amount - execution_price * execution_volume
+        buy_agent_asset_volume: int = buy_agent.asset_volumes[market_id] + execution_volume
+        sell_agent_cash_amount: float = sell_agent.cash_amount + execution_price * execution_volume
+        sell_agent_asset_volume: int = sell_agent.asset_volumes[market_id] - execution_volume
         self.market_id2rows_dic[market_id].append(
             [
                 t, buy_agent_id, execution_price, execution_volume,
-                buy_agent.cash_amount, buy_agent.asset_volumes[market_id]      
+                buy_agent_cash_amount, buy_agent_asset_volume
             ]
         )
         self.market_id2rows_dic[market_id].append(
             [
                 t, sell_agent_id, execution_price, -execution_volume,
-                sell_agent.cash_amount, sell_agent.asset_volumes[market_id]
+                sell_agent_cash_amount, sell_agent_asset_volume
             ]
         )
             
