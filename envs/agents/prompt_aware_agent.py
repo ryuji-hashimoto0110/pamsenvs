@@ -99,7 +99,6 @@ class PromptAwareAgent(Agent):
                 success = True
             except Exception as e:
                 print(e)
-                assert False
                 continue
             if success:
                 break
