@@ -14,7 +14,7 @@
         ]
     },
     "Market": {
-		"class": "Market",
+		"class": "TotalTimeAwareMarket",
 		"tickSize": 0.00001,
 		"marketPrice": 300.0,
         "fundamentalDrift": 0.01,
@@ -35,6 +35,7 @@
         "markets": ["Market"],
         "assetVolume": 0,
         "cashAmount": 30000,
-        "llmName": "gpt-4o"
+        "llmName": "llama3.1",
+        "onlyMarketOrders": true
     }
 }
