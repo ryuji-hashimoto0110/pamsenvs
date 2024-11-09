@@ -1,6 +1,6 @@
 initial_seed=42
 num_simulations=1
-config_path="moderate_config.json"
+config_path="loss_aversion_moderate_config.json"
 csvs_path="results"
 
 python test_loss_aversion.py \
