@@ -58,7 +58,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Make sure to enclose each property in double quotes. " + \
                 "Order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
-                "Short selling is not allowed.\\n Here are the answer format." + \
+                "Short selling is not allowed. Try to keep the volume of transactions as non-zero as possible. " + \
+                "Here are the answer format." + \
                 '\\n{<market id>: {order_price: <order price>, order_volume: <order volume>, reason: <reason>} ...}'
             self.base_prompt: str = self.premise + self.instruction
         if not "onlyMarketOrders" in settings:
