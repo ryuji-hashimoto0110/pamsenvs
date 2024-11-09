@@ -20,12 +20,14 @@ class RangeRegulatedMarket(Market):
         order_price: float = order.price
         if order.is_buy:
             min_buy_price: float = maket_price * (1 - self.range)
-            if order_price < min_buy_price:
-                order.price = min_buy_price
+            if order_price is not None:
+                if order_price < min_buy_price:
+                    order.price = min_buy_price
         else:
             max_sell_price: float = maket_price * (1 + self.range)
-            if max_sell_price < order_price:
-                order.price = max_sell_price
+            if order_price is not None:
+                if max_sell_price < order_price:
+                    order.price = max_sell_price
         return order
         
 
