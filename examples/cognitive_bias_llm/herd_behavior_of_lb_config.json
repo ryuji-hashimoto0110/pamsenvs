@@ -70,6 +70,7 @@
         "llmName": "llama3.1",
         "devidendPrice": 10,
         "getOFI": true,
-        "getLeaderBoard": true
+        "getLeaderBoard": true,
+        "onlyMarketOrders": false
     }
 }
