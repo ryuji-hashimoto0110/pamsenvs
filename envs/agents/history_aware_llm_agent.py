@@ -40,11 +40,11 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         if "basePrompt" in settings:
             warnings.warn("basePrompt will be ignored.")
         else:
-            premise: str = "This is a social experiment in a laboratory setting. " + \
+            self.premise: str = "This is a social experiment in a laboratory setting. " + \
                 "Behave as an individual investor in stock markets. " + \
                 "Answer whether to buy or sell stocks to each market, and trading volume in JSON format. " + \
                 "Your goal is to achieve profit as much as possible. Be careful not to lack cash amount.\\n\\n"
-            instruction: str = "Your current portfolio is provided as a following format.\\n" + \
+            self.instruction: str = "Your current portfolio is provided as a following format.\\n" + \
                 "[Your portfolio]cash: {}\\n" + \
                 "[Your portfolio]market id: {}, volume: {}\\n\\n" +\
                 "Each market condition is provided as a following format.\\n" + \
@@ -62,7 +62,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
                 "Short selling is not allowed."
-            self.base_prompt: str = premise + instruction
+            self.base_prompt: str = self.premise + self.instruction
     
     def _create_portfolio_info(self) -> str:
         """create a portfolio information."""
