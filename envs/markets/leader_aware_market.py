@@ -1,6 +1,6 @@
 from pams.agents import Agent
 from pams.logs import Logger
-from pams.logs.base import OrderLog
+from pams.logs import OrderLog
 from pams.market import Market
 from pams.order import Order
 from pams.order_book import OrderBook
@@ -9,6 +9,7 @@ from pathlib import Path
 import random
 from .total_time_aware_market import TotalTimeAwareMarket
 from typing import Any
+from typing import Literal
 from typing import Optional
 from typing import TypeVar
 
@@ -31,8 +32,6 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
                     consistentSignalRate (float): The probability that the market privides private
                         signal that is consistent with the fundamental value.
                     signalsPath (str): The path to the signals folder.
-                    isOrderFlowImbalanceAvailable (bool): Whether the market provides order flow imbalance or not.
-                    isLeaderBoardAvailable (bool): Whether the market provides leaderboard or not.
                     devidendPrice (float): The price of the devidend per unit.
                     averageStockValue (float): The value of one unit of the stock. This is used to calculate wealth.
         """
@@ -41,14 +40,6 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
             raise ValueError("consistentSignalRate is required for LeaderAwareMarket setting.")
         else:
             self.consistent_signal_rate: float = settings["consistentSignalRate"]
-        if not "isOrderFlowImbalanceAvailable" in settings:
-            raise ValueError("isOrderFlowImbalanceAvailable is required for LeaderAwareMarket setting.")
-        else:
-            self.is_ofi_available: bool = settings["isOrderFlowImbalanceAvailable"]
-        if not "isLeaderBoardAvailable" in settings:
-            raise ValueError("isLeaderBoardAvailable is required for LeaderAwareMarket setting.")
-        else:
-            self.is_lb_available: bool = settings["isLeaderBoardAvailable"]
         if not "devidendPrice" in settings:
             raise ValueError("devidendPrice is required for LeaderAwareMarket setting.")
         else:
@@ -66,8 +57,11 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
         else:
             self.average_stock_value: float = settings["averageStockValue"]
         self.leader2wealth_dic: dict[AgentID, float] = {}
+        self.leader2action_dic: dict[AgentID, Literal["buy", "sell"]] = {}
         self.agent2wealth_dic: dict[AgentID, float] = {}
         self.overweight_rate: float = 0.0
+        self.num_buy_orders: int = 0
+        self.num_sell_orders: int = 0
     
     def _collect_signal_paths(self, overweight: bool = True) -> list[Path]:
         if overweight:
@@ -96,12 +90,15 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
 
         This method initializes the session by the following procedure.
             1. Clear buy/sell order book.
-            2. Uniformly sample the devidend from {0, self.devidend_price}.
-            3. set overweight and underweight signals.
-            4. Get top-3 agents and register them as leaders.
+            2. initialize OFI.
+            3. Uniformly sample the devidend from {0, self.devidend_price}.
+            4. set overweight and underweight signals.
+            5. Get top-3 agents and register them as leaders.
         """
         self._clear_order_book(self.buy_order_book)
         self._clear_order_book(self.sell_order_book)
+        self.num_buy_orders = 0
+        self.num_sell_orders = 0
         self.devidend = self._prng.choice([0, self.devidend_price])
         if self.devidend == self.devidend_price:
             self.overweight_rate: float = self.consistent_signal_rate
@@ -141,4 +138,49 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
                         self.leader2wealth_dic[agent_id] = wealth
                     if 3 <= len(self.leader2wealth_dic):
                         break
+
+    def get_leaderboard(self) -> str:
+        """get leaderboard."""
+        leaderboard: str = ""
+        wealthes: list[float] = sorted(
+            list(self.leader2wealth_dic.values()), reverse=True
+        )
+        rank: int = 0
+        for wealth in wealthes:
+            agent_ids: list[AgentID] = [
+                agent_id for agent_id, w in self.leader2wealth_dic.items() if w == wealth
+            ]
+            for agent_id in agent_ids:
+                rank += 1
+                if agent_id in self.leader2action_dic:
+                    action: str = self.leader2action_dic[agent_id]
+                else:
+                    action: str = "None"
+                leaderboard += f"[Leaderboard]rank: {rank}th, wealth: {wealth}, action: {action}\\n"
+        return leaderboard
+
+    def get_ofi(self) -> str:
+        if self.num_buy_orders + self.num_sell_orders == 0:
+            ofi: float = 0.0
+        else:
+            ofi: float = (
+                self.num_buy_orders - self.num_sell_orders
+            ) / (
+                self.num_buy_orders + self.num_sell_orders
+            )
+        return f"[Order Flow Imbalance]{ofi}\\n"
+
+    def _add_order(self, order: Order) -> OrderLog:
+        log: OrderLog = super()._add_order(order)
+        is_buy: bool = order.is_buy
+        if is_buy:
+            self.num_buy_orders += 1
+        else:
+            self.num_sell_orders += 1
+        agent_id: AgentID = order.agent_id
+        if agent_id in self.leader2wealth_dic:
+            if is_buy:
+                self.leader2action_dic[agent_id] = "buy"
+            else:
+                self.leader2action_dic[agent_id] = "sell"
 
