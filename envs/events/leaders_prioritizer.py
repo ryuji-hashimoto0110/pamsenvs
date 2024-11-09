@@ -10,7 +10,7 @@ from typing import TypeVar
 
 AgentID = TypeVar("AgentID")
 
-class LeaderAwareMarketInitializer(EventABC):
+class LeadersPrioritizer(EventABC):
     def __init__(
         self,
         event_id: int,
