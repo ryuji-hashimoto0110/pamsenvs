@@ -41,27 +41,25 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         if "basePrompt" in settings:
             warnings.warn("basePrompt will be ignored.")
         else:
-            self.premise: str = "This is a social experiment in a laboratory setting. " + \
-                "Behave as an investor in stock markets. Answer your order decision by analysing the given information."
+            self.premise: str = "You are a participant of the simulation of stock markets. " + \
+                "Behave as an investor. Answer your order decision after analysing the given information."
             self.instruction: str = "\\n\\nYour current portfolio is provided as a following format." + \
                 "\\n[Your portfolio]cash: {}\\n" + \
-                "[Your portfolio]market id: {}, volume: {}" + \
+                "[Your portfolio]market id: {}, volume: {}, ..." + \
                 "\\n\\nEach market condition is provided as a following format." + \
                 "\\n[Market condition]market id: {}, current market price: {}, " + \
-                "all time high price: {}, all time low price: {}" + \
-                "\\n[Market condition]remaining time step: {}/{}" + \
-                "\\n\\nYour trading history is also provided as a following format. " + \
-                "Negative volume means that you sold the stock." + \
-                "\\n[Your trading history]market id: {}, price: {} volume: {}" + \
-                "\\n[Your trading history]market id: {}, price: {} volume: {} ..."
+                "all time high price: {}, all time low price: {}, ..." + \
+                "\\n[Market condition]remaining time steps: {}/{}" + \
+                "\\n\\nYour trading history is provided as a following format. " + \
+                "\\n[Your trading history]market id: {}, price: {} volume: {}, ..."
             self.answer_format: str = "\\n\\nDecide your investment in the following JSON format. " + \
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
-                "Make sure to enclose each property in double quotes." + \
-                '\\n{<market id>: {"order_price": <order price>, "order_volume": <order volume>, "reason": <reason>} ...}' + \
-                "\\n\\norder volume means the number of units you want to buy or sell the stock. " + \
+                "Make sure to enclose each property in double quotes. " + \
+                "Order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
-                "Short selling is not allowed."
+                "Short selling is not allowed.\\n Here are the answer format." + \
+                '\\n{<market id>: {order_price: <order price>, order_volume: <order volume>, reason: <reason>} ...}'
             self.base_prompt: str = self.premise + self.instruction
         if not "onlyMarketOrders" in settings:
             raise ValueError("onlyMarketOrders must be included in settings.")
@@ -112,9 +110,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                     volume = -volume
                 else:
                     raise ValueError("The agent id does not match the buy agent id or the sell agent id.")
-                trading_history_info += f"[Your trading history]market id: {market_id}, " + \
-                    f"price: {price:.1f}, volume: {volume:.1f}\\n"
-        trading_history_info += "\\n"
+                trading_history_info += f"\n[Your trading history]market id: {market_id}, " + \
+                    f"price: {price:.1f}, volume: {volume:.1f}"
         return trading_history_info
     
     def create_prompt(self, markets: list[Market]) -> str:
@@ -122,7 +119,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         portfolio_info: str = self._create_portfolio_info()
         market_condition_info: str = self._create_market_condition_info(markets=markets)
         trading_history_info: str = self._create_trading_history_info()
-        prompt: str = self.base_prompt + portfolio_info + \
+        prompt: str = self.base_prompt + "\\n Here are the information." + portfolio_info + \
             market_condition_info + trading_history_info + self.answer_format
         prompt = json.dumps({"text": prompt}, ensure_ascii=False)
         return prompt

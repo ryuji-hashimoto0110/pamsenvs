@@ -52,24 +52,26 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             raise ValueError("getLeaderBoard must be included in settings.")
         else:
             self.get_lb: bool = settings["getLeaderBoard"]
-        self.premise += "At each time steps, You can receive devidend as cash according to your holding stock volume: " + \
-            "cash amount += asset volume * devidend price. " + \
-            f"The devidend price is decided as 0 or {devidend_price} according to the fundamental value of the stock. " + \
+        self.premise += "At each time steps, you can receive devidend as cash according to your holding stock volume: " + \
+            "your cash amount <- your cash amount +  asset volume * devidend price. " + \
+            f"The devidend price is decided to be 0 or {devidend_price} according to the fundamental value of the stock. " + \
             "You should buy the stock if you believe that the fundamental value is high to gain devidend. " \
-            "At the end of the simulation, the agent with the highest wealth is the winner. The wealth is calculated as: " + \
-            "cash amount + sum(asset volume * (average stock value * remaining time steps)). " + \
-            "Therefore, stock will become less valueable as the time goes by." 
+            "Your goal is to achieve high wealth. Your wealth is calculated as: " + \
+            "your cash amount + sum(asset volume * (average stock value * remaining time steps)). " + \
+            "Note that stocks will become less valuable as the time goes by." 
         if self.get_ofi:
             self.instruction += "\\n\\n Order flow imbalance is provided as a following format." + \
-                "Order flow imbalance means that" + \
-                "\\n[Order flow imbalance]market id: {}, order flow imbalance: {}"
+                "Order flow imbalance means the difference between the number of buy and sell orders submitted to the stock market. " + \
+                "Negative order flow imbalance indicates that the number of sell orders exceed that of buy orders. " + \
+                "Higher absolute value of order flow imbalance indicates that orders are imbalance to one side." + \
+                "\\n[Order flow imbalance]market id: {}, order flow imbalance: {}, ..."
         if self.get_lb:
             self.instruction += "\\n\\n Leader board is provided as a following format." + \
-                "\\n[Leader board]rank: {}, agent id: {}, wealth: {}, action: {}"
+                "\\n[Leaderboard]market id: {}, rank: {}, wealth: {}, order direction: {}, ..."
         self.instruction += "\\n\\nIn addition to the above information, " + \
-            "private signals are provided. Private signal is the clue to guess the fundamental value of the stock. " + \
+            "private signal is provided. Private signal is a description about the fundamental value of the stock. " + \
             "If the private signal seems to be overweighted, the fundamental value tends to be high. " + \
-            "Leader board is provided as a following format.\\n [Private signal]market id: {}, private signal: {}"
+            "Leaderboard is provided as a following format.\\n [Private signal]market id: {}, private signal: {}, ..."
         self.base_prompt: str = self.premise + self.instruction
 
     def create_ofi_info(self, markets: list[Market]) -> str:
@@ -102,7 +104,7 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
         portfolio_info: str = self._create_portfolio_info()
         market_condition_info: str = self._create_market_condition_info(markets=markets)
         trading_history_info: str = self._create_trading_history_info()
-        prompt: str = self.base_prompt + portfolio_info + \
+        prompt: str = self.base_prompt + "\\n Here are the information." + portfolio_info + \
             market_condition_info + trading_history_info 
         if self.get_ofi:
             prompt += self.create_ofi_info(markets=markets)
