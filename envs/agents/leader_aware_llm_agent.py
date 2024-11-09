@@ -65,7 +65,7 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
                 "\\n[Order flow imbalance]market id: {}, order flow imbalance: {}"
         if self.get_lb:
             self.instruction += "\\n\\n Leader board is provided as a following format." + \
-                "\\n[Leader board]rank: {}, agent id: {}, wealth: {}"
+                "\\n[Leader board]rank: {}, agent id: {}, wealth: {}, action: {}"
         self.instruction += "\\n\\nIn addition to the above information, " + \
             "private signals are provided. Private signal is the clue to guess the fundamental value of the stock. " + \
             "If the private signal seems to be overweighted, the fundamental value tends to be high. " + \
