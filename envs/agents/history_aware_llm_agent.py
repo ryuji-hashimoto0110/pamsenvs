@@ -136,6 +136,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         success: bool = False
         print("[green]==LLM output==[green]")
         print(llm_output)
+        assert False
         order_dic: dict[MarketID, int] = json.loads(llm_output)
         #print(order_dic)
         #rint()
