@@ -134,6 +134,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
     ) -> list[Order | Cancel]:
         """convert the LLM output to orders."""
         success: bool = False
+        print(llm_output)
         order_dic: dict[MarketID, int] = json.loads(llm_output)
         #print(order_dic)
         #rint()
