@@ -47,6 +47,7 @@ def main(args):
         runner.class_register(LeaderAwareLLMAgent)
         runner.class_register(LeaderAwareMarket)
         runner.class_register(DevidendProvider)
+        runner.class_register(LeadersPrioritizer)
         runner.class_register(LeaderAwareMarketInitializer)
         runner.main()
 
