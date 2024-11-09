@@ -163,7 +163,7 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
                 else:
                     action: str = "None"
                 leaderboard += f"\\n[Leaderboard]market id: {self.market_id}, rank: {rank}th, " + \
-                    "wealth: {wealth}, action: {action}"
+                    f"wealth: {wealth}, action: {action}"
         return leaderboard
 
     def get_ofi(self) -> str:
