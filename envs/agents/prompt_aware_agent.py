@@ -29,7 +29,6 @@ def fetch_llm_output(
         prompt,
         f'http://hpc15.socsim.t.u-tokyo.ac.jp:8000/{llm_name}'
     ]
-    print(commands)
     raw_llm_output: str = subprocess.run(
         commands, capture_output=True, text=True
     ).stdout
