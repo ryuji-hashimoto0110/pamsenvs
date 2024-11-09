@@ -42,7 +42,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             warnings.warn("basePrompt will be ignored.")
         else:
             self.premise: str = "You are a participant of the simulation of stock markets. " + \
-                "Behave as an investor. Answer your order decision after analysing the given information."
+                "Behave as an investor. Answer your order decision after analysing the given information. "
             self.instruction: str = "\\n\\nYour current portfolio is provided as a following format." + \
                 "\\n[Your portfolio]cash: {}\\n" + \
                 "[Your portfolio]market id: {}, volume: {}, ..." + \

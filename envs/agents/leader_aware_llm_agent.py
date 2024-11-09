@@ -55,12 +55,12 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
         self.premise += "At each time steps, you can receive devidend as cash according to your holding stock volume: " + \
             "your cash amount <- your cash amount +  asset volume * devidend price. " + \
             f"The devidend price is decided to be 0 or {devidend_price} according to the fundamental value of the stock. " + \
-            "You should buy the stock if you believe that the fundamental value is high to gain devidend. " \
+            "You should buy the stock if you believe that the fundamental value is high to gain devidend. " + \
             "Your goal is to achieve high wealth. Your wealth is calculated as: " + \
             "your cash amount + sum(asset volume * (average stock value * remaining time steps)). " + \
             "Note that stocks will become less valuable as the time goes by." 
         if self.get_ofi:
-            self.instruction += "\\n\\n Order flow imbalance is provided as a following format." + \
+            self.instruction += "\\n\\n Order flow imbalance is provided as a following format. " + \
                 "Order flow imbalance means the difference between the number of buy and sell orders submitted to the stock market. " + \
                 "Negative order flow imbalance indicates that the number of sell orders exceed that of buy orders. " + \
                 "Higher absolute value of order flow imbalance indicates that orders are imbalance to one side." + \
