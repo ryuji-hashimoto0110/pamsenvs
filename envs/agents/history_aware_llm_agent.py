@@ -168,6 +168,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 order_volume = - order_volume
             else:
                 is_buy: bool = True
+            print(f"market_id: {market_id}, is_buy: {is_buy}, order_price: {order_price}, order_volume: {order_volume}, order_kind: {order_kind}")
             order = Order(
                 agent_id=self.agent_id,
                 market_id=market_id,
