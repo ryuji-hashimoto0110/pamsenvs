@@ -110,6 +110,8 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             prompt += self.create_lb_info(markets=markets)
         prompt += self.create_private_signal_info(markets=markets)
         prompt += self.answer_format
+        prompt = json.dumps({"text": prompt}, ensure_ascii=False)
+        prompt = prompt["text"]
         print(prompt)
         print()
         return prompt
