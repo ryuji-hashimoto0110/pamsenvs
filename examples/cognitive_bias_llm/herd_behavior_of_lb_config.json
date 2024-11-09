@@ -64,6 +64,7 @@
 	},
     "LeaderAwareLLMAgent": {
         "class": "LeaderAwareLLMAgent",
+        "markets": ["Market"],
         "cashAmount": 100,
         "assetVolume": 5,
         "llmName": "llama3.1",
