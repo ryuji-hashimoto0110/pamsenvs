@@ -5,9 +5,6 @@ from pams.market import Market
 from pams.order import Order
 import random
 from .range_regulated_market import RangeRegulatedMarket
-from typing import Any
-from typing import Dict
-from typing import Literal
 from typing import Optional
 from typing import TypeVar
 
