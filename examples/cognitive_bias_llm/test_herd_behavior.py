@@ -48,7 +48,6 @@ def main(args):
         runner.class_register(LeaderAwareMarket)
         runner.class_register(DevidendProvider)
         runner.class_register(LeaderAwareMarketInitializer)
-        runner.class_register(LeaderAwareMarket)
         runner.main()
 
 if __name__ == "__main__":
