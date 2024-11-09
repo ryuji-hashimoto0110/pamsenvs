@@ -162,8 +162,8 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
                     action: str = self.leader2action_dic[agent_id]
                 else:
                     action: str = "None"
-                leaderboard += f"\\n[Leaderboard]market id: {self.market_id}, rank: {rank}th, " + \
-                    f"wealth: {wealth}, action: {action}"
+                leaderboard += f"\\n[Leaderboard]market id: {self.market_id}, rank: {rank}, " + \
+                    f"wealth: {wealth}, order direction: {action}"
         return leaderboard
 
     def get_ofi(self) -> str:
@@ -175,14 +175,14 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
             ) / (
                 self.num_buy_orders + self.num_sell_orders
             )
-        return f"\\n[Order Flow Imbalance]market id: {self.market_id}, order flow imbalance: {ofi}"
+        return f"\\n[Order flow imbalance]market id: {self.market_id}, order flow imbalance: {ofi}"
     
     def get_private_signal(self) -> str:
         if self.overweight_rate < random.random():
             private_signal: str = self.underweight_signal
         else:
             private_signal: str = self.overweight_signal
-        return f"\\n[Private Signal]market id: {self.market_id}, private signal: {private_signal}"
+        return f"\\n[Private signal]market id: {self.market_id}, private signal: {private_signal}"
 
     def _add_order(self, order: Order) -> OrderLog:
         log: OrderLog = super()._add_order(order)
