@@ -21,7 +21,7 @@ MarketID = TypeVar("MarketID")
 
 def fetch_llm_output(
     prompt: str,
-    llm_name: Literal["gpt-4o-mini", "gpt-4o", "llama", "finllama"]
+    llm_name: Literal["gpt-4o-mini", "gpt-4o", "llama", "llama3.1", "finllama"]
 ) -> str:
     commands: list[str] = [
         'curl', '-X', 'POST', '-H',
