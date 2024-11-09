@@ -110,6 +110,10 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
         self.underweight_signal: str = self._get_signal_fromt_txt(self.underweight_txt_paths)
         self._update_leaderboard()
 
+    def provide_devidend(self, agent: Agent) -> None:
+        """provide devidend to the agent. This is called by DevidendProvider."""
+        agent.cash_amount += agent.asset_volumes[self.market_id] * self.devidend
+
     def _get_signal_fromt_txt(self, txt_paths: list[Path]) -> str:
         if len(txt_paths) == 0:
             raise ValueError("signals exhausted.")
