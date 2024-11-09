@@ -108,8 +108,8 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             prompt += self.create_ofi_info(markets=markets)
         if self.get_lb:
             prompt += self.create_lb_info(markets=markets)
-        print(prompt)
-        print()
         prompt += self.create_private_signal_info(markets=markets)
         prompt += self.answer_format
+        print(prompt)
+        print()
         return prompt
