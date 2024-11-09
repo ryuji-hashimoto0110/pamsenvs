@@ -11,6 +11,7 @@ import sys
 sys.path.append(str(root_path))
 from envs.agents import LiquidityProviderAgent
 from envs.agents import HistoryAwareLLMAgent
+from envs.markets import TotalTimeAwareMarket
 from logs import PortfolioSaver
 from typing import Any
 from typing import Optional
@@ -43,6 +44,7 @@ def main(args):
         )
         runner.class_register(LiquidityProviderAgent)
         runner.class_register(HistoryAwareLLMAgent)
+        runner.class_register(TotalTimeAwareMarket)
         runner.main()
 
 if __name__ == "__main__":
