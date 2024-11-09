@@ -156,6 +156,8 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
             ]
             for agent_id in agent_ids:
                 rank += 1
+                if 4 <= rank:
+                    break
                 if agent_id in self.leader2action_dic:
                     action: str = self.leader2action_dic[agent_id]
                 else:
