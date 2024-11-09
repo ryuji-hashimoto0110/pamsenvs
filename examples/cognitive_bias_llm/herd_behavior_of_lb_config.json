@@ -1,0 +1,74 @@
+{
+    "simulation": {
+        "markets": ["Market"],
+        "agents": ["LeaderAwareLLMAgent"],
+        "sessions": [
+            {
+                "sessionName": 1,
+                "iterationSteps": 10,
+                "withOrderPlacement": true,
+                "withOrderExecution": true,
+                "withPrint": true,
+                "hiFrequencySubmitRate": 1.0,
+                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+            },
+            {
+                "sessionName": 2,
+                "iterationSteps": 10,
+                "withOrderPlacement": true,
+                "withOrderExecution": true,
+                "withPrint": true,
+                "hiFrequencySubmitRate": 1.0,
+                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+            },
+            {
+                "sessionName": 3,
+                "iterationSteps": 10,
+                "withOrderPlacement": true,
+                "withOrderExecution": true,
+                "withPrint": true,
+                "hiFrequencySubmitRate": 1.0,
+                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+            },
+            {
+                "sessionName": 4,
+                "iterationSteps": 10,
+                "withOrderPlacement": true,
+                "withOrderExecution": true,
+                "withPrint": true,
+                "hiFrequencySubmitRate": 1.0,
+                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+            },
+            {
+                "sessionName": 5,
+                "iterationSteps": 10,
+                "withOrderPlacement": true,
+                "withOrderExecution": true,
+                "withPrint": true,
+                "hiFrequencySubmitRate": 1.0,
+                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+            }
+        ]
+    },
+    "initialization": {"class": "LeaderAwareMarketInitializer"},
+    "prioritze_leaders": {"class": "LeadersPrioritizer"},
+    "provide_devidend": {"class": "DevidendProvider"},
+    "Market": {
+		"class": "LeaderAwareMarket",
+		"tickSize": 1.0,
+		"marketPrice": 5.0,
+        "consistentSignalRate": 0.7,
+        "devidendPrice": 10,
+        "averageStockValue": 5.0,
+        "signalsPath": "../../datas/ecc_documents"
+	},
+    "LeaderAwareLLMAgent": {
+        "class": "LeaderAwareLLMAgent",
+        "cashAmount": 100,
+        "assetVolume": 5,
+        "llmName": "llama3.1",
+        "devidendPrice": 10,
+        "getOFI": true,
+        "getLeaderBoard": true
+    }
+}
