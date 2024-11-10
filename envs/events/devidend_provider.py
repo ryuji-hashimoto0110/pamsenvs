@@ -24,5 +24,6 @@ class DevidendProvider(EventABC):
         """
         for market in simulator.markets:
             if isinstance(market, LeaderAwareMarket):
+                print(f"{market.get_time()} DevidendProvider: provide devidend.")
                 for agent in simulator.agents:
                     market.provide_devidend(agent)

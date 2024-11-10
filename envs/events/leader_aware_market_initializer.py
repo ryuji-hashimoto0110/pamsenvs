@@ -24,6 +24,7 @@ class LeaderAwareMarketInitializer(EventABC):
         """
         for market in simulator.markets:
             if isinstance(market, LeaderAwareMarket):
+                print(f"{market.get_time()} LeaderAwareMarketInitializer: init session.")
                 market.init_session()
     
 
