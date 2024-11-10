@@ -7,7 +7,7 @@
         "sessions": [
             {
                 "sessionName": 1,
-                "iterationSteps": 10,
+                "iterationSteps": 100,
                 "withOrderPlacement": true,
                 "withOrderExecution": true,
                 "withPrint": true,
