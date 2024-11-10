@@ -49,6 +49,7 @@ class PortfolioSaver(Logger):
     def process_execution_log(self, log: ExecutionLog) -> None:
         market_id: MarketID = log.market_id
         t: int = log.time
+        print(f"{t=}, {market_id=}")
         buy_agent_id: str = log.buy_agent_id
         buy_agent: Agent = self.agent_id2agent_dic[buy_agent_id]
         if hasattr(buy_agent, "last_reason_dic"):
