@@ -113,6 +113,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             raise ValueError(
                 f"{current_volume=}, {total_shares=}."
             )
+        elif total_shares == 0:
+            return 0.0
         current_price: float = market.get_market_price()
         average_cost: float = total_cost / total_shares
         unrealized_gain: float = (current_price - average_cost) * total_shares
