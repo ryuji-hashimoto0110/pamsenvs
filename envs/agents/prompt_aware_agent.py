@@ -64,6 +64,8 @@ class PromptAwareAgent(Agent):
             self.base_prompt: Optional[str] = None
         self.llm_name: str = settings["llmName"]
         self.executed_orders_dic: dict[MarketID, list[ExecutionLog]] = {}
+        for market_id in accessible_markets_ids:
+            self.executed_orders_dic[market_id] = []
 
     @abstractmethod
     def create_prompt(self, markets: list[Market]) -> str:
@@ -108,7 +110,4 @@ class PromptAwareAgent(Agent):
     
     def executed_order(self, log: ExecutionLog) -> None:
         market_id: MarketID = log.market_id
-        if market_id not in self.executed_orders_dic:
-            self.executed_orders_dic[market_id] = [log]
-        else:
-            self.executed_orders_dic[market_id].append(log)
+        self.executed_orders_dic[market_id].append(log)
