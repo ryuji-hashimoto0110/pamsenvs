@@ -71,9 +71,9 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             raise ValueError("onlyMarketOrders must be included in settings.")
         else:
             self.only_market_orders: bool = settings["onlyMarketOrders"]
-        self.last_reason: dict[MarketID, str] = {}
+        self.last_reason_dic: dict[MarketID, str] = {}
         for market_id in accessible_markets_ids:
-            self.last_reason[market_id] = ""
+            self.last_reason_dic[market_id] = ""
     
     def _create_portfolio_info(self, markets: list[Market]) -> str:
         """create a portfolio information."""
@@ -195,7 +195,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 reason: str = ""
             else:
                 reason: str = order_dic["reason"]
-            self.last_reason[market_id] = reason
+            self.last_reason_dic[market_id] = reason
             if order_volume == 0:
                 continue
             if self.only_market_orders:
