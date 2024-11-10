@@ -26,7 +26,7 @@ class PortfolioSaver(Logger):
     def _create_columns(self) -> list[str]:
          return [
               "time", "agent_id", "execution_price", "execution_volume",
-              "holding_cash_amount", "holding_asset_volume"
+              "holding_cash_amount", "holding_asset_volume", "reason"
          ]
 
     def process_simulation_begin_log(self, log: SimulationBeginLog) -> None:
@@ -51,8 +51,16 @@ class PortfolioSaver(Logger):
         t: int = log.time
         buy_agent_id: str = log.buy_agent_id
         buy_agent: Agent = self.agent_id2agent_dic[buy_agent_id]
+        if hasattr(buy_agent, "last_reason_dic"):
+            buy_reason: str = buy_agent.last_reason_dic[market_id]
+        else:
+            buy_reason: str = None
         sell_agent_id: str = log.sell_agent_id
         sell_agent: Agent = self.agent_id2agent_dic[sell_agent_id]
+        if hasattr(sell_agent, "last_reason_dic"):
+            sell_reason: str = sell_agent.last_reason_dic[market_id]
+        else:
+            sell_reason: str = None
         execution_price: float = log.price
         execution_volume: int = log.volume
         buy_agent_cash_amount: float = buy_agent.cash_amount - execution_price * execution_volume
@@ -62,13 +70,13 @@ class PortfolioSaver(Logger):
         self.market_id2rows_dic[market_id].append(
             [
                 t, buy_agent_id, execution_price, execution_volume,
-                buy_agent_cash_amount, buy_agent_asset_volume
+                buy_agent_cash_amount, buy_agent_asset_volume, buy_reason
             ]
         )
         self.market_id2rows_dic[market_id].append(
             [
                 t, sell_agent_id, execution_price, -execution_volume,
-                sell_agent_cash_amount, sell_agent_asset_volume
+                sell_agent_cash_amount, sell_agent_asset_volume, sell_reason
             ]
         )
             
