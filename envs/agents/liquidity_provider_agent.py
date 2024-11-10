@@ -71,3 +71,54 @@ class LiquidityProviderAgent(HighFrequencyAgent):
         )
         orders: list[Order | Cancel] = [buy_order, sell_order]
         return orders
+    
+class HighFrequencyDummyAgent(HighFrequencyAgent):
+    def setup(
+        self,
+        settings: dict[str, Any],
+        accessible_markets_ids: list[MarketID],
+        *args: Any,
+        **kwargs: Any
+    ) -> None:
+        """agent setup.
+        
+        Args:
+            settings (dict[str, Any]): agent configuration. This must include the parameters:
+                cashAmount (float): the initial cash amount.
+                assetVolume (int): the initial asset volume.
+                orderVolume (int): the volume of the order.
+            accessible_markets_ids (list[MarketID]): list of accessible market ids.
+        """
+        super().setup(
+            settings=settings, accessible_markets_ids=accessible_markets_ids
+        )
+        self.order_volume: int = settings["orderVolume"]
+
+    def submit_orders(
+        self, markets: list[Market]
+    ) -> list[Order | Cancel]:
+        """submit orders.
+        """
+        orders: list[Order | Cancel] = sum(
+            [
+                self.submit_orders_by_market(market=market) for market in markets
+            ], []
+        )
+        return orders
+    
+    def submit_orders_by_market(self, market: Market) -> list[Order | Cancel]:
+        """submit orders by market.
+        
+        HighFrequencyDummyAgent submits both buy order every time.
+        """
+        buy_order: Order = Order(
+            agent_id=self.agent_id,
+            market_id=market.market_id,
+            is_buy=True,
+            price=None,
+            volume=self.order_volume,
+            kind=MARKET_ORDER,
+            ttl=1
+        )
+        orders: list[Order | Cancel] = [buy_order]
+        return orders
