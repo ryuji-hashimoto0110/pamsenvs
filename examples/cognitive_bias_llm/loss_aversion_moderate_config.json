@@ -2,7 +2,7 @@
     "simulation": {
         "markets": ["Market1", "Market2"],
         "agents": [
-            "LiquidityProviderAgents", "HistoryAwareLLMAgent", "HighFrequencyDummyAgent"
+            "LiquidityProviderAgents", "HistoryAwareLLMAgent"
         ],
         "sessions": [
             {
@@ -12,7 +12,7 @@
                 "withOrderExecution": true,
                 "withPrint": true,
                 "maxNormalOrders": 2,
-                "maxHighFrequencyOrders": 2
+                "maxHighFrequencyOrders": 1
             }
         ]
     },
@@ -38,14 +38,6 @@
 		"cashAmount": 10000000000,
         "orderVolume": 1000,
         "halfSpread": 0.00001
-    },
-    "HighFrequencyDummyAgent": {
-        "class": "HighFrequencyDummyAgent",
-        "numAgents": 1,
-        "markets": ["Market1", "Market2"],
-        "assetVolume": 0,
-        "cashAmount": 300000,
-        "orderVolume": 100
     },
     "HistoryAwareLLMAgent": {
         "class": "HistoryAwareLLMAgent",
