@@ -63,7 +63,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
                 "Order volume ranges from -10 to 10." + \
-                "Short selling is not allowed. Try to keep the your order volume as non-zero as possible. " + \
+                "Short selling is not allowed. Try to keep the your order volume as non-zero and non-extreme as possible. " + \
                 "Be careful not to lose your cash. Here are the answer format." + \
                 '\\n{<market id>: {order_price: <order price>, order_volume: <order volume>, reason: <reason>} ...}'
             self.base_prompt: str = self.premise + self.instruction
@@ -111,7 +111,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 )
         if current_volume != total_shares:
             raise ValueError(
-                f"{current_volume=}, {total_shares=}."
+                f"{market_id=}, {current_volume=}, {total_shares=}."
             )
         elif total_shares == 0:
             return 0.0
