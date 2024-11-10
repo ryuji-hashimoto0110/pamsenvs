@@ -1,5 +1,5 @@
 import json
-from pams.logs.base import ExecutionLog
+from pams.logs import ExecutionLog
 from pams.market import Market
 from pams.order import Cancel
 from pams.order import LIMIT_ORDER
@@ -43,22 +43,27 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         else:
             self.premise: str = "You are a participant of the simulation of stock markets. " + \
                 "Behave as an investor. Answer your order decision after analysing the given information. "
-            self.instruction: str = "\\n\\nYour current portfolio is provided as a following format." + \
+            self.instruction: str = "\\n\\nYour current portfolio is provided as a following format. " + \
+                "Unrealized gain refers to the increase in value of the investment that has not yet been sold. " + \
+                "It represents the potential profit on your stock position. Negative unrealized gain means that " + \
+                "the investment has decreased in value. " + \
                 "\\n[Your portfolio]cash: {}\\n" + \
-                "[Your portfolio]market id: {}, volume: {}, ..." + \
+                "[Your portfolio]market id: {}, volume: {}, unrealized gain: {}" + \
                 "\\n\\nEach market condition is provided as a following format." + \
                 "\\n[Market condition]market id: {}, current market price: {}, " + \
                 "all time high price: {}, all time low price: {}, ..." + \
                 "\\n[Market condition]remaining time steps: {}/{}" + \
                 "\\n\\nYour trading history is provided as a following format. " + \
                 "\\n[Your trading history]market id: {}, price: {} volume: {}, ..."
+            
             self.answer_format: str = "\\n\\nDecide your investment in the following JSON format. " + \
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
                 "Make sure to enclose each property in double quotes. " + \
                 "Order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
-                "Short selling is not allowed. Try to keep the volume of transactions as non-zero as possible. " + \
+                "Order volume ranges from -10 to 10." + \
+                "Short selling is not allowed. Try to keep the your order volume as non-zero as possible. " + \
                 "Be careful not to lose your cash. Here are the answer format." + \
                 '\\n{<market id>: {order_price: <order price>, order_volume: <order volume>, reason: <reason>} ...}'
             self.base_prompt: str = self.premise + self.instruction
@@ -66,22 +71,60 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             raise ValueError("onlyMarketOrders must be included in settings.")
         else:
             self.only_market_orders: bool = settings["onlyMarketOrders"]
+        self.last_reason: dict[MarketID, str] = {}
+        for market_id in accessible_markets_ids:
+            self.last_reason[market_id] = ""
     
-    def _create_portfolio_info(self) -> str:
+    def _create_portfolio_info(self, markets: list[Market]) -> str:
         """create a portfolio information."""
         cash_amount: float = self.get_cash_amount()
         portfolio_info: str = f"\\n[Your portfolio]cash: {cash_amount:.1f}"
-        for market_id, volume in self.asset_volumes.items():
-            portfolio_info += f"\\n[Your portfolio]market id: {market_id}, volume: {volume}\\n"
+        for market in markets:
+            market_id: int = market.market_id
+            volume: int = self.asset_volumes[market_id]
+            unrealized_gain: float = self._get_unrealized_gain(
+                market=market, current_volume=volume
+            )
+            portfolio_info += f"\\n[Your portfolio]market id: {market_id}, " + \
+                f"volume: {volume}, unrealized gain: {unrealized_gain:.2f}"
         return portfolio_info
+    
+    def _get_unrealized_gain(
+        self,
+        market: Market,
+        current_volume: int
+    ) -> float:
+        market_id: int = market.market_id
+        execution_logs: list[ExecutionLog] = self.executed_orders_dic[market_id]
+        total_shares: int = 0
+        total_cost: float = 0.0
+        for log in execution_logs:
+            if log.buy_agent_id == self.agent_id:
+                total_shares += log.volume
+                total_cost += log.price * log.volume
+            elif log.sell_agent_id == self.agent_id:
+                total_shares -= log.volume
+                total_cost -= log.price * log.volume
+            else:
+                raise ValueError(
+                    "Unrelated execution log found in executed_orders_dic."
+                )
+        if current_volume != total_shares:
+            raise ValueError(
+                f"{current_volume=}, {total_shares=}."
+            )
+        current_price: float = market.get_market_price()
+        average_cost: float = total_cost / total_shares
+        unrealized_gain: float = (current_price - average_cost) * total_shares
+        return unrealized_gain
     
     def _create_market_condition_info(self, markets: list[Market]) -> str:
         """create a market condition information."""
         market_condition_info: str = ""
         for market in markets:
             market_id: int = market.market_id
-            current_market_price: float = market.get_fundamental_price()
-            market_prices: list[float] = market.get_fundamental_prices()
+            current_market_price: float = market.get_market_price()
+            market_prices: list[float] = market.get_market_prices()
             all_time_high_price: float = max(market_prices)
             all_time_low_price: float = min(market_prices)
             if hasattr(market, "get_remaining_time"):
@@ -117,7 +160,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
     
     def create_prompt(self, markets: list[Market]) -> str:
         """create a prompt for the agent."""
-        portfolio_info: str = self._create_portfolio_info()
+        portfolio_info: str = self._create_portfolio_info(markets=markets)
         market_condition_info: str = self._create_market_condition_info(markets=markets)
         trading_history_info: str = self._create_trading_history_info()
         prompt: str = self.base_prompt + "\\n Here are the information." + portfolio_info + \
@@ -148,6 +191,11 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 order_volume = int(order_volume)
             except ValueError:
                 raise ValueError(f"Failed to convert order_volume to an integer: {order_volume}.")
+            if not "reason" in order_dic:
+                reason: str = ""
+            else:
+                reason: str = order_dic["reason"]
+            self.last_reason[market_id] = reason
             if order_volume == 0:
                 continue
             if self.only_market_orders:
