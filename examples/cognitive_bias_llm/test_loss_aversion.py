@@ -9,8 +9,9 @@ curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
 root_path: Path = curr_path.parents[1]
 import sys
 sys.path.append(str(root_path))
-from envs.agents import LiquidityProviderAgent
+from envs.agents import HighFrequencyDummyAgent
 from envs.agents import HistoryAwareLLMAgent
+from envs.agents import LiquidityProviderAgent
 from envs.markets import TotalTimeAwareMarket
 from logs import PortfolioSaver
 from typing import Any
@@ -43,6 +44,7 @@ def main(args):
             logger=saver
         )
         runner.class_register(LiquidityProviderAgent)
+        runner.class_register(HighFrequencyDummyAgent)
         runner.class_register(HistoryAwareLLMAgent)
         runner.class_register(TotalTimeAwareMarket)
         runner.main()
