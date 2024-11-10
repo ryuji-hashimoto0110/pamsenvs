@@ -25,6 +25,8 @@ class TotalTimeAwareMarket(RangeRegulatedMarket):
         self.total_iteration_steps: Optional[int] = None
 
     def get_remaining_time(self) -> int:
+        print(self.buy_order_book.get_price_volume())
+        print(self.sell_order_book.get_price_volume())
         if self.total_iteration_steps is None:
             if len(self.simulator.sessions) == 0:
                 return 1e+10
