@@ -63,7 +63,7 @@ class PromptAwareAgent(Agent):
         else:
             self.base_prompt: Optional[str] = None
         self.llm_name: str = settings["llmName"]
-        self.executed_orders_dic: dict[MarketID, list[float]] = {}
+        self.executed_orders_dic: dict[MarketID, list[ExecutionLog]] = {}
 
     @abstractmethod
     def create_prompt(self, markets: list[Market]) -> str:
