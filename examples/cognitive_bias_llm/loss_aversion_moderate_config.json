@@ -53,7 +53,7 @@
         "markets": ["Market1", "Market2"],
         "assetVolume": 0,
         "cashAmount": 30000,
-        "llmName": "llama3.1",
+        "llmName": "gpt-4o",
         "onlyMarketOrders": true
     }
 }
