@@ -109,11 +109,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 raise ValueError(
                     "Unrelated execution log found in executed_orders_dic."
                 )
-        if current_volume != total_shares:
-            raise ValueError(
-                f"{market_id=}, {current_volume=}, {total_shares=}."
-            )
-        elif total_shares == 0:
+        if total_shares == 0:
             return 0.0
         current_price: float = market.get_market_price()
         average_cost: float = total_cost / total_shares
