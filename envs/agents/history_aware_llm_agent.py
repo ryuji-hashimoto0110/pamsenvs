@@ -48,12 +48,13 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "It represents the potential profit on your stock position. Negative unrealized gain means that " + \
                 "the investment has decreased in value. " + \
                 "\\n[Your portfolio]cash: {}\\n" + \
-                "[Your portfolio]market id: {}, volume: {}, unrealized gain: {}" + \
+                "[Your portfolio]market id: {}, volume: {}, unrealized gain: {}, ..." + \
                 "\\n\\nEach market condition is provided as a following format." + \
                 "\\n[Market condition]market id: {}, current market price: {}, " + \
                 "all time high price: {}, all time low price: {}, ..." + \
                 "\\n[Market condition]remaining time steps: {}/{}" + \
                 "\\n\\nYour trading history is provided as a following format. " + \
+                "Negative volume means that you sold the stock." + \
                 "\\n[Your trading history]market id: {}, price: {} volume: {}, ..."
             
             self.answer_format: str = "\\n\\nDecide your investment in the following JSON format. " + \
@@ -63,7 +64,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Order volume means the number of units you want to buy or sell the stock. " + \
                 "Negative order volume means that you want to sell the stock. " + \
                 "Order volume ranges from -10 to 10. " + \
-                "Short selling is not allowed. Try to keep your order volume as non-zero and non-extreme as possible. " + \
+                "Short selling is not allowed. Try to keep your order volume as non-zero and not-extreme as possible. " + \
                 "Here are the answer format." + \
                 '\\n{<market id>: {order_price: <order price>, order_volume: <order volume>, reason: <reason>} ...}'
             self.base_prompt: str = self.premise + self.instruction
