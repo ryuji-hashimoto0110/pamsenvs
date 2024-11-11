@@ -28,7 +28,7 @@ class LeadersPrioritizer(EventABC):
         self.end_time: int = self.start_time + 3
         event_hook = EventHook(
             event=self,
-            hook_type="session",
+            hook_type="market",
             time=[self.start_time + t for t in range(4)],
             is_before=True
         )

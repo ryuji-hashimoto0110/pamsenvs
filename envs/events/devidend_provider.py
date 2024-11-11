@@ -6,7 +6,7 @@ from pams.simulator import Simulator
 
 class DevidendProvider(EventABC):
     def hook_registration(self) -> list[EventHook]:
-        t: int = self.session.session_start_time
+        t: int = self.session.session_end_time
         event_hook = EventHook(
             event=self,
             hook_type="session",
