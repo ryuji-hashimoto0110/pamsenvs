@@ -49,6 +49,7 @@ class PortfolioSaver(Logger):
                     "leader3_id", "leader3_wealth", "leader3_action"
                 ]
             )
+        return column_names
 
     def process_simulation_begin_log(self, log: SimulationBeginLog) -> None:
         simulator: Simulator = log.simulator
