@@ -143,9 +143,10 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
                     if 3 <= len(self.leader2wealth_dic):
                         break
 
-    def get_leaderboard(self) -> str:
+    def get_leaderboard(self) -> tuple[str, list[str]]:
         """get leaderboard."""
         leaderboard: str = ""
+        lb_components: list[str] = []
         wealthes: list[float] = sorted(
             list(self.leader2wealth_dic.values()), reverse=True
         )
@@ -162,11 +163,12 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
                     action: str = self.leader2action_dic[agent_id]
                 else:
                     action: str = "None"
+                lb_components.extend([agent_id, wealth, action])
                 leaderboard += f"\\n[Leaderboard]market id: {self.market_id}, rank: {rank}, " + \
                     f"wealth: {wealth}, order direction: {action}"
-        return leaderboard
+        return leaderboard, lb_components
 
-    def get_ofi(self) -> str:
+    def get_ofi(self) -> tuple[str, float]:
         if self.num_buy_orders + self.num_sell_orders == 0:
             ofi: float = 0.0
         else:
@@ -175,14 +177,18 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
             ) / (
                 self.num_buy_orders + self.num_sell_orders
             )
-        return f"\\n[Order flow imbalance]market id: {self.market_id}, order flow imbalance: {ofi}"
+        return f"\\n[Order flow imbalance]market id: {self.market_id}, " + \
+            f"order flow imbalance: {ofi}", ofi
     
-    def get_private_signal(self) -> str:
+    def get_private_signal(self) -> tuple[str, list[str | float]]:
         if self.overweight_rate < random.random():
             private_signal: str = self.underweight_signal
+            signal_tone: str = "underweight"
         else:
             private_signal: str = self.overweight_signal
-        return f"\\n[Private signal]market id: {self.market_id}, private signal: {private_signal}"
+            signal_tone: str = "overweight"
+        return f"\\n[Private signal]market id: {self.market_id}, " + \
+            f"private signal: {private_signal}", [self.devidend, signal_tone]
 
     def _add_order(self, order: Order) -> OrderLog:
         log: OrderLog = super()._add_order(order)
