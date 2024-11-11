@@ -117,7 +117,7 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
     def create_prompt(self, markets: list[Market]) -> str:
         """create a prompt for the agent."""
         cash_amount: float = self.get_cash_amount()
-        portfolio_info: str = self._create_portfolio_info()
+        portfolio_info: str = self._create_portfolio_info(markets=markets)
         market_condition_info: str = self._create_market_condition_info(markets=markets)
         trading_history_info: str = self._create_trading_history_info()
         prompt: str = self.base_prompt + "\\n Here are the information." + portfolio_info + \
