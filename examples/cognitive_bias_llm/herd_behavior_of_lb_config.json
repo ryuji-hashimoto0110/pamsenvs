@@ -10,7 +10,7 @@
                 "withOrderExecution": true,
                 "withPrint": true,
                 "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
             },
             {
                 "sessionName": 2,
@@ -19,7 +19,7 @@
                 "withOrderExecution": true,
                 "withPrint": true,
                 "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
             },
             {
                 "sessionName": 3,
@@ -28,7 +28,7 @@
                 "withOrderExecution": true,
                 "withPrint": true,
                 "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
             },
             {
                 "sessionName": 4,
@@ -37,7 +37,7 @@
                 "withOrderExecution": true,
                 "withPrint": true,
                 "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
             },
             {
                 "sessionName": 5,
@@ -46,12 +46,12 @@
                 "withOrderExecution": true,
                 "withPrint": true,
                 "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritze_leaders", "provide_devidend"]
+                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
             }
         ]
     },
     "initialization": {"class": "LeaderAwareMarketInitializer"},
-    "prioritze_leaders": {"class": "LeadersPrioritizer"},
+    "prioritize_leaders": {"class": "LeadersPrioritizer"},
     "provide_devidend": {"class": "DevidendProvider"},
     "Market": {
 		"class": "LeaderAwareMarket",
