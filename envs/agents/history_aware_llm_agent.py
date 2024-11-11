@@ -52,7 +52,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "\\n\\nEach market condition is provided as a following format." + \
                 "\\n[Market condition]market id: {}, current market price: {}, " + \
                 "all time high price: {}, all time low price: {}, ..." + \
-                "\\n[Market condition]remaining time steps: {}/{}" + \
+                "\\n[Market condition]remaining time steps: {} total time steps: {}" + \
                 "\\n\\nYour trading history is provided as a following format. " + \
                 "Negative volume means that you sold the stock." + \
                 "\\n[Your trading history]market id: {}, price: {} volume: {}, ..."
@@ -138,7 +138,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 f"current market price: {current_market_price:.1f}, " + \
                 f"all time high price: {all_time_high_price:.1f}, " + \
                 f"all time low price: {all_time_low_price:.1f}" + \
-                f"\\n[Market condition]remaining time step: {remaining_time}/{total_time}"
+                f"\\n[Market condition]remaining time step: {remaining_time} total time steps: {total_time}"
         return market_condition_info
     
     def _create_trading_history_info(self) -> str:
