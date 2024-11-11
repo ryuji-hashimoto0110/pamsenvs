@@ -202,7 +202,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 if not "order_price" in order_dic:
                     raise ValueError("order_price must be included in order_dic.")
                 else:
-                    order_kind = MARKET_ORDER
+                    order_kind = LIMIT_ORDER
                     order_price: Any = order_dic["order_price"]
                     try:
                         order_price = float(order_price)
