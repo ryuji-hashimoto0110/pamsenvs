@@ -8,6 +8,6 @@ python test_herd_behavior.py \
 --num_simulations ${num_simulations} \
 --config_path ${config_path} \
 --csvs_path ${csvs_path} \
---locord_ofi \
+--record_ofi \
 --record_leader_board \
 --record_signal_description
