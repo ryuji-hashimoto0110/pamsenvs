@@ -53,7 +53,7 @@ class LeadersPrioritizer(EventABC):
             leaders: list[Agent] = self.pick_leader(market, 3)
         elif current_time == self.end_time:
             print(f"{current_time} LeadersPrioritizer: pick others.")
-            leaders_: list[Agent] = simulator.normal_frequency_agents
+            leaders_: list[Agent] = self.normal_frequency_agents
             leaders: list[Agent] = []
             for agent in leaders_:
                 agent_id: AgentID = agent.agent_id
