@@ -65,6 +65,8 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "Negative order volume means that you want to sell the stock. " + \
                 "Order volume ranges from -10 to 10. " + \
                 "Short selling is not allowed. Try to keep your order volume as non-zero and not-extreme as possible. " + \
+                "Order price means the limit price at which you want to buy or sell the stock. By adjusting " + \
+                "order price, you can trade at a more favorable price or adjust the time it takes to execute a trade. " + \
                 "Here are the answer format." + \
                 '\\n{<market id>: {order_price: <order price>, order_volume: <order volume>, reason: <reason>} ...}'
             self.base_prompt: str = self.premise + self.instruction
