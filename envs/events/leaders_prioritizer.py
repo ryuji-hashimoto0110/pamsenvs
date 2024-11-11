@@ -54,6 +54,8 @@ class LeadersPrioritizer(EventABC):
         elif current_time == self.end_time-1:
             print(f"{current_time} LeadersPrioritizer: pick others.")
             leaders: list[Agent] = simulator.normal_frequency_agents
+        else:
+            raise ValueError(f"Invalid time: {current_time=}, [{self.start_time}, {self.end_time}].")
         simulator.normal_frequency_agents = leaders
 
     def pick_leader(
