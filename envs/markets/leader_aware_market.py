@@ -203,4 +203,5 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
                 self.leader2action_dic[agent_id] = "buy"
             else:
                 self.leader2action_dic[agent_id] = "sell"
+        return log
 
