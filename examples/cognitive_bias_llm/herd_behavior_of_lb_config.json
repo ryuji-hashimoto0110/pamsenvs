@@ -1,7 +1,7 @@
 {
     "simulation": {
         "markets": ["Market"],
-        "agents": ["LeaderAwareLLMAgent", "LiquidityProviderAgent"],
+        "agents": ["LeaderAwareLLMAgent"],
         "sessions": [
             {
                 "sessionName": 1,
@@ -62,15 +62,6 @@
         "averageStockValue": 5.0,
         "signalsPath": "../../datas/ecc_documents"
 	},
-    "LiquidityProviderAgent": {
-        "class": "LiquidityProviderAgent",
-        "numAgents": 1,
-        "markets": ["Market"],
-        "assetVolume": 10000,
-		"cashAmount": 10000000000,
-        "orderVolume": 1000,
-        "halfSpread": 0.00001
-    },
     "LeaderAwareLLMAgent": {
         "class": "LeaderAwareLLMAgent",
         "markets": ["Market"],
