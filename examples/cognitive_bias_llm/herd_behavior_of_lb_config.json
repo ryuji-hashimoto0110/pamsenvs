@@ -68,7 +68,7 @@
         "numAgents": 10,
         "cashAmount": 100,
         "assetVolume": 5,
-        "llmName": "llama3.1",
+        "llmName": "gpt-4o",
         "devidendPrice": 10,
         "getOFI": true,
         "getLeaderBoard": true,
