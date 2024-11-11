@@ -10,6 +10,7 @@ root_path: Path = curr_path.parents[1]
 import sys
 sys.path.append(str(root_path))
 from envs.agents import LeaderAwareLLMAgent
+from envs.agents import LiquidityProviderAgent
 from envs.events import DevidendProvider
 from envs.events import LeaderAwareMarketInitializer
 from envs.events import LeadersPrioritizer
@@ -56,6 +57,7 @@ def main(args):
             logger=saver
         )
         runner.class_register(LeaderAwareLLMAgent)
+        runner.class_register(LiquidityProviderAgent)
         runner.class_register(LeaderAwareMarket)
         runner.class_register(DevidendProvider)
         runner.class_register(LeadersPrioritizer)
