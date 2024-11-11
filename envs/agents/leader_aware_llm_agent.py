@@ -75,11 +75,11 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
         self.base_prompt: str = self.premise + self.instruction
         self.market_id2ofi: dict[MarketID, Optional[float]] = {}
         self.market_id2lb: dict[MarketID, list[Optional[int | str | float]]] = {}
-        self.market_id2signal_description: dict[MarketID, list[Optional[str]]] = {}
+        self.market_id2signal_descriptions: dict[MarketID, list[Optional[str]]] = {}
         for market_id in accessible_markets_ids:
             self.market_id2ofi[market_id] = None
-            self.market_id2lb[market_id] = [None, None, None]
-            self.market_id2signal_description[market_id] = [None, None]
+            self.market_id2lb[market_id] = [None for _ in range(9)]
+            self.market_id2signal_descriptions[market_id] = [None, None]
 
     def create_ofi_info(self, markets: list[Market]) -> str:
         """create order flow imbalance information."""
@@ -110,7 +110,7 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             market_id: MarketID = market.market_id
             if hasattr(market, "get_private_signal"):
                 private_signal_str, signal_descriptions = market.get_private_signal()
-                self.market_id2signal_description[market_id] = signal_descriptions
+                self.market_id2signal_descriptions[market_id] = signal_descriptions
                 private_signal_info += private_signal_str
         return private_signal_info
         
