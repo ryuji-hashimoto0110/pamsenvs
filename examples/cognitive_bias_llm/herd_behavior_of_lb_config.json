@@ -5,7 +5,7 @@
         "sessions": [
             {
                 "sessionName": 1,
-                "iterationSteps": 10,
+                "iterationSteps": 20,
                 "withOrderPlacement": true,
                 "withOrderExecution": true,
                 "withPrint": true,
@@ -14,7 +14,7 @@
             },
             {
                 "sessionName": 2,
-                "iterationSteps": 10,
+                "iterationSteps": 20,
                 "withOrderPlacement": true,
                 "withOrderExecution": true,
                 "withPrint": true,
@@ -23,25 +23,7 @@
             },
             {
                 "sessionName": 3,
-                "iterationSteps": 10,
-                "withOrderPlacement": true,
-                "withOrderExecution": true,
-                "withPrint": true,
-                "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
-            },
-            {
-                "sessionName": 4,
-                "iterationSteps": 10,
-                "withOrderPlacement": true,
-                "withOrderExecution": true,
-                "withPrint": true,
-                "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
-            },
-            {
-                "sessionName": 5,
-                "iterationSteps": 10,
+                "iterationSteps": 20,
                 "withOrderPlacement": true,
                 "withOrderExecution": true,
                 "withPrint": true,
