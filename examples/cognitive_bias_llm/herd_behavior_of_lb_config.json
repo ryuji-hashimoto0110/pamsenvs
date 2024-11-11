@@ -47,7 +47,7 @@
     "LeaderAwareLLMAgent": {
         "class": "LeaderAwareLLMAgent",
         "markets": ["Market"],
-        "numAgents": 10,
+        "numAgents": 20,
         "cashAmount": 100,
         "assetVolume": 5,
         "llmName": "gpt-4o",
