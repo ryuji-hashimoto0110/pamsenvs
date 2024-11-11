@@ -2,8 +2,9 @@ import csv
 import pathlib
 from pathlib import Path
 from pams.agents import Agent
-from pams.logs.base import SimulationBeginLog, SimulationEndLog
-from pams.logs.base import ExecutionLog
+from pams.logs import SimulationBeginLog, SimulationEndLog
+from pams.logs import OrderLog
+from pams.logs import ExecutionLog
 from pams.market import Market
 from pams.simulator import Simulator
 from pams.logs import Logger
@@ -34,7 +35,7 @@ class PortfolioSaver(Logger):
 
     def _create_columns(self) -> list[str]:
         column_names: list[str] = [
-            "time", "agent_id", "execution_price", "execution_volume",
+            "time", "agent_id", "price", "volume",
             "holding_cash_amount", "holding_asset_volume", "reason"
         ]
         if self.record_signal_description:
@@ -62,31 +63,24 @@ class PortfolioSaver(Logger):
             agent_id: AgentID = agent.agent_id
             self.agent_id2agent_dic[agent_id] = agent
 
-    def process_execution_log(self, log: ExecutionLog) -> None:
+    def process_order_log(self, log: OrderLog) -> None:
         market_id: MarketID = log.market_id
-        buy_agent_id: str = log.buy_agent_id
-        buy_agent: Agent = self.agent_id2agent_dic[buy_agent_id]
-        sell_agent_id: str = log.sell_agent_id
-        sell_agent: Agent = self.agent_id2agent_dic[sell_agent_id]
-        buy_agent_infos: list[Optional[str | float | int]] = self._record_agent_infos(
-            log, buy_agent
-        )
-        sell_agent_infos: list[Optional[str | float | int]] = self._record_agent_infos(
-            log, sell_agent
-        )
-        self.market_id2rows_dic[market_id].append(buy_agent_infos)
-        self.market_id2rows_dic[market_id].append(sell_agent_infos)
+        agent_infos: list[Optional[str | float | int]] = self._record_agent_infos(log)
+        self.market_id2rows_dic[market_id].append(agent_infos)
 
     def _record_agent_infos(
         self,
-        log: ExecutionLog,
-        agent: Agent
+        log: OrderLog,
     ) -> list[Optional[str | float | int]]:
         market_id: MarketID = log.market_id
         t: int = log.time
-        execution_price: float = log.price
-        execution_volume: int = log.volume
-        agent_id: AgentID = agent.agent_id
+        price: float = log.price
+        volume: int = log.volume
+        is_buy: bool = log.is_buy
+        if not is_buy:
+            volume = -volume
+        agent_id: AgentID = log.agent_id
+        agent: Agent = self.agent_id2agent_dic[agent_id]
         agent_cash_amount: float = agent.cash_amount
         agent_asset_volume: int = agent.asset_volumes[market_id]
         if hasattr(agent, "last_reason_dic"):
@@ -94,7 +88,7 @@ class PortfolioSaver(Logger):
         else:
             reason: str = None
         agent_infos: list[Optional[str | float | int]] = [
-            t, agent_id, execution_price, execution_volume,
+            t, agent_id, price, volume,
             agent_cash_amount, agent_asset_volume, reason
         ]
         if self.record_signal_description:
