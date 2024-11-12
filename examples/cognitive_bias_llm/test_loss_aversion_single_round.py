@@ -99,7 +99,13 @@ def main(args):
                 ensure_ascii=False
             )
             llm_output: str = fetch_llm_output(prompt, llm_name)
-            order_dic: dict[int, int] = json.loads(llm_output)[0]
+            if llm_output[:7] == "```json" and llm_output[-3:] == "```":
+                llm_output = llm_output[7:-3]
+            try:
+                order_dic: dict[int, int] = json.loads(llm_output)["0"]
+            except Exception as e:
+                print(e)
+                continue
             if not "order_price" in order_dic:
                 raise ValueError("order_price not found.")
             else:
