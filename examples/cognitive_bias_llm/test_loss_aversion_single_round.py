@@ -14,6 +14,7 @@ from envs.agents import fetch_llm_output
 
 def get_config():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--initial_seed", type=int, default=42)
     parser.add_argument("--num_simulations", type=int, default=1)
     parser.add_argument("--csv_path", type=str)
     parser.add_argument("--cash_amount", type=float, default=30000.0)
@@ -71,6 +72,7 @@ def create_info(
 def main(args):
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
+    initial_seed: int = all_args.initial_seed
     num_simulations: int = all_args.num_simulations
     csv_path: Path = pathlib.Path(all_args.csv_path).resolve()
     cash_amount: float = all_args.cash_amount
@@ -88,7 +90,9 @@ def main(args):
         writer = csv.writer(f)
         writer.writerow(columns)
         for i in range(num_simulations):
-            log_return: float = random.random()
+            seed = initial_seed + i
+            prng = random.Random(seed)
+            log_return: float = prng.uniform(a=0, b=1)
             if not is_uptrend:
                 log_return = -log_return
             current_price: float = bought_price * (1 + log_return)
