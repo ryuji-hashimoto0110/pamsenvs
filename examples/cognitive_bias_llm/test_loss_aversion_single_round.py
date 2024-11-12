@@ -26,7 +26,7 @@ def get_config():
     return parser
 
 premise: str = "You are a participant of the simulation of stock markets. " + \
-    "Behave as an investor. Answer your order decision after analysing the given information. "
+    "Behave as an day trader. Answer your order decision after analysing the given information. "
 instruction: str = "\\n\\nYour current portfolio is provided as a following format. " + \
     "Unrealized gain refers to the increase in value of the investment that has not yet been sold. " + \
     "It represents the potential profit on your stock position. Negative unrealized gain means that " + \
@@ -35,10 +35,10 @@ instruction: str = "\\n\\nYour current portfolio is provided as a following form
     "[Your portfolio]market id: {}, volume: {}, unrealized gain: {}, ..." + \
     "\\n\\nEach market condition is provided as a following format." + \
     "\\n[Market condition]market id: {}, current market price: {}, " + \
-    "all time high price: {}, all time low price: {}, ..." + \
+    "daily all time high price: {}, daily all time low price: {}, ..." + \
     "\\n\\nYour trading history is provided as a following format. " + \
     "Negative volume means that you sold the stock." + \
-    "\\n[Your trading history]market id: {}, price: {} volume: {}, ..."
+    "\\n[Your trading history]market id: {}, date: {}, price: {}, volume: {}, ..."
 answer_format: str = "\\n\\nDecide your investment in the following JSON format. " + \
     "Do not deviate from the format, " + \
     "and do not add any additional words to your response outside of the format. " + \
@@ -64,8 +64,8 @@ def create_info(
     portfolio_info: str = f"\\n[Your portfolio]cash: {cash_amount}\\n" + \
         f"[Your portfolio]market id: 0, volume: {bought_volume}, unrealized gain: {unrealized_gain}"
     market_info: str = f"\\n[Market condition]market id: 0, current market price: {current_price}, " + \
-        f"all time high price: {all_time_higth}, all time low price: {all_time_low}"
-    trading_history: str = f"\\n[Your trading history]market id: 0, price: {bought_price} volume: {bought_volume}"
+        f"daily all time high price: {all_time_higth}, daily all time low price: {all_time_low}"
+    trading_history: str = f"\\n[Your trading history]market id: 0, date: yesterday, price: {bought_price} volume: {bought_volume}"
     return portfolio_info + market_info + trading_history
 
 def main(args):
