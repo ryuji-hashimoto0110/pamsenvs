@@ -88,7 +88,7 @@ def main(args):
         writer = csv.writer(f)
         writer.writerow(columns)
         for i in range(num_simulations):
-            log_return: float = random.Random.uniform(0, 1)
+            log_return: float = random.random()
             if not is_uptrend:
                 log_return = -log_return
             current_price: float = bought_price * (1 + log_return)
