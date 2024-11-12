@@ -22,7 +22,7 @@ def get_config():
     parser.add_argument("--current_price", type=float)
     parser.add_argument("--all_time_higth", type=float, default=400.0)
     parser.add_argument("--all_time_low", type=float, default=200.0)
-    parser.add_argument("--llm_name", type=float, default="gpt-4o")
+    parser.add_argument("--llm_name", type=str, default="gpt-4o")
     parser.add_argument("--temp", type=float, default=0.7)
     return parser
 
