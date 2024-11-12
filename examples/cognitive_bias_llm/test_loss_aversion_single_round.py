@@ -22,6 +22,7 @@ def get_config():
     parser.add_argument("--current_price", type=float)
     parser.add_argument("--all_time_higth", type=float, default=400.0)
     parser.add_argument("--all_time_low", type=float, default=200.0)
+    parser.add_argument("--llm_name", type=float, default="gpt-4o")
     parser.add_argument("--temp", type=float, default=0.7)
     return parser
 
@@ -80,6 +81,7 @@ def main(args):
     all_time_low: float = all_args.all_time_low
     bought_volume: int = all_args.bought_volume
     temp: float = all_args.temp
+    llm_name: str = all_args.llm_name
     columns = [
         "cash_amount", "bought_price", "bought_volume", "current_price", "all_time_higth", "all_time_low",
         "order_price", "order_volume", "reason"
@@ -96,7 +98,7 @@ def main(args):
                 {"text": prompt, "temperature": temp},
                 ensure_ascii=False
             )
-            llm_output: str = fetch_llm_output(prompt)
+            llm_output: str = fetch_llm_output(prompt, llm_name)
             order_dic: dict[int, int] = json.loads(llm_output)[0]
             if not "order_price" in order_dic:
                 raise ValueError("order_price not found.")
