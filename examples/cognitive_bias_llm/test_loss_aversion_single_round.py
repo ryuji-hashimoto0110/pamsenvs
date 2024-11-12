@@ -1,8 +1,7 @@
 import argparse
 import csv
 import json
-from pams.runners import Runner
-from pams.runners import SequentialRunner
+import numpy as np
 import random
 import pathlib
 from pathlib import Path
@@ -92,10 +91,10 @@ def main(args):
         for i in range(num_simulations):
             seed = initial_seed + i
             prng = random.Random(seed)
-            log_return: float = prng.uniform(a=0, b=1)
+            log_return: float = prng.uniform(a=0, b=0.5)
             if not is_uptrend:
                 log_return = -log_return
-            current_price: float = bought_price * (1 + log_return)
+            current_price: float = bought_price * np.exp(log_return)
             if is_peak:
                 if is_uptrend:
                     all_time_high: float = current_price
@@ -105,10 +104,10 @@ def main(args):
                     all_time_high: float = bought_price
             else:
                 if is_uptrend:
-                    all_time_high: float = current_price * (1 + log_return)
+                    all_time_high: float = current_price * np.exp(log_return)
                     all_time_low: float = bought_price
                 else:
-                    all_time_low: float = current_price * (1 + log_return)
+                    all_time_low: float = current_price * np.exp(log_return)
                     all_time_high: float = bought_price
             info: str = create_info(
                 cash_amount, bought_price, bought_volume, current_price, all_time_high, all_time_low
