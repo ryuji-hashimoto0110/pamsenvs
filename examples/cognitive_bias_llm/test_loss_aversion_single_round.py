@@ -20,8 +20,8 @@ def get_config():
     parser.add_argument("--bought_price", type=float, default=300.0)
     parser.add_argument("--bought_volume", type=int, default=10)
     parser.add_argument("--current_price", type=float)
-    parser.add_argument("--all_time_high", type=float, default=400.0)
-    parser.add_argument("--all_time_low", type=float, default=200.0)
+    parser.add_argument("--is_uptrend", action="store_true")
+    parser.add_argument("--is_peak", action="store_true")
     parser.add_argument("--llm_name", type=str, default="gpt-4o")
     parser.add_argument("--temp", type=float, default=0.7)
     return parser
@@ -76,10 +76,27 @@ def main(args):
     csv_path: Path = pathlib.Path(all_args.csv_path).resolve()
     cash_amount: float = all_args.cash_amount
     bought_price: float = all_args.bought_price
-    current_price: float = all_args.current_price
-    all_time_high: float = all_args.all_time_high
-    all_time_low: float = all_args.all_time_low
     bought_volume: int = all_args.bought_volume
+    is_uptrend: bool = all_args.is_uptrend
+    is_peak: bool = all_args.is_peak
+    log_return: float = random.Random.uniform(0, 1)
+    if not is_uptrend:
+        log_return = -log_return
+    current_price: float = bought_price * (1 + log_return)
+    if is_peak:
+        if is_uptrend:
+            all_time_high: float = current_price
+            all_time_low: float = bought_price
+        else:
+            all_time_low: float = current_price
+            all_time_high: float = bought_price
+    else:
+        if is_uptrend:
+            all_time_high: float = current_price * (1 + log_return)
+            all_time_low: float = bought_price
+        else:
+            all_time_low: float = current_price * (1 + log_return)
+            all_time_high: float = bought_price
     temp: float = all_args.temp
     llm_name: str = all_args.llm_name
     columns = [
