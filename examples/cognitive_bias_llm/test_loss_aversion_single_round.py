@@ -115,7 +115,8 @@ def main(args):
                 all_time_higth, all_time_low, order_price, order_volume, reason]
             )
         
-
+if __name__ == "__main__":
+    main(sys.argv[1:])
         
 
 
