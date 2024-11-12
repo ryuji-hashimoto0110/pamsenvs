@@ -72,7 +72,7 @@ def main(args):
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
     num_simulations: int = all_args.num_simulations
-    csv_path: Path = pathlib.Path(all_args.csvs_path).resolve()
+    csv_path: Path = pathlib.Path(all_args.csv_path).resolve()
     cash_amount: float = all_args.cash_amount
     bought_price: float = all_args.bought_price
     current_price: float = all_args.current_price
