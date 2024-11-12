@@ -1,4 +1,4 @@
-num_simulations=30
+num_simulations=100
 csv_path="results/loss_aversion/single_round_uptrend_ath.csv"
 temp=1.0
 llm_name="gpt-4o"
