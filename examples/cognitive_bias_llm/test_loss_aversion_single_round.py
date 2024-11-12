@@ -20,7 +20,7 @@ def get_config():
     parser.add_argument("--bought_price", type=float, default=300.0)
     parser.add_argument("--bought_volume", type=int, default=10)
     parser.add_argument("--current_price", type=float)
-    parser.add_argument("--all_time_higth", type=float, default=400.0)
+    parser.add_argument("--all_time_high", type=float, default=400.0)
     parser.add_argument("--all_time_low", type=float, default=200.0)
     parser.add_argument("--llm_name", type=str, default="gpt-4o")
     parser.add_argument("--temp", type=float, default=0.7)
@@ -77,13 +77,13 @@ def main(args):
     cash_amount: float = all_args.cash_amount
     bought_price: float = all_args.bought_price
     current_price: float = all_args.current_price
-    all_time_higth: float = all_args.all_time_higth
+    all_time_high: float = all_args.all_time_high
     all_time_low: float = all_args.all_time_low
     bought_volume: int = all_args.bought_volume
     temp: float = all_args.temp
     llm_name: str = all_args.llm_name
     columns = [
-        "cash_amount", "bought_price", "bought_volume", "current_price", "all_time_higth", "all_time_low",
+        "cash_amount", "bought_price", "bought_volume", "current_price", "all_time_high", "all_time_low",
         "order_price", "order_volume", "reason"
     ]
     with open(csv_path, mode="w") as f:
@@ -91,7 +91,7 @@ def main(args):
         writer.writerow(columns)
         for i in range(num_simulations):
             info: str = create_info(
-                cash_amount, bought_price, bought_volume, current_price, all_time_higth, all_time_low
+                cash_amount, bought_price, bought_volume, current_price, all_time_high, all_time_low
             )
             prompt: str = premise + f"\\n\\nHere's the information." + instruction + info + answer_format
             prompt = json.dumps(
@@ -120,7 +120,7 @@ def main(args):
                 reason: str = order_dic["reason"]
             writer.writerow(
                 [cash_amount, bought_price, bought_volume, current_price,
-                all_time_higth, all_time_low, order_price, order_volume, reason]
+                all_time_high, all_time_low, order_price, order_volume, reason]
             )
         
 if __name__ == "__main__":
