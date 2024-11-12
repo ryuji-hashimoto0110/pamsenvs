@@ -66,11 +66,11 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
     def _collect_signal_paths(self, overweight: bool = True) -> list[Path]:
         if overweight:
             return sorted(
-                list(self.signals_path.rglob("*promotion_overweight.txt"))
+                list(self.signals_path.rglob("*analysis_overweight.txt"))
             )
         else:
             return sorted(
-                list(self.signals_path.rglob("*promotion_underweight.txt"))
+                list(self.signals_path.rglob("*analysis_underweight.txt"))
             )
         
     def _calc_wealth(self, agent: Agent) -> float:
