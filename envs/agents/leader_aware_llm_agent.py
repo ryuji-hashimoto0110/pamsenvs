@@ -30,7 +30,7 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
                 cashAmount (float): the initial cash amount.
                 assetVolume (int): the initial asset volume.
                 llmName (str): the name of the language model.
-                devidendPrice (float): The price of the devidend per unit.
+                dividendPrice (float): The price of the dividend per unit.
                 getOFI (bool): whether to get order flow imbalance.
                 getLeaderBoard (bool): whether to get leader board.
             and can include the parameter:
@@ -40,10 +40,10 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
         super().setup(
             settings=settings, accessible_markets_ids=accessible_markets_ids
         )
-        if not "devidendPrice" in settings:
-            raise ValueError("devidendPrice must be included in settings.")
+        if not "dividendPrice" in settings:
+            raise ValueError("dividendPrice must be included in settings.")
         else:
-            devidend_price: float = settings["devidendPrice"]
+            dividend_price: float = settings["dividendPrice"]
         if not "getOFI" in settings:
             raise ValueError("getOFI must be included in settings.")
         else:
@@ -52,10 +52,10 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             raise ValueError("getLeaderBoard must be included in settings.")
         else:
             self.get_lb: bool = settings["getLeaderBoard"]
-        self.premise += "At each time steps, you can receive devidend as cash according to your holding stock volume: " + \
-            "your cash amount <- your cash amount +  asset volume * devidend price. " + \
-            f"The devidend price is decided to be 0 or {devidend_price} according to the fundamental value of the stock. " + \
-            "You should buy the stock if you believe that the fundamental value is high to gain devidend. " + \
+        self.premise += "At each time steps, you can receive dividend as cash according to your holding stock volume: " + \
+            "your cash amount <- your cash amount +  asset volume * dividend price. " + \
+            f"The dividend price is decided to be 0 or {dividend_price} according to the fundamental value of the stock. " + \
+            "You should buy the stock if you believe that the fundamental value is high to gain dividend. " + \
             "Your goal is to achieve high wealth. Your wealth is calculated as: " + \
             "your cash amount + sum(asset volume * (average stock value * remaining time steps)). " + \
             "Note that stocks will become less valuable as the time goes by." 

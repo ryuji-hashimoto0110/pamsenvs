@@ -32,7 +32,7 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
                     consistentSignalRate (float): The probability that the market privides private
                         signal that is consistent with the fundamental value.
                     signalsPath (str): The path to the signals folder.
-                    devidendPrice (float): The price of the devidend per unit.
+                    dividendPrice (float): The price of the dividend per unit.
                     averageStockValue (float): The value of one unit of the stock. This is used to calculate wealth.
         """
         super().setup(settings, *args, **kwargs)
@@ -40,10 +40,10 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
             raise ValueError("consistentSignalRate is required for LeaderAwareMarket setting.")
         else:
             self.consistent_signal_rate: float = settings["consistentSignalRate"]
-        if not "devidendPrice" in settings:
-            raise ValueError("devidendPrice is required for LeaderAwareMarket setting.")
+        if not "dividendPrice" in settings:
+            raise ValueError("dividendPrice is required for LeaderAwareMarket setting.")
         else:
-            self.devidend_price: float = settings["devidendPrice"]
+            self.dividend_price: float = settings["dividendPrice"]
         if not "signalsPath" in settings:
             raise ValueError("signalsPath is required for LeaderAwareMarket setting.")
         else:
@@ -91,7 +91,7 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
         This method initializes the session by the following procedure.
             1. Clear buy/sell order book.
             2. initialize OFI.
-            3. Uniformly sample the devidend from {0, self.devidend_price}.
+            3. Uniformly sample the dividend from {0, self.dividend_price}.
             4. set overweight and underweight signals.
             5. Get top-3 agents and register them as leaders.
         """
@@ -99,20 +99,20 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
         self._clear_order_book(self.sell_order_book)
         self.num_buy_orders = 0
         self.num_sell_orders = 0
-        self.devidend = self._prng.choice([0, self.devidend_price])
-        if self.devidend == self.devidend_price:
+        self.dividend = self._prng.choice([0, self.dividend_price])
+        if self.dividend == self.dividend_price:
             self.overweight_rate: float = self.consistent_signal_rate
-        elif self.devidend == 0:
+        elif self.dividend == 0:
             self.overweight_rate: float = 1 - self.consistent_signal_rate
         else:
-            raise ValueError(f"Invalid devidend: {self.devidend}")
+            raise ValueError(f"Invalid dividend: {self.dividend}")
         self.overweight_signal: str = self._get_signal_fromt_txt(self.overweight_txt_paths)
         self.underweight_signal: str = self._get_signal_fromt_txt(self.underweight_txt_paths)
         self._update_leaderboard()
 
-    def provide_devidend(self, agent: Agent) -> None:
-        """provide devidend to the agent. This is called by DevidendProvider."""
-        agent.cash_amount += agent.asset_volumes[self.market_id] * self.devidend
+    def provide_dividend(self, agent: Agent) -> None:
+        """provide dividend to the agent. This is called by dividendProvider."""
+        agent.cash_amount += agent.asset_volumes[self.market_id] * self.dividend
 
     def _get_signal_fromt_txt(self, txt_paths: list[Path]) -> str:
         if len(txt_paths) == 0:
@@ -188,7 +188,7 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
             private_signal: str = self.overweight_signal
             signal_tone: str = "overweight"
         return f"\\n[Private signal]market id: {self.market_id}, " + \
-            f"private signal: {private_signal}", [self.devidend, signal_tone]
+            f"private signal: {private_signal}", [self.dividend, signal_tone]
 
     def _add_order(self, order: Order) -> OrderLog:
         log: OrderLog = super()._add_order(order)

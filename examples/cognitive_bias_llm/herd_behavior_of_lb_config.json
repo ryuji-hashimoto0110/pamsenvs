@@ -10,7 +10,7 @@
                 "withOrderExecution": true,
                 "withPrint": true,
                 "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
+                "events": ["initialization", "prioritize_leaders", "provide_dividend"]
             },
             {
                 "sessionName": 2,
@@ -19,7 +19,7 @@
                 "withOrderExecution": true,
                 "withPrint": true,
                 "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
+                "events": ["initialization", "prioritize_leaders", "provide_dividend"]
             },
             {
                 "sessionName": 3,
@@ -28,19 +28,19 @@
                 "withOrderExecution": true,
                 "withPrint": true,
                 "hiFrequencySubmitRate": 1.0,
-                "events": ["initialization", "prioritize_leaders", "provide_devidend"]
+                "events": ["initialization", "prioritize_leaders", "provide_dividend"]
             }
         ]
     },
     "initialization": {"class": "LeaderAwareMarketInitializer"},
     "prioritize_leaders": {"class": "LeadersPrioritizer"},
-    "provide_devidend": {"class": "DevidendProvider"},
+    "provide_dividend": {"class": "dividendProvider"},
     "Market": {
 		"class": "LeaderAwareMarket",
 		"tickSize": 1.0,
 		"marketPrice": 5.0,
         "consistentSignalRate": 0.7,
-        "devidendPrice": 10,
+        "dividendPrice": 10,
         "averageStockValue": 5.0,
         "signalsPath": "../../datas/ecc_documents"
 	},
@@ -51,7 +51,7 @@
         "cashAmount": 100,
         "assetVolume": 5,
         "llmName": "gpt-4o",
-        "devidendPrice": 10,
+        "dividendPrice": 10,
         "getOFI": true,
         "getLeaderBoard": true,
         "onlyMarketOrders": false
