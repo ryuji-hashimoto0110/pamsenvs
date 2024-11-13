@@ -37,19 +37,15 @@ def main(args):
     market_name: str = all_args.market_name
     all_csvs_path: Path = pathlib.Path(all_args.csvs_path).resolve()
     for i in range(num_simulations):
-        prng = random.Random(initial_seed+i)
+        prng = random.Random(initial_seed+100)
         csvs_path: Path = all_csvs_path / f"{i}"
         if not csvs_path.exists():
             csvs_path.mkdir(parents=True)
         saver = PortfolioSaver(dfs_save_path=csvs_path)
         config = initial_config.copy()
         initial_drift: float = initial_config[market_name]["fundamentalDrift"]
-        drift: float = prng.uniform(a=initial_drift-0.001, b=initial_drift+0.001)
-        initial_vola: float = initial_config[market_name]["fundamentalVolatility"]
-        vola: float = prng.uniform(a=0.005, b=initial_vola)
+        drift: float = prng.uniform(a=initial_drift-0.005, b=initial_drift+0.005)
         config[market_name]["fundamentalDrift"] = drift
-        config[market_name]["fundamentalVolatility"] = vola
-        print(f"{drift=}, {vola=}")
         runner: Runner = SequentialRunner(
             settings=config,
             prng=random.Random(initial_seed+i),
