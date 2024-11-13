@@ -1,5 +1,5 @@
 initial_seed=42
-num_simulations=1
+num_simulations=30
 config_path="loss_aversion_moderate_config.json"
 csvs_path="results/loss_aversion/moderate"
 
