@@ -15,6 +15,8 @@ from envs.markets import TotalTimeAwareMarket
 from logs import PortfolioSaver
 from typing import Any
 from typing import Optional
+import warnings
+warnings.simplefilter("ignore")
 
 def get_config():
     parser = argparse.ArgumentParser()
