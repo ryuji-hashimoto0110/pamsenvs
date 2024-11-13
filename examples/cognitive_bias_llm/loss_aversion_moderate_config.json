@@ -1,29 +1,22 @@
 {
     "simulation": {
-        "markets": ["Market1", "Market2"],
+        "markets": ["Market1"],
         "agents": [
             "LiquidityProviderAgents", "HistoryAwareLLMAgent"
         ],
         "sessions": [
             {
                 "sessionName": 1,
-                "iterationSteps": 30,
+                "iterationSteps": 50,
                 "withOrderPlacement": true,
                 "withOrderExecution": true,
                 "withPrint": true,
-                "maxNormalOrders": 2,
+                "maxNormalOrders": 1,
                 "maxHighFrequencyOrders": 1
             }
         ]
     },
-    "Market1": {
-		"class": "TotalTimeAwareMarket",
-		"tickSize": 0.00001,
-		"marketPrice": 300.0,
-        "fundamentalDrift": 0.0,
-        "fundamentalVolatility": 0.01
-	},
-    "Market2": {
+    "Market": {
 		"class": "TotalTimeAwareMarket",
 		"tickSize": 0.00001,
 		"marketPrice": 300.0,
@@ -32,8 +25,8 @@
 	},
     "LiquidityProviderAgents": {
         "class": "LiquidityProviderAgent",
-        "numAgents": 1,
-        "markets": ["Market1", "Market2"],
+        "numAgents": 2,
+        "markets": ["Market"],
         "assetVolume": 10000,
 		"cashAmount": 10000000000,
         "orderVolume": 1000,
@@ -42,7 +35,7 @@
     "HistoryAwareLLMAgent": {
         "class": "HistoryAwareLLMAgent",
         "numAgents": 1,
-        "markets": ["Market1", "Market2"],
+        "markets": ["Market"],
         "assetVolume": 0,
         "cashAmount": 30000,
         "llmName": "gpt-4o",
