@@ -27,6 +27,7 @@ class PortfolioSaver(Logger):
             dfs_save_path.mkdir(parents=True)
         self.dfs_save_path: Path = dfs_save_path
         self.market_id2path_dic: dict[MarketID, Path] = {}
+        self.market_id2market_dic: dict[MarketID, Market] = {}
         self.agent_id2agent_dic: dict[AgentID, Agent] = {}
         self.market_id2rows_dic: dict[MarketID, list[Optional[str | float | int]]] = {}
         self.record_ofi: bool = record_ofi
@@ -35,7 +36,8 @@ class PortfolioSaver(Logger):
 
     def _create_columns(self) -> list[str]:
         column_names: list[str] = [
-            "time", "agent_id", "price", "volume",
+            "time", "agent_id", "market_price",
+            "order_price", "order_volume", "average_cost",
             "holding_cash_amount", "holding_asset_volume", "reason"
         ]
         if self.record_signal_description:
@@ -59,6 +61,7 @@ class PortfolioSaver(Logger):
             csv_path: Path = self.dfs_save_path / f"market{market_id}.csv"
             self.market_id2rows_dic[market_id] = [self._create_columns()]
             self.market_id2path_dic[market_id] = csv_path
+            self.market_id2market_dic[market_id] = market
         for agent in simulator.agents:
             agent_id: AgentID = agent.agent_id
             self.agent_id2agent_dic[agent_id] = agent
@@ -73,9 +76,11 @@ class PortfolioSaver(Logger):
         log: OrderLog,
     ) -> list[Optional[str | float | int]]:
         market_id: MarketID = log.market_id
+        market: Market = self.market_id2market_dic[market_id]
         t: int = log.time
-        price: float = log.price
-        volume: int = log.volume
+        market_price: float = market.get_market_price(t)
+        order_price: float = log.price
+        order_volume: int = log.volume
         is_buy: bool = log.is_buy
         if not is_buy:
             volume = -volume
@@ -87,8 +92,12 @@ class PortfolioSaver(Logger):
             reason: str = agent.last_reason_dic[market_id]
         else:
             reason: str = None
+        if hasattr(agent, "average_cost_dic"):
+            average_cost: float = agent.average_cost_dic[market_id]
+        else:
+            average_cost: float = None
         agent_infos: list[Optional[str | float | int]] = [
-            t, agent_id, price, volume,
+            t, agent_id, market_price, order_price, order_volume, average_cost,
             agent_cash_amount, agent_asset_volume, reason
         ]
         if self.record_signal_description:
