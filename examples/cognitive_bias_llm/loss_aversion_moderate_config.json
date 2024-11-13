@@ -1,6 +1,6 @@
 {
     "simulation": {
-        "markets": ["Market1"],
+        "markets": ["Market"],
         "agents": [
             "LiquidityProviderAgents", "HistoryAwareLLMAgent"
         ],
