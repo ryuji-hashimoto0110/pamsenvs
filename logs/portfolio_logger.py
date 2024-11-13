@@ -83,7 +83,7 @@ class PortfolioSaver(Logger):
         order_volume: int = log.volume
         is_buy: bool = log.is_buy
         if not is_buy:
-            volume = -volume
+            order_volume = -order_volume
         agent_id: AgentID = log.agent_id
         agent: Agent = self.agent_id2agent_dic[agent_id]
         agent_cash_amount: float = agent.cash_amount
