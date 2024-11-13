@@ -75,7 +75,9 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         else:
             self.only_market_orders: bool = settings["onlyMarketOrders"]
         self.last_reason_dic: dict[MarketID, str] = {}
+        self.average_cost_dic: dict[MarketID, float] = {}
         for market_id in accessible_markets_ids:
+            self.average_cost_dic[market_id] = 0.0
             self.last_reason_dic[market_id] = ""
     
     def _create_portfolio_info(self, markets: list[Market]) -> str:
@@ -113,9 +115,11 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                     "Unrelated execution log found in executed_orders_dic."
                 )
         if total_shares == 0:
+            self.average_cost_dic[market_id] = 0.0
             return 0.0
         current_price: float = market.get_market_price()
         average_cost: float = total_cost / total_shares
+        self.average_cost_dic[market_id] = average_cost
         unrealized_gain: float = (current_price - average_cost) * total_shares
         return unrealized_gain
     
