@@ -49,6 +49,7 @@ def main(args):
         vola: float = prng.uniform(a=0.005, b=initial_vola)
         config[market_name]["fundamentalDrift"] = drift
         config[market_name]["fundamentalVolatility"] = vola
+        print(f"{drift=}, {vola=}")
         runner: Runner = SequentialRunner(
             settings=config,
             prng=random.Random(initial_seed+i),
