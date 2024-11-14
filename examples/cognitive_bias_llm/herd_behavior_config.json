@@ -52,8 +52,8 @@
         "assetVolume": 5,
         "llmName": "gpt-4o",
         "dividendPrice": 10,
-        "getOFI": true,
-        "getLeaderBoard": true,
+        "getOFI": false,
+        "getLeaderBoard": false,
         "onlyMarketOrders": false
     }
 }
