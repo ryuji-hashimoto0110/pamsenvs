@@ -1,6 +1,6 @@
 initial_seed=42
-num_simulations=1
-config_path="herd_behavior_of_lb_config.json"
+num_simulations=30
+config_path="herd_behavior_config.json"
 csvs_path="results/herd_behavior/of_lb"
 
 python test_herd_behavior.py \
