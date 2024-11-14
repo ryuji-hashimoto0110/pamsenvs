@@ -1,4 +1,4 @@
-from .devidend_provider import DevidendProvider
+from .devidend_provider import DividendProvider
 from .leader_aware_market_initializer import LeaderAwareMarketInitializer
 from .leaders_prioritizer import LeadersPrioritizer
 

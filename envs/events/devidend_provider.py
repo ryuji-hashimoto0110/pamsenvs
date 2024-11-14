@@ -4,7 +4,7 @@ from pams.events import EventHook
 from pams.session import Session
 from pams.simulator import Simulator
 
-class DevidendProvider(EventABC):
+class DividendProvider(EventABC):
     def hook_registration(self) -> list[EventHook]:
         t: int = self.session.session_start_time + self.session.iteration_steps - 1
         event_hook = EventHook(
@@ -24,6 +24,6 @@ class DevidendProvider(EventABC):
         """
         for market in simulator.markets:
             if isinstance(market, LeaderAwareMarket):
-                print(f"{market.get_time()} DevidendProvider: provide devidend.")
+                print(f"{market.get_time()} DividendProvider: provide devidend.")
                 for agent in simulator.agents:
-                    market.provide_devidend(agent)
+                    market.provide_dividend(agent)
