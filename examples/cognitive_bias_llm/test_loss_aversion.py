@@ -44,7 +44,8 @@ def main(args):
         saver = PortfolioSaver(dfs_save_path=csvs_path)
         config = initial_config.copy()
         initial_drift: float = initial_config[market_name]["fundamentalDrift"]
-        drift: float = prng.uniform(a=initial_drift-0.005, b=initial_drift+0.005)
+        vol: float = initial_config[market_name]["fundamentalVolatility"]
+        drift: float = prng.uniform(a=initial_drift+0.5*vol**2-0.002, b=initial_drift+0.5*vol**2+0.002)
         config[market_name]["fundamentalDrift"] = drift
         runner: Runner = SequentialRunner(
             settings=config,
