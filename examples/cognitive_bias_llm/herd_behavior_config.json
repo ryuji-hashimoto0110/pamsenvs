@@ -34,7 +34,7 @@
     },
     "initialization": {"class": "LeaderAwareMarketInitializer"},
     "prioritize_leaders": {"class": "LeadersPrioritizer"},
-    "provide_dividend": {"class": "dividendProvider"},
+    "provide_dividend": {"class": "DividendProvider"},
     "Market": {
 		"class": "LeaderAwareMarket",
 		"tickSize": 1.0,
