@@ -122,10 +122,12 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
         trading_history_info: str = self._create_trading_history_info()
         prompt: str = self.base_prompt + "\\n Here are the information." + portfolio_info + \
             market_condition_info + trading_history_info 
+        ofi_info: str = self.create_ofi_info(markets=markets)
         if self.get_ofi:
-            prompt += self.create_ofi_info(markets=markets)
+            prompt += ofi_info
+        lb_info: str = self.create_lb_info(markets=markets)
         if self.get_lb:
-            prompt += self.create_lb_info(markets=markets)
+            prompt += lb_info
         prompt += self.create_private_signal_info(markets=markets)
         prompt += self.answer_format
         prompt = json.dumps({"text": prompt}, ensure_ascii=False)
