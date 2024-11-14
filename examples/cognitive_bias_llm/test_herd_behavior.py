@@ -42,6 +42,7 @@ def main(args):
     record_leader_board: bool = all_args.record_leader_board
     record_signal_description: bool = all_args.record_signal_description
     for i in range(num_simulations):
+        print(f"{i=}, {record_ofi=}, {record_leader_board=}, {record_signal_description=}")
         csvs_path: Path = all_csvs_path / f"{i}"
         if not csvs_path.exists():
             csvs_path.mkdir(parents=True)   
