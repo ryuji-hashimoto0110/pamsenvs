@@ -13,6 +13,7 @@ from envs.agents import HistoryAwareLLMAgent
 from envs.agents import LiquidityProviderAgent
 from envs.markets import TotalTimeAwareMarket
 from logs import PortfolioSaver
+from rich import print
 from typing import Any
 from typing import Optional
 import warnings
@@ -37,7 +38,7 @@ def main(args):
     market_name: str = all_args.market_name
     all_csvs_path: Path = pathlib.Path(all_args.csvs_path).resolve()
     for i in range(num_simulations):
-        prng = random.Random(initial_seed+100)
+        prng = random.Random(initial_seed+i)
         csvs_path: Path = all_csvs_path / f"{i}"
         if not csvs_path.exists():
             csvs_path.mkdir(parents=True)
@@ -47,6 +48,8 @@ def main(args):
         vol: float = initial_config[market_name]["fundamentalVolatility"]
         drift: float = prng.uniform(a=initial_drift+0.5*vol**2-0.002, b=initial_drift+0.5*vol**2+0.002)
         config[market_name]["fundamentalDrift"] = drift
+        print(f"{i=}")
+        print(config[market_name])
         runner: Runner = SequentialRunner(
             settings=config,
             prng=random.Random(initial_seed+i),
