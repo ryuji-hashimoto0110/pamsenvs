@@ -66,11 +66,11 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
     
     def _collect_signal_paths(self, overweight: bool = True) -> list[Path]:
         if overweight:
-            return sorted(
+            return self._prng.shuffle(
                 list(self.signals_path.rglob("*overweight_analysis.txt"))
             )
         else:
-            return sorted(
+            return self._prng.shuffle(
                 list(self.signals_path.rglob("*underweight_analysis.txt"))
             )
         

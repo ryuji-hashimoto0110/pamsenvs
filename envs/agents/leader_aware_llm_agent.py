@@ -81,32 +81,6 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             self.market_id2lb[market_id] = [None for _ in range(9)]
             self.market_id2signal_descriptions[market_id] = [None, None]
 
-    def _create_market_condition_info(self, markets: list[Market]) -> str:
-        """create a market condition information."""
-        market_condition_info: str = ""
-        for market in markets:
-            market_id: int = market.market_id
-            current_market_price: float = market.get_market_price()
-            if hasattr(market, "dividend_price"):
-                all_time_high_price: float = market.dividend_price
-                all_time_low_price: float = 0.0
-            else:
-                market_prices: list[float] = market.get_market_prices()
-                all_time_high_price: float = max(market_prices)
-                all_time_low_price: float = min(market_prices)
-            if hasattr(market, "get_remaining_time"):
-                remaining_time: int = market.get_remaining_time()
-                current_time: int = market.get_time()
-                total_time: int = current_time + remaining_time
-            else:
-                raise ValueError("The market does not have the method get_remaining_time.")
-            market_condition_info += f"\\n[Market condition]market id: {market_id}, " + \
-                f"current market price: {current_market_price:.1f}, " + \
-                f"all time high price: {all_time_high_price:.1f}, " + \
-                f"all time low price: {all_time_low_price:.1f}" + \
-                f"\\n[Market condition]remaining time step: {remaining_time} total time steps: {total_time}"
-        return market_condition_info
-
     def create_ofi_info(self, markets: list[Market]) -> str:
         """create order flow imbalance information."""
         ofi_info: str = ""
