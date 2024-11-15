@@ -66,13 +66,12 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
     
     def _collect_signal_paths(self, overweight: bool = True) -> list[Path]:
         if overweight:
-            return self._prng.shuffle(
-                list(self.signals_path.rglob("*overweight_analysis.txt"))
-            )
+            private_signal_paths: list[Path] = list(self.signals_path.rglob("*overweight_analysis.txt"))
+            private_signal_paths = self._prng.sample(private_signal_paths, len(private_signal_paths))
         else:
-            return self._prng.shuffle(
-                list(self.signals_path.rglob("*underweight_analysis.txt"))
-            )
+            private_signal_paths: list[Path] = list(self.signals_path.rglob("*ounderweight_analysis.txt"))
+            private_signal_paths = self._prng.sample(private_signal_paths, len(private_signal_paths))
+        return private_signal_paths
         
     def _calc_wealth(self, agent: Agent) -> float:
         cash_amount: float = agent.cash_amount
