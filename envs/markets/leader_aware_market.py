@@ -12,6 +12,7 @@ from typing import Any
 from typing import Literal
 from typing import Optional
 from typing import TypeVar
+import warnings
 
 AgentID = TypeVar("AgentID")
 
@@ -66,11 +67,11 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
     def _collect_signal_paths(self, overweight: bool = True) -> list[Path]:
         if overweight:
             return sorted(
-                list(self.signals_path.rglob("*summary_overweight.txt"))
+                list(self.signals_path.rglob("overweight_analysis.txt"))
             )
         else:
             return sorted(
-                list(self.signals_path.rglob("*summary_underweight.txt"))
+                list(self.signals_path.rglob("underweight_analysis.txt"))
             )
         
     def _calc_wealth(self, agent: Agent) -> float:
@@ -180,6 +181,14 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
         return f"\\n[Order flow imbalance]market id: {self.market_id}, " + \
             f"order flow imbalance: {ofi}", ofi
     
+    def _check_word_length(self, sentence: str) -> str:
+        words: list[str] = sentence.split(" ")
+        if len(words) <= 150:
+            return sentence
+        else:
+            warnings.warn(f"Sentence is too long: {len(sentence)}. The sentence will be truncated.")
+            return " ".join(words[:150])
+    
     def get_private_signal(self) -> tuple[str, list[str | float]]:
         if self.overweight_rate < random.random():
             private_signal: str = self.underweight_signal
@@ -187,6 +196,7 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
         else:
             private_signal: str = self.overweight_signal
             signal_tone: str = "overweight"
+        private_signal: str = self._check_word_length(private_signal)
         return f"\\n[Private signal]market id: {self.market_id}, " + \
             f"private signal: {private_signal}", [self.dividend, signal_tone]
 
