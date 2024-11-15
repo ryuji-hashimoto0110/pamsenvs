@@ -69,7 +69,7 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
             private_signal_paths: list[Path] = list(self.signals_path.rglob("*overweight_analysis.txt"))
             private_signal_paths = self._prng.sample(private_signal_paths, len(private_signal_paths))
         else:
-            private_signal_paths: list[Path] = list(self.signals_path.rglob("*ounderweight_analysis.txt"))
+            private_signal_paths: list[Path] = list(self.signals_path.rglob("*underweight_analysis.txt"))
             private_signal_paths = self._prng.sample(private_signal_paths, len(private_signal_paths))
         return private_signal_paths
         
