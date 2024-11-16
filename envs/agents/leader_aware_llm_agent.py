@@ -63,7 +63,9 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             self.instruction += "\\n\\n Order flow imbalance is provided as a following format. " + \
                 "Order flow imbalance means the difference between the number of buy and sell orders submitted to the stock market. " + \
                 "Negative order flow imbalance indicates that the number of sell orders exceed that of buy orders. " + \
-                "Higher absolute value of order flow imbalance indicates that orders are imbalance to one side." + \
+                "If the order flow is positive (negative), the fundamental value tends to be high (low)." + \
+                "Higher absolute value of order flow imbalance indicates that orders are imbalance to one side, " + \
+                "and suggests stronger evidence about the fundamentals." + \
                 "\\n[Order flow imbalance]market id: {}, order flow imbalance: {}, ..."
         if self.get_lb:
             self.instruction += "\\n\\n Leader board is provided as a following format." + \
