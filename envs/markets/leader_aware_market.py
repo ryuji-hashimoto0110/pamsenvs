@@ -174,8 +174,6 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
         else:
             ofi: float = (
                 self.num_buy_orders - self.num_sell_orders
-            ) / (
-                self.num_buy_orders + self.num_sell_orders
             )
         return f"\\n[Order flow imbalance]market id: {self.market_id}, " + \
             f"order flow imbalance: {ofi}", ofi
