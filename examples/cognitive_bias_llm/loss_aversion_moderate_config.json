@@ -38,7 +38,7 @@
         "markets": ["Market"],
         "assetVolume": 0,
         "cashAmount": 30000,
-        "llmName": "gpt-4o",
+        "llmName": "claude-sonnet",
         "onlyMarketOrders": true
     }
 }

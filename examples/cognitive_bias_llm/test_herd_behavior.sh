@@ -1,7 +1,7 @@
 initial_seed=42
 num_simulations=30
 config_path="herd_behavior_config.json"
-csvs_path="results/herd_behavior/of_lb"
+csvs_path="results/herd_behavior/claude_base"
 
 python test_herd_behavior.py \
 --initial_seed ${initial_seed} \

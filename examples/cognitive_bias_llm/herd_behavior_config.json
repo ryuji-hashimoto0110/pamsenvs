@@ -50,7 +50,7 @@
         "numAgents": 20,
         "cashAmount": 100,
         "assetVolume": 5,
-        "llmName": "gpt-4o",
+        "llmName": "claude-sonnet",
         "dividendPrice": 10,
         "getOFI": false,
         "getLeaderBoard": false,
