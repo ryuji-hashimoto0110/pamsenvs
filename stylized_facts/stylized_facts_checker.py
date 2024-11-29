@@ -1049,6 +1049,9 @@ class StylizedFactsChecker:
             volume_tail_arr = self.check_hill_index_volume()
             volume_tail_arr = np.repeat(volume_tail_arr, repeats=kurtosis_arr.shape[0])
             volume_volatility_correlation = self.check_volume_volatility_correlation()
+            acorr_dic: dict[int, ndarray] = self.check_autocorrelation(
+                [lag for lag in range(1,30)], return_tail=False
+            )
             acorr_tail_arr, first_negative_lag_arr = self.check_autocorrelation(
                 [lag for lag in range(1,71)], return_tail=True
             )
@@ -1070,6 +1073,8 @@ class StylizedFactsChecker:
                 "tail (acorr)": acorr_tail_arr.flatten(),
                 "first negative lag": first_negative_lag_arr.flatten()
             }
+            for lag, acorr_arr in acorr_dic.items():
+                data_dic[f"acorr_{lag}"] = acorr_arr.flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
             if print_results:
                 self.print_results(stylized_facts_df)
