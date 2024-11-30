@@ -31,7 +31,7 @@ class FCWeightsAwareMarket(RangeRegulatedMarket):
         self.agent_id2wf_dic: dict[AgentID, float] = {}
         self.agent_id2wc_dic: dict[AgentID, float] = {}
         self.wc_rate: float = 0.0
-        self.previous_time_window_size: int = 0
+        self.previous_time_window_sizes: list[int] = []
 
     def _update_time(self, next_fundamental_price: float) -> None:
         super()._update_time(next_fundamental_price)
@@ -47,11 +47,16 @@ class FCWeightsAwareMarket(RangeRegulatedMarket):
         if hasattr(agent, "w_f") and hasattr(agent, "w_c"):
             self.agent_id2wf_dic[agent_id] = agent.w_f
             self.agent_id2wc_dic[agent_id] = agent.w_c
-            self.previous_time_window_size = agent._calc_temporal_time_window_size(
+            previous_time_window_size = agent._calc_temporal_time_window_size(
                 time=self.time,
                 fundamental_weight=agent.w_f, chart_weight=agent.w_c,
                 market=self
             )
+            if len(self.previous_time_window_sizes) < 10:
+                self.previous_time_window_sizes.append(previous_time_window_size)
+            else:
+                self.previous_time_window_sizes.pop(0)
+                self.previous_time_window_sizes.append(previous_time_window_size)
         total_wc: float = sum(list(self.agent_id2wc_dic.values()))
         total_wf: float = sum(list(self.agent_id2wf_dic.values()))
         if not total_wc + total_wf == 0:
