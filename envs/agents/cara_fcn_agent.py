@@ -405,7 +405,8 @@ class CARAFCNAgent(Agent):
         """update weight by the adaptive rule.
         """
         pred_acc: float = np.sign(pred_r * obs_r)
-        update_w: float = current_w + self.learning_rate * pred_acc
+        updated_w: float = current_w + self.learning_rate * pred_acc
+        #print(f"{current_w=:.3f} {updated_w=:.3f}")
         #if pred_acc == 1:
         #    updated_w: float = current_w + self.learning_rate
         #elif pred_acc == -1:
