@@ -408,11 +408,11 @@ class CARAFCNAgent(Agent):
         pred_r *= 100
         obs_r *= 100
         if pred_acc == 1:
-            updated_w: float = current_w + self.learning_rate * np.exp(
-                -np.abs(pred_r-obs_r)
-            )
+            updated_w: float = current_w + self.learning_rate
         elif pred_acc == -1:
-            updated_w: float = current_w - self.learning_rate * np.abs(pred_r+obs_r)
+            updated_w: float = current_w - self.learning_rate * (
+                np.abs(pred_r)+np.abs(obs_r)
+            )
         elif pred_acc == 0:
             updated_w: float = current_w
         else:
