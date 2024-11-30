@@ -293,7 +293,9 @@ class FlexSaver(Logger):
             wc_rate: float = market.wc_rate
             wc_rate_str: str = f"{wc_rate:.5f}"
             log_dic["Data"]["wc_rate"] = wc_rate_str
-            time_window_size: int = market.previous_time_window_size
+            time_window_size: int = sorted(
+                market.previous_time_window_sizes
+            )[len(market.previous_time_window_sizes) // 2]
             log_dic["Data"]["time_window_size"] = str(time_window_size)
         market_price: Optional[float | str] = market.get_last_executed_price()
         log_dic["Data"]["market_price"] = self._convert_price2str(market_price)
