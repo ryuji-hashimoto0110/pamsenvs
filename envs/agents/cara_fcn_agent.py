@@ -405,14 +405,15 @@ class CARAFCNAgent(Agent):
         """update weight by the adaptive rule.
         """
         pred_acc: float = np.sign(pred_r * obs_r)
-        if pred_acc == 1:
-            updated_w: float = current_w + self.learning_rate * 100 * np.abs(pred_r-obs_r)
-        elif pred_acc == -1:
-            updated_w: float = current_w - self.learning_rate * 100 * np.abs(pred_r+obs_r)
-        elif pred_acc == 0:
-            updated_w: float = current_w
-        else:
-            raise ValueError(f"pred_acc must be 1, -1, or 0 but found {pred_acc}.")
+        updated_w: float = current_w + self.learning_rate * pred_acc
+        #if pred_acc == 1:
+        #    updated_w: float = current_w + self.learning_rate * 100 * np.abs(pred_r-obs_r)
+        #elif pred_acc == -1:
+        #    updated_w: float = current_w - self.learning_rate * 100 * np.abs(pred_r+obs_r)
+        #elif pred_acc == 0:
+        #    updated_w: float = current_w
+        #else:
+        #    raise ValueError(f"pred_acc must be 1, -1, or 0 but found {pred_acc}.")
         return updated_w
 
     def _calc_temporal_time_window_size(
