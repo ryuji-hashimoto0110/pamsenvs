@@ -64,7 +64,8 @@
 		"timeWindowSize": 60,
 		"heterogeneousTimeWindowSize": true,
 		"tauDiff": 10,
-		"heterogeneousRiskAversionTerm": false,
+		"heterogeneousRiskAversionTerm": true,
+		"alphaDiff": 1,
 		"isAdaptive": false,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1
