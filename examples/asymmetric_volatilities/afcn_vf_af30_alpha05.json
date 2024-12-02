@@ -52,7 +52,7 @@
         "numAgents": 2000,
 		"markets": ["Market"],
 		"assetVolume": {"uniform": [0,100]},
-		"cashAmount": {"uniform": [0,30000]},
+		"cashAmount": {"uniform": [3000,30000]},
 		"averageCashAmount": 15000,
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [1.5]},
