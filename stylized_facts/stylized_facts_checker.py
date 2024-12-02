@@ -1074,7 +1074,9 @@ class StylizedFactsChecker:
                 "first negative lag": first_negative_lag_arr.flatten()
             }
             for lag, acorr_arr in acorr_dic.items():
-                data_dic[f"acorr_{lag}"] = acorr_arr.flatten()
+                data_dic[f"acorr_{lag}"] = np.repeat(
+                    acorr_arr, repeats=kurtosis_arr.shape[0]
+                ).flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
             if print_results:
                 self.print_results(stylized_facts_df)
