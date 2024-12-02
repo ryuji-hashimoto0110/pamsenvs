@@ -122,13 +122,14 @@ class CARAFCNAgent(Agent):
         )
         if "heterogeneousTimeWindowSize" in settings:
             self.heterogeneous_time_window_size: bool = settings["heterogeneousTimeWindowSize"]
+        else:
+            self.heterogeneous_time_window_size: bool = False
+        if self.heterogeneous_time_window_size:
             if "tauDiff" not in settings:
                 raise ValueError(
                     "tauDiff must be set when heterogeneousTimeWindowSize is true."
                 )
             self.tau_diff: int = int(json_random.random(json_value=settings["tauDiff"]))
-        else:
-            self.heterogeneous_time_window_size: bool = True
         self.is_cara: bool = settings["isCARA"]
         if not self.is_cara:
             if "orderMargin" not in settings:
@@ -156,6 +157,12 @@ class CARAFCNAgent(Agent):
             self.heterogeneous_risk_aversion_term: bool = settings["heterogeneousRiskAversionTerm"]
         else:
             self.heterogeneous_risk_aversion_term: bool = False
+        if self.heterogeneous_risk_aversion_term:
+            if "alphaDiff" not in settings:
+                raise ValueError(
+                    "alphaDiff must be set when heterogeneousRiskAversionTerm is true."
+                )
+            self.alpha_diff: int = int(json_random.random(json_value=settings["alphaDiff"]))
         if "meanReversionTime" in settings:
             self.mean_reversion_time: int = int(
                 json_random.random(json_value=settings["meanReversionTime"])
