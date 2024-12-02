@@ -61,7 +61,7 @@
         "feedbackAsymmetry": 2.0,
         "noiseAsymmetry": 0.0, 
 		"noiseScale": 0.0001,
-		"timeWindowSize": 100,
+		"timeWindowSize": 60,
 		"heterogeneousTimeWindowSize": true,
 		"tauDiff": 10,
 		"heterogeneousRiskAversionTerm": false,

@@ -59,7 +59,7 @@
 		"noiseWeight": {"expon": [1.0]},
         "riskAversionTerm": 0.20,
 		"noiseScale": 0.0001,
-		"timeWindowSize": 100,
+		"timeWindowSize": 60,
 		"heterogeneousTimeWindowSize": true,
 		"tauDiff": 10,
 		"heterogeneousRiskAversionTerm": false,
