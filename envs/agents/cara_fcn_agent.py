@@ -478,7 +478,7 @@ class CARAFCNAgent(Agent):
         """
         if self.heterogeneous_risk_aversion_term:
             risk_aversion_term: float = self.risk_aversion_term * (
-                (1 + fundamental_weight) / (1 + chart_weight)
+                (self.alpha_diff + fundamental_weight) / (self.alpha_diff + chart_weight)
             )
         else:
             risk_aversion_term: float = self.risk_aversion_term
