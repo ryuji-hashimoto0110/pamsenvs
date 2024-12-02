@@ -448,7 +448,7 @@ class RVsDDEvaluater(DDEvaluater):
         price_arr: ndarray = price_arr.reshape(num_days, num_daily_obs)
         intraday_return_arr: ndarray = (
             np.log(price_arr[:, 1:]) - np.log(price_arr[:, :-1])
-        ) * 100
+        )
         daily_return_arr: ndarray = np.sum(intraday_return_arr, axis=1).flatten()
         daily_return_arr = (
             daily_return_arr - np.mean(daily_return_arr)
