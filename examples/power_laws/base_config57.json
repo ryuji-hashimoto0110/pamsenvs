@@ -56,7 +56,7 @@
 		"averageCashAmount": 20000,
         "paretoVariables": {
 			"assetVolume": {"alpha": 16.67, "beta": 1.5},
-			"cashAmount": {"alpha": 6667, "beta": 1.5}
+			"cashAmount": {"alpha": 500, "beta": 1.5}
 		},
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [0.0]},
