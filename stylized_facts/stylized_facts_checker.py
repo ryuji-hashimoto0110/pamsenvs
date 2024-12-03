@@ -161,10 +161,6 @@ class StylizedFactsChecker:
                     if df["num_events"].sum() < self.min_executions:
                         print(f"dataframe discarded. len(df): {df['num_events'].sum()}")
                         store_df = False
-                market_prices: ndarray = df["close"].values
-                minmax_return: float = np.max(market_prices) / np.min(market_prices)
-                if 1.5 < minmax_return:
-                    store_df = False
             if store_df:
                 csv_names.append(csv_name)
                 dfs.append(df)
