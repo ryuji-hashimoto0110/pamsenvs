@@ -13,11 +13,11 @@ temp_tick_dfs_path="../../datas/artificial_datas/flex_csv/temp36"
 temp_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp36"
 temp_all_time_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/all_time/temp36"
 path_to_calc_point_clouds="../../datas/artificial_datas/intraday/flex_ohlcv/1min/temp36"
-num_simulations=300
+num_simulations=100
 transactions_path="../../datas/real_datas/intraday/flex_transactions/1min/7203"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
-num_points=1000
+num_points=1500
 results_save_path="ot_result36.csv"
 
 python ../search_simulation_configs.py \
