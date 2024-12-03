@@ -65,6 +65,7 @@
 		"alphaDiff": 1,
 		"noiseScale": 0.0001,
 		"timeWindowSize": 100,
+		"heterogeneousTimeWindowSize": true,
 		"taudiff": 20,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1

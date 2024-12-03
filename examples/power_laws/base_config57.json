@@ -68,6 +68,7 @@
 		"moodWeight": {"expon": [0.0002]},
         "moodSensitivity": 0.5,
 		"timeWindowSize": 100,
+		"heterogeneousTimeWindowSize": true,
 		"taudiff": 20,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1
