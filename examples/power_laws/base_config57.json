@@ -53,19 +53,22 @@
 		"markets": ["Market"],
 		"assetVolume": {"expon": [1]},
 		"cashAmount": {"expon": [1]},
-		"averageCashAmount": 15000,
+		"averageCashAmount": 20000,
         "paretoVariables": {
 			"assetVolume": {"alpha": 16.67, "beta": 1.5},
-			"cashAmount": {"alpha": 5000, "beta": 1.5}
+			"cashAmount": {"alpha": 6667, "beta": 1.5}
 		},
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [0.0]},
 		"noiseWeight": {"expon": [1.0]},
         "riskAversionTerm": 0.1,
+		"heterogeneousRiskAversionTerm": true,
+		"alphaDiff": 1,
 		"noiseScale": 0.0001,
 		"moodWeight": {"expon": [0.0002]},
         "moodSensitivity": 0.5,
 		"timeWindowSize": 100,
+		"taudiff": 20,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1
     }

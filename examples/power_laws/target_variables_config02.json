@@ -1,8 +1,12 @@
 {
     "2": [
         ["Agent", "chartWeight"],
-        [{"expon": [0.0]}, {"expon": [1.50]}, {"expon": [1.75]},
-         {"expon": [2.0]}, {"expon": [2.25]}, {"expon": [2.50]}]
+        [
+            {"expon": [0.00]}, {"expon": [0.50]}, {"expon": [0.75]},
+            {"expon": [1.00]}, {"expon": [1.25]}, {"expon": [1.50]},
+            {"expon": [1.75]}, {"expon": [2.00]}, {"expon": [2.25]},
+            {"expon": [2.50]}
+        ]
     ],
     "4": [
         ["Agent", "riskAversionTerm"],
