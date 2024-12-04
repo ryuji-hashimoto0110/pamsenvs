@@ -52,7 +52,6 @@
 		"markets": ["Market"],
 		"assetVolume": {"uniform": [0,100]},
 		"cashAmount": {"uniform": [3000,27000]},
-		"averageCashAmount": 15000,
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [0.0]},
 		"noiseWeight": {"expon": [1.0]},
