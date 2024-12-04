@@ -10,7 +10,7 @@
     "4": [
         ["Agent", "chartWeight"],
         [
-            {"expon": [0.50]}, {"expon": [1.00]}, {"expon": [1.25]},
+            {"expon": [0.50]}, {"expon": [0.75]}, {"expon": [1.00]}, {"expon": [1.25]},
             {"expon": [1.50]}, {"expon": [1.75]}, {"expon": [2.00]}
         ]
     ],
