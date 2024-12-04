@@ -53,11 +53,11 @@
 		"markets": ["Market"],
 		"assetVolume": {"expon": [1]},
 		"cashAmount": {"expon": [1]},
-		"averageCashAmount": 15000,
         "paretoVariables": {
 			"assetVolume": {"alpha": 16.67, "beta": 1.5},
-			"cashAmount": {"alpha": 500, "beta": 1.5}
+			"cashAmount": {"alpha": 6667, "beta": 1.5}
 		},
+		"averageCashAmount": 20000,
 		"fundamentalWeight": {"expon": [10.0]},
 		"chartWeight": {"expon": [0.0]},
 		"noiseWeight": {"expon": [1.0]},
