@@ -464,13 +464,13 @@ class RVsDDEvaluater(DDEvaluater):
         assert num_days == len(daily_log_rv_arr)
         point_cloud: ndarray = np.concatenate(
             [
-                daily_log_rv_arr[:-1].reshape(-1, 1),
+                #daily_log_rv_arr[:-1].reshape(-1, 1),
                 daily_return_arr[:-1].reshape(-1, 1),
                 daily_log_rv_arr[1:].reshape(-1, 1),
             ],
             axis=1
         )
-        assert point_cloud.shape == (num_days-1, 3)
+        assert point_cloud.shape == (num_days-1, 2)
         indices: ndarray = self.prng.choice(
             np.arange(num_days-1), num_points, replace=False
         )
