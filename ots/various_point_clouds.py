@@ -450,9 +450,10 @@ class RVsDDEvaluater(DDEvaluater):
             np.log(price_arr[:, 1:]) - np.log(price_arr[:, :-1])
         )
         daily_return_arr: ndarray = np.sum(intraday_return_arr, axis=1).flatten()
-        daily_return_arr = (
-            daily_return_arr - np.mean(daily_return_arr)
-        ) / (np.std(daily_return_arr) + 1e-10)
+        daily_return_arr = 0 < daily_return_arr
+        #(
+        #    daily_return_arr - np.mean(daily_return_arr)
+        #) / (np.std(daily_return_arr) + 1e-10)
         #daily_return_arr = np.clip(daily_return_arr, -7, 7)
         assert num_days == len(daily_return_arr)
         daily_rv_arr: ndarray = np.sum(intraday_return_arr**2, axis=1).flatten()
