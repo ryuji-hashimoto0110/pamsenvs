@@ -8,17 +8,17 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11, <3.13"
 numpy = "^1.26.1"
-torch = "^2.1.0"
 pams = "^0.2.0"
 pandas = "^2.1.2"
 matplotlib = "^3.8.1"
 opencv-python = "^4.8.1.78"
-gym = "^0.26.2"
 pot = "^0.9.3"
 rich = "^13.7.0"
+torch = "^2.2.1"
 torchvision = "^0.17.1"
 pickleshare = "^0.7.5"
 tqdm = "^4.66.4"
+pettingzoo = "^1.24.3"
 
 
 [tool.poetry.group.dev.dependencies]
