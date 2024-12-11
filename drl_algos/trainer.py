@@ -57,9 +57,9 @@ class Trainer:
         self.actor_best_save_path: Optional[Path] = actor_best_save_path
         self.actor_last_save_path: Optional[Path] = actor_last_save_path
         self.results_dic: dict[str, dict[AgentID, list[float]]] = self._set_results_dic(other_indicators)
-        self.num_train_steps: int = num_train_steps
-        self.eval_interval: int = eval_interval
-        self.num_eval_episodes: int = num_eval_episodes
+        self.num_train_steps: int = int(num_train_steps)
+        self.eval_interval: int = int(eval_interval)
+        self.num_eval_episodes: int = int(num_eval_episodes)
         self.best_reward: float = -1e+10
 
     def _set_results_dic(
