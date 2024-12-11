@@ -78,12 +78,13 @@ class PamsAECEnv(AECEnv, ABC):
             self.seed(seed)
         self.agent_selection: AgentID
 
-    def last(self, agent_id: AgentID) -> ObsType:
+    def last(self) -> ObsType:
         """_summary_
 
         Returns:
             ObsType: 
         """
+        agent_id: AgentID = self.agent_selection
         obs: ObsType = self.generate_obs(agent_id)
         return obs
 
@@ -107,6 +108,12 @@ class PamsAECEnv(AECEnv, ABC):
         torch.cuda.manual_seed(seed)
         torch.backends.cudnn.deterministic = True
         torch.use_deterministic_algorithms = True
+
+    def get_time(self) -> int:
+        if hasattr(self, "markets"):
+            return self.markets[0].get_time()
+        else:
+            return -1
 
     def reset(self) -> None:
         """reset environment.
@@ -262,7 +269,6 @@ class PamsAECEnv(AECEnv, ABC):
         """
         done: bool = False
         while True:
-            self.market_time: int = self.markets[0].get_time()
             self.simulator.current_session = self.sessions[self.current_session_idx]
             self.current_session: Session = self.simulator.current_session
             is_ending_session: bool = False
