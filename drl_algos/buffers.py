@@ -136,11 +136,3 @@ class RolloutBuffer4IPPO:
         )
         self._initialize_buffer()
         return experiences
-
-
-
-
-
-
-
-# agent_idx, obs, action, reward, done, log_prob
