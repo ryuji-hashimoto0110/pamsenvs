@@ -7,6 +7,7 @@ from torch.nn import Module
 from typing import TypeVar
 
 ActionType = TypeVar("ActionType")
+AgentID = TypeVar("AgentID")
 ObsType = TypeVar("ObsType")
 
 class Algorithm(ABC):
@@ -104,16 +105,51 @@ class Algorithm(ABC):
         """
         pass
 
-    @abstractmethod
     def step(
         self,
         env: AECEnv,
         current_episode_steps: int,
         current_total_steps: int,
-    ) -> tuple[ObsType, int]:
-        pass
+    ) -> int:
+        """Step the environment.
+
+        Args:
+            env (AECEnv): Environment.
+            current_episode_steps (int): Current episode steps.
+            current_total_steps (int): Current total steps.
+        
+        Returns:
+            current_episode_steps (int): Updated current episode steps.
+        """
+        agent_id: AgentID = env.agent_selection
+        obs: ObsType = env.last()
+        action, log_prob = self.explore(obs)
+        reward, done, _ = env.step(action)
+        self._store_experience(
+            agent_id=agent_id,
+            obs=obs,
+            action=action,
+            reward=reward,
+            done=done,
+        )
+        if hasattr(env, "get_time"):
+            current_episode_steps = env.get_time()
+        else:
+            current_episode_steps += 1
+        return current_episode_steps
 
     @abstractmethod
     def update(self) -> None:
+        pass
+
+    @abstractmethod
+    def _store_experience(
+        self,
+        agent_id: AgentID,
+        obs: ObsType,
+        action: ActionType,
+        reward: float,
+        done: bool,
+    ) -> None:
         pass
 
