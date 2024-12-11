@@ -38,9 +38,6 @@ class RolloutBuffer4IPPO:
         self.agent_num: int = int(agent_num)
         self.obs_shape: tuple[int] = obs_shape
         self.action_shape: tuple[int] = action_shape
-        self.next_idx_dic: dict[int, int] = {
-            agent_idx: 0 for agent_idx in range(agent_num)
-        }
         self.device: torch.device = device
         self._initialize_buffer()
 
@@ -51,6 +48,9 @@ class RolloutBuffer4IPPO:
         """
         self.is_storing_dic: dict[int, bool] = {
             agent_idx: True for agent_idx in range(self.agent_num)
+        }
+        self.next_idx_dic: dict[int, int] = {
+            agent_idx: 0 for agent_idx in range(self.agent_num)
         }
         self.obses: Tensor = torch.empty(
             (self.buffer_size, self.agent_num, *self.obs_shape),
@@ -103,6 +103,7 @@ class RolloutBuffer4IPPO:
                 self.obses[-1, agent_idx].copy_(
                     obs_tensor.view(self.obs_shape)
                 )
+            self.next_idx_dic[agent_idx] = 1
             return
         else:
             self.next_obses[next_idx-1, agent_idx].copy_(
