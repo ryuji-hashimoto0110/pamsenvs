@@ -7,7 +7,6 @@ from torch.nn import Module
 from typing import TypeVar
 
 ActionType = TypeVar("ActionType")
-AgentID = TypeVar("AgentID")
 ObsType = TypeVar("ObsType")
 
 class Algorithm(ABC):
@@ -109,7 +108,6 @@ class Algorithm(ABC):
     def step(
         self,
         env: AECEnv,
-        obs: ObsType,
         current_episode_steps: int,
         current_total_steps: int,
     ) -> tuple[ObsType, int]:
