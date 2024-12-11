@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from gym import Env
-from gym import Space
+from gymnasium import Space
 import numpy as np
 from pams.agents import Agent
 from pams.agents import HighFrequencyAgent
@@ -22,30 +21,34 @@ from pams.order import Order
 from pams.runners import Runner
 from pams.session import Session
 from pams.simulator import Simulator
+from pettingzoo import AECEnv
 import random
 from random import Random
 import torch
 from typing import Optional, TypeVar
 
-ObsType = TypeVar("ObsType")
 ActionType = TypeVar("ActionType")
+AgentID = TypeVar("AgentID")
 InfoType = TypeVar("InfoType")
+MarketID = TypeVar("MarketID")
+ObsType = TypeVar("ObsType")
 
-class PamsEnv(Env, ABC):
-    """PamsEnv class.
+class PamsAECEnv(AECEnv, ABC):
+    """PamsAECEnv class.
 
-    Single agent RL environment for an agent in PAMS.
-    This class inherits from the gym.Env class.
+    Multi-agent environment class for pams.
+    PamsAECEnv treat pams based artificial market as Agent Environment Cycle (AEC) environment.
     """
     def __init__(
         self,
         config_dic: dict,
         variable_ranges_dic: Optional[dict],
         simulator_class: type[Simulator],
-        target_agent_name: str,
-        action_dim: int,
-        obs_dim: int,
+        target_agent_names: list[str],
+        action_dims: list[int],
+        obs_dims: list[int],
         logger: Optional[Logger] = None,
+        seed: Optional[int] = None
     ) -> None:
         """initialization.
 
@@ -56,21 +59,33 @@ class PamsEnv(Env, ABC):
                     ...}
                 The values of variables are sampled by .modify_config method as each episode.
             simulator_class (type[Simulator]): type of simulator.
-            target_agent_name (str): target Agent name.
-            action_dim (int): dimension of action space.
-            obs_dim (int): dimension of observation space.
+            target_agent_names (list[str]): target Agent names.
+            action_dims (list[int]): dimensions of action spaces.
+            obs_dims (list[int]): dimensions of observation spaces.
             logger (Optional[Logger]): logger instance. Defaults to None.
         """
         self.config_dic: dict = config_dic
         self.variable_ranges_dic: Optional[dict] = variable_ranges_dic
         self.simulator_class: type[Simulator] = simulator_class
-        self.target_agent_name: str = target_agent_name
-        self.action_dim: int = action_dim
-        self.obs_dim: int = obs_dim
+        self.target_agent_names: list[str] = target_agent_names
+        self.action_dims: list[int] = action_dims
+        self.obs_dims: list[int] = obs_dims
         self.logger: Optional[Logger] = logger
         self._prng: Random = random.Random()
         self.action_space: Space = self.set_action_space()
         self.obs_space: Space = self.set_obs_space()
+        if seed is not None:
+            self.seed(seed)
+        self.agent_selection: AgentID
+
+    def last(self, agent_id: AgentID) -> ObsType:
+        """_summary_
+
+        Returns:
+            ObsType: 
+        """
+        obs: ObsType = self.generate_obs(agent_id)
+        return obs
 
     @abstractmethod
     def set_action_space(self) -> Space:
@@ -93,7 +108,7 @@ class PamsEnv(Env, ABC):
         torch.backends.cudnn.deterministic = True
         torch.use_deterministic_algorithms = True
 
-    def reset(self) -> ObsType:
+    def reset(self) -> None:
         """reset environment.
 
         initialize and set up runner and send initial observation to target agent.
@@ -115,56 +130,87 @@ class PamsEnv(Env, ABC):
         )
         self.runner: Runner = self.setup_runner(episode_config_dic, self.logger)
         self.simulator: Simulator = self.runner.simulator
-        self.target_agent: Agent = self.simulator.name2agent[self.target_agent_name]
-        self.is_hft: bool = isinstance(self.target_agent, HighFrequencyAgent)
+        self.agents: list[AgentID] = [
+            self.simulator.name2agent[name].agent_id for name in self.target_agent_names
+        ]
         self.sessions: list[Session] = self.simulator.sessions
         self.markets: list[Market] = self.simulator.markets
-        self.current_session_idx: int = 0
-        self.current_session_time: int = 0
-        if self.logger is not None:
-            log: Log = SimulationBeginLog(simulator=self.simulator)
-            log.read_and_write_with_direct_process(logger=self.logger)
-        self.add_attributes()
-        self.unplaced_local_orders, _ = self.iterate_markets_til_target_agent_is_called()
-        obs: ObsType = self.generate_obs()
-        return obs
+        self._start_simulation()
+        target_agent_id, unplaced_local_orders, done = self.iterate_markets_til_target_agent_is_called()
+        assert target_agent_id is not None and unplaced_local_orders is not None
+        self.agent_selection: AgentID = target_agent_id
+        self.unplaced_local_orders: list[list[Order | Cancel]] = unplaced_local_orders
 
     def step(
         self,
         action: ActionType
-    ) -> tuple[ObsType, float, bool, InfoType]:
+    ) -> tuple[float, bool, InfoType]:
         """step environment.
 
         receive action by the agent and step the environment.
+        This method
+            1. convert action (probably np.ndarray) to list of orders.
+            2. handle orders if the target agent is hft agent, add orders to the local orders otherwise.
+            3. handle remaining local orders. If hft agent is called to take actions,
+               return reward, done, and info and wait for the action of the called hft agent.
+            4. collect local orders until one of the target agents is called for submitting orders.
 
         Args:
             action (ActionType): action by target agent.
 
         Returns:
-            next_obs (ObsType):
             reward (float):
             done (bool):
             info (InfoType):
         """
         target_orders: list[Order | Cancel] = self.convert_action2orders(action)
-        if self.is_hft:
+        target_agent_id: AgentID = self.agent_selection
+        if isinstance(
+            self.simulator.id2agent[target_agent_id], HighFrequencyAgent
+        ):
             self.handle_orders_by_single_agent(target_orders)
-            self.unplaced_local_orders, is_target_agent_called = \
-                self.handle_orders_wo_target_agents(
-                    session=self.current_session,
-                    unplaced_local_orders=self.unplaced_local_orders
-                )
-            if is_target_agent_called:
-                next_obs: ObsType = self.generate_obs()
-                reward: float = self.generate_reward()
-                done: bool = False
-                info: InfoType = self.generate_info()
-                return next_obs, reward, done, info
         else:
             self.unplaced_local_orders.append(target_orders)
-            self.runner._handle_orders(
-                session=self.current_session, local_orders=self.unplaced_local_orders
+        self.unplaced_local_orders, target_agent_id_ = \
+            self.handle_orders_wo_target_agents(
+                session=self.current_session,
+                unplaced_local_orders=self.unplaced_local_orders
             )
+        if target_agent_id_ is not None:
+            self.agent_selection = target_agent_id_
+            reward: float = self.generate_reward(target_agent_id)
+            done: bool = False
+            info: InfoType = self.generate_info(target_agent_id)
+            return reward, done, info
+        if len(self.unplaced_local_orders) != 0:
+            raise ValueError(
+                "unplaced orders remain, even though order handling completed."
+            )
+        target_agent_id_, unplaced_local_orders, done = \
+            self.iterate_markets_til_target_agent_is_called()
+        if target_agent_id_ is None or unplaced_local_orders is None:
+            if not done:
+                raise ValueError(
+                    "target_agent_id_ or unplaced_local_orders is None, even though episode did not end."
+                )
+        self.agent_selection = target_agent_id_
+        self.unplaced_local_orders: list[list[Order | Cancel]] = unplaced_local_orders
+        reward: float = self.generate_reward(target_agent_id)
+        info: InfoType = self.generate_info(target_agent_id)
+        return reward, done, info
+    
+    def _start_simulation(self) -> None:
+        self.current_session_idx: int = 0
+        self.current_session_time: int = 0
+        if self.logger is not None:
+            log: Log = SimulationBeginLog(simulator=self.simulator)
+            log.read_and_write_with_direct_process(logger=self.logger)
+        self.simulator._update_times_on_markets(self.markets)
+        self.add_attributes()
+        self.n_orders: int = 0
+        self.n_hft_orders: int = 0
+    
+    def _step_simulation(self) -> None:
         for market in self.markets:
             if self.logger is not None:
                 log = MarketStepEndLog(
@@ -172,96 +218,91 @@ class PamsEnv(Env, ABC):
                 )
                 log.read_and_write_with_direct_process(logger=self.logger)
             self.simulator._trigger_event_after_step_for_market(market=market)
-        self.unplaced_local_orders, done = self.iterate_markets_til_target_agent_is_called()
-        next_obs: ObsType = self.generate_obs()
-        reward: float = self.generate_reward()
-        info: InfoType = self.generate_info()
-        return next_obs, reward, done, info
+        self.simulator._update_times_on_markets(self.markets)
+        self.current_session_time += 1
+        self.n_orders = 0
+        self.n_hft_orders = 0
+
+    def _start_session(self) -> None:
+        self.simulator._trigger_event_before_session(session=self.current_session)
+        if self.logger is not None:
+            log: Log = SessionBeginLog(
+                session=self.current_session, simulator=self.simulator
+            )
+            log.read_and_write_with_direct_process(logger=self.logger)
+
+    def _step_session(self) -> bool:
+        self.simulator._trigger_event_after_session(session=self.current_session)
+        done: bool = False
+        if self.logger is not None:
+            log = SessionEndLog(
+                session=self.current_session, simulator=self.simulator
+            )
+            log.read_and_write_with_direct_process(logger=self.logger)
+        if self.current_session_idx + 1 == len(self.sessions):
+            done: bool = True
+            if self.logger is not None:
+                log = SimulationEndLog(simulator=self.simulator)
+                log.read_and_write_with_direct_process(logger=self.logger)
+        else:
+            self.current_session_idx += 1
+            self.current_session_time = 0
+        return done
 
     def iterate_markets_til_target_agent_is_called(
         self
-    ) -> tuple[Optional[list[list[Order | Cancel]]], bool]:
-        """iterate markets until target agent is called for submitting orders.
+    ) -> tuple[Optional[AgentID], Optional[list[list[Order | Cancel]]], bool]:
+        """iterate markets until one of the target agents is called for submitting orders.
 
         Returns:
-            unplaced_local_orders (Optional[list[list[Order | Cancel]]]):
+            agent_id (AgentID, optional): id of called target agent.
+            unplaced_local_orders (list[list[Order | Cancel]], optinal):
                 local orders that have not yet placed at markets.
             done (bool): whether the simulation ended or not.
         """
         done: bool = False
         while True:
-            self.simulator._update_times_on_markets(self.markets)
             self.market_time: int = self.markets[0].get_time()
             self.simulator.current_session = self.sessions[self.current_session_idx]
             self.current_session: Session = self.simulator.current_session
+            is_ending_session: bool = False
             if self.current_session_time == 0:
-                self.simulator._trigger_event_before_session(session=self.current_session)
-                if self.logger is not None:
-                    log: Log = SessionBeginLog(
-                        session=self.current_session, simulator=self.simulator
-                    )
-                    log.read_and_write_with_direct_process(logger=self.logger)
-                self.current_session_time += 1
-            elif self.current_session_time == self.current_session.iteration_steps:
-                self.simulator._trigger_event_after_session(session=self.current_session)
-                if self.logger is not None:
-                    log = SessionEndLog(
-                        session=self.current_session, simulator=self.simulator
-                    )
-                    log.read_and_write_with_direct_process(logger=self.logger)
-                if self.current_session_idx + 1 == len(self.sessions):
-                    done: bool = True
+                self._start_session()
+            elif self.current_session_time == self.current_session.iteration_steps-1:
+                is_ending_session = True
+            if self.n_orders == 0:
+                for market in self.markets:
+                    market._is_running = self.current_session.with_order_execution
+                    self.simulator._trigger_event_before_step_for_market(market=market)
                     if self.logger is not None:
-                        log = SimulationEndLog(simulator=self.simulator)
-                        log.read_and_write_with_direct_process(logger=self.logger)
-                    return None, done
-                self.current_session_idx += 1
-                self.current_session_time = 0
-            else:
-                self.current_session_time += 1
-            for market in self.markets:
-                market._is_running = self.current_session.with_order_execution
-                self.simulator._trigger_event_before_step_for_market(market=market)
-                if self.logger is not None:
-                    log = MarketStepBeginLog(
-                        session=self.current_session, market=market, simulator=self.simulator
-                    )
-                    log.read_and_write_with_direct_process(logger=self.logger)
-                if self.current_session.with_order_placement:
-                    if self.is_hft:
-                        unplaced_local_orders: list[list[Order | Cancel]] = \
-                            self.runner._collect_orders_from_normal_agents(
-                                session=self.current_session
-                            )
-                        unplaced_local_orders, is_target_agent_called = \
-                            self.handle_orders_wo_target_agents(
-                                session=self.current_session,
-                                unplaced_local_orders=unplaced_local_orders
-                            )
-                        if is_target_agent_called:
-                            return unplaced_local_orders, done
-                    else:
-                        unplaced_local_orders, is_target_agent_called = \
-                            self.collect_orders_from_normal_agents_wo_target_agent(
-                                session=self.current_session
-                            )
-                        if is_target_agent_called:
-                            return unplaced_local_orders, done
-                        self.runner._handle_orders(
-                            session=self.current_session, local_orders=unplaced_local_orders
+                        log = MarketStepBeginLog(
+                            session=self.current_session, market=market, simulator=self.simulator
                         )
-            for market in self.markets:
-                if self.logger is not None:
-                    log = MarketStepEndLog(
-                        session=self.current_session, market=market, simulator=self.simulator
+                        log.read_and_write_with_direct_process(logger=self.logger)
+            if self.current_session.with_order_placement:
+                unplaced_local_orders, target_agent_id = \
+                    self.collect_orders_from_normal_agents_wo_target_agent(
+                        session=self.current_session
                     )
-                    log.read_and_write_with_direct_process(logger=self.logger)
-                self.simulator._trigger_event_after_step_for_market(market=market)
+                if target_agent_id is not None:
+                    return target_agent_id, unplaced_local_orders, done
+                unplaced_local_orders, target_agent_id = \
+                    self.handle_orders_wo_target_agents(
+                        session=self.current_session, unplaced_local_orders=unplaced_local_orders
+                    )
+                if target_agent_id is not None:
+                    return target_agent_id, unplaced_local_orders, done
+            if self.n_orders <= self.current_session.max_normal_orders:
+                self._step_simulation()
+                if is_ending_session:
+                    done = self._step_session()
+                    if done:
+                        return None, None, done
 
     def collect_orders_from_normal_agents_wo_target_agent(
         self,
         session: Session
-    ) -> tuple[list[list[Order | Cancel]], bool]:
+    ) -> tuple[list[list[Order | Cancel]], Optional[AgentID]]:
         """_summary_
 
         Args:
@@ -274,26 +315,28 @@ class PamsEnv(Env, ABC):
         agents: list[Agent] = self.simulator.normal_frequency_agents
         agents = self._prng.sample(agents, len(agents))
         unplaced_local_orders: list[list[Order | Cancel]] = []
-        n_orders: int = 0
-        is_target_agent_called: bool = False
+        target_agent_id: Optional[AgentID] = None
         for agent in agents:
-            if session.max_normal_orders <= n_orders:
+            if session.max_normal_orders <= self.n_orders:
                 break
-            if agent.name == self.target_agent_name:
-                n_orders += 1
-                is_target_agent_called = True
-                continue
-            orders: list[Order | Cancel] = agent.submit_orders(markets=self.simulator.markets)
-            if len(orders) > 0:
-                unplaced_local_orders.append(orders)
-                n_orders += 1
-        return unplaced_local_orders, is_target_agent_called
+            if agent.name in self.target_agent_names:
+                self.n_orders += 1
+                target_agent_id: AgentID = agent.agent_id
+                break
+            else:
+                orders: list[Order | Cancel] = agent.submit_orders(
+                    markets=self.simulator.markets
+                )
+                if len(orders) > 0:
+                    unplaced_local_orders.append(orders)
+                    self.n_orders += 1
+        return unplaced_local_orders, target_agent_id
 
     def handle_orders_wo_target_agents(
         self,
         session: Session,
         unplaced_local_orders: list[list[Order | Cancel]]
-    ) -> tuple[list[list[Order | Cancel]], bool]:
+    ) -> tuple[list[list[Order | Cancel]], Optional[AgentID]]:
         """_summary_
 
         Args:
@@ -305,33 +348,33 @@ class PamsEnv(Env, ABC):
             is_target_agent_called (bool): _description_
         """
         removing_orders: list[list[Order | Cancel]] = []
-        is_target_agent_called: bool = False
-        for orders in enumerate(unplaced_local_orders):
-            self.handle_orders_by_single_agent(
-                session, orders
-            )
+        target_agent_id: Optional[AgentID] = None
+        for orders in unplaced_local_orders:
+            self.handle_orders_by_single_agent(session, orders)
             removing_orders.append(orders)
             if session.high_frequency_submission_rate < self._prng.random():
                 continue
-            n_high_freq_orders: int = 0
             agents = self.simulator.high_frequency_agents
             agents = self._prng.sample(agents, len(agents))
             for agent in agents:
-                if n_high_freq_orders >= session.max_high_frequency_orders:
+                if session.max_high_frequency_orders <= self.n_hft_orders:
                     break
-                if agent.name == self.target_agent_name:
-                    is_target_agent_called = True
+                if agent.name in self.target_agent_names:
+                    self.n_hft_orders += 1
+                    target_agent_id: AgentID = agent.agent_id
                     break
-                high_freq_orders: list[Order | Cancel] = agent.submit_orders(markets=self.simulator.markets)
-                n_high_freq_orders += 1
+                high_freq_orders: list[Order | Cancel] = agent.submit_orders(
+                    markets=self.simulator.markets
+                )
+                self.n_hft_orders += 1
                 self.handle_orders_by_single_agent(
                     session, high_freq_orders
                 )
-            if is_target_agent_called:
+            if target_agent_id is not None:
                 break
         for orders in removing_orders:
             unplaced_local_orders.remove(orders)
-        return unplaced_local_orders, is_target_agent_called
+        return unplaced_local_orders, target_agent_id
 
     def handle_orders_by_single_agent(
         self,
@@ -384,15 +427,15 @@ class PamsEnv(Env, ABC):
         pass
 
     @abstractmethod
-    def generate_obs(self) -> ObsType:
+    def generate_obs(self, agent_id: AgentID) -> ObsType:
         pass
 
     @abstractmethod
-    def generate_reward(self) -> float:
+    def generate_reward(self, agent_id: AgentID) -> float:
         pass
 
     @abstractmethod
-    def generate_info(self) -> float:
+    def generate_info(self, agent_id: AgentID) -> InfoType:
         pass
 
     @abstractmethod
