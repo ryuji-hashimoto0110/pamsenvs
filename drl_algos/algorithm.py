@@ -79,6 +79,9 @@ class Algorithm(ABC):
             obs_tensor (Tensor): Observation tensor.
         """
         return torch.tensor(obs, dtype=torch.float).unsqueeze_(0).to(self.device)
+    
+    def _convert_action2tensor(self, action: ActionType | Tensor) -> Tensor:
+        return torch.tensor(action, dtype=torch.float).unsqueeze_(0).to(self.device)
 
     def _convert_tensor2action(self, action_tensor: Tensor | ActionType) -> ActionType:
         """Convert tensor to action.
@@ -127,8 +130,8 @@ class Algorithm(ABC):
         reward, done, _ = env.step(action)
         self._store_experience(
             agent_id=agent_id,
-            obs=obs,
-            action=action,
+            obs_tensor=self._convert_obs2tensor(obs),
+            action_tensor=self._convert_action2tensor(action),
             reward=reward,
             done=done,
         )
@@ -146,8 +149,8 @@ class Algorithm(ABC):
     def _store_experience(
         self,
         agent_id: AgentID,
-        obs: ObsType,
-        action: ActionType,
+        obs_tensor: Tensor,
+        action_tensor: Tensor,
         reward: float,
         done: bool,
     ) -> None:
