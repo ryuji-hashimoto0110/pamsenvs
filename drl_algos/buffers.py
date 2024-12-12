@@ -53,31 +53,31 @@ class RolloutBuffer4IPPO:
             agent_idx: 0 for agent_idx in range(self.agent_num)
         }
         self.obses: Tensor = torch.empty(
-            (self.buffer_size, self.agent_num, *self.obs_shape),
+            (self.agent_num, self.buffer_size, *self.obs_shape),
             dtype=torch.float, device=self.device
         )
         self.actions: Tensor = torch.empty(
-            (self.buffer_size, self.agent_num, *self.action_shape),
+            (self.agent_num, self.buffer_size, *self.action_shape),
             dtype=torch.float, device=self.device
         )
         self.rewards: Tensor = torch.empty(
-            (self.buffer_size, self.agent_num),
+            (self.agent_num, self.buffer_size),
             dtype=torch.float, device=self.device
         )
         self.rewards: Tensor = torch.empty(
-            (self.buffer_size, self.agent_num),
+            (self.agent_num, self.buffer_size),
             dtype=torch.float, device=self.device
         )
         self.dones: Tensor = torch.empty(
-            (self.buffer_size, self.agent_num),
+            (self.agent_num, self.buffer_size),
             dtype=torch.float, device=self.device
         )
         self.log_probs: Tensor = torch.empty(
-            (self.buffer_size, self.agent_num),
+            (self.agent_num, self.buffer_size),
             dtype=torch.float, device=self.device
         )
         self.next_obses: Tensor = torch.empty(
-            (self.buffer_size, self.agent_num, *self.obs_shape),
+            (self.agent_num, self.buffer_size, *self.obs_shape),
             dtype=torch.float, device=self.device
         )
 
@@ -100,7 +100,7 @@ class RolloutBuffer4IPPO:
         is_storing: bool = self.is_storing_dic[agent_idx]
         if not is_storing:
             if next_idx == 0:
-                self.obses[-1, agent_idx].copy_(
+                self.obses[agent_idx, -1].copy_(
                     obs_tensor.view(self.obs_shape)
                 )
             self.next_idx_dic[agent_idx] = 1
@@ -109,11 +109,11 @@ class RolloutBuffer4IPPO:
             self.next_obses[next_idx-1, agent_idx].copy_(
                 obs_tensor.view(self.obs_shape)
             )
-        self.obses[next_idx, agent_idx].copy_(obs_tensor.view(self.obs_shape))
-        self.actions[next_idx, agent_idx].copy_(action_tensor.view(self.action_shape))
-        self.rewards[next_idx, agent_idx] = float(reward)
-        self.dones[next_idx, agent_idx] = float(done)
-        self.log_probs[next_idx, agent_idx] = float(log_prob)
+        self.obses[agent_idx, next_idx].copy_(obs_tensor.view(self.obs_shape))
+        self.actions[agent_idx, next_idx].copy_(action_tensor.view(self.action_shape))
+        self.rewards[agent_idx, next_idx] = float(reward)
+        self.dones[agent_idx, next_idx] = float(done)
+        self.log_probs[agent_idx, next_idx] = float(log_prob)
         self.next_idx_dic[agent_idx] = (next_idx + 1) % self.buffer_size
         if next_idx + 1 == self.buffer_size:
             self.is_storing_dic[agent_idx] = False
