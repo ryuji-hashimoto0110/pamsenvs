@@ -99,6 +99,8 @@ class Trainer:
         """
         current_episode_steps: int = 0
         self.train_env.reset()
+        if hasattr(self.algo, "assign_agent_id2agent_idx"):
+            self.algo.assign_agent_id2agent_idx(self.train_env.agents)
         for current_total_steps in range(1, self.num_train_steps):
             current_episode_steps = self.algo.step(
                 env=self.train_env,
