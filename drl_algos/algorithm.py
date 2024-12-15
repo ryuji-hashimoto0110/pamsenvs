@@ -128,6 +128,8 @@ class Algorithm(ABC):
         obs: ObsType = env.last()
         action, log_prob = self.explore(obs)
         reward, done, _ = env.step(action)
+        if done:
+            env.reset()
         self._store_experience(
             agent_id=agent_id,
             obs_tensor=self._convert_obs2tensor(obs),
