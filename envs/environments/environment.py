@@ -45,8 +45,8 @@ class PamsAECEnv(AECEnv, ABC):
         variable_ranges_dic: Optional[dict],
         simulator_class: type[Simulator],
         target_agent_names: list[str],
-        action_dims: list[int],
-        obs_dims: list[int],
+        action_dim: int,
+        obs_dim: int,
         logger: Optional[Logger] = None,
         seed: Optional[int] = None
     ) -> None:
@@ -60,16 +60,16 @@ class PamsAECEnv(AECEnv, ABC):
                 The values of variables are sampled by .modify_config method as each episode.
             simulator_class (type[Simulator]): type of simulator.
             target_agent_names (list[str]): target Agent names.
-            action_dims (list[int]): dimensions of action spaces.
-            obs_dims (list[int]): dimensions of observation spaces.
+            action_dim (int): dimension of action spaces.
+            obs_dim (int): dimension of observation spaces.
             logger (Optional[Logger]): logger instance. Defaults to None.
         """
         self.config_dic: dict = config_dic
         self.variable_ranges_dic: Optional[dict] = variable_ranges_dic
         self.simulator_class: type[Simulator] = simulator_class
         self.target_agent_names: list[str] = target_agent_names
-        self.action_dims: list[int] = action_dims
-        self.obs_dims: list[int] = obs_dims
+        self.action_dim: list[int] = action_dim
+        self.obs_dim: list[int] = obs_dim
         self.logger: Optional[Logger] = logger
         self._prng: Random = random.Random()
         self.action_space: Space = self.set_action_space()
