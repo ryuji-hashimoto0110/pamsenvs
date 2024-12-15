@@ -146,6 +146,7 @@ class IPPO(Algorithm):
         num_updates_per_rollout: int = 1,
         batch_size: int = 512,
         gamma: float = 0.99,
+        gamma_idx: Optional[int] = None,
         lr_actor: float = 3e-04,
         lr_critic: float = 3e-04,
         clip_eps: float = 0.2,
@@ -164,6 +165,8 @@ class IPPO(Algorithm):
                 using one rollout. Defaults to 10.
             batch_size (int): Batch size. A rollout is processed in mini batch. Defaults to 1024
             gamma (float): Discount factor. Defaults to 0.995.
+            gamma_idx (int, optional): Index of gamma in the observation. If gamma is included in the observation, set gamma_idx.
+                Defaults to None.
             lr_actor (float): Learning rate for the actor. Defaults to 3e-04.
             lr_critic (float): Learning rate for the critic. Defaults to 3e-04.
             clip_eps (float): The value to clip importance_ratio (pi / pi_old)
@@ -192,6 +195,7 @@ class IPPO(Algorithm):
         self.num_updates_per_rollout: int = num_updates_per_rollout
         self.batch_size: int = batch_size
         self.gamma: float = gamma
+        self.gamma_idx: Optional[int] = gamma_idx
         self.clip_eps: float = clip_eps
         self.lmd: float = lmd
         self.max_grad_norm: float = max_grad_norm
@@ -226,18 +230,29 @@ class IPPO(Algorithm):
         get the rollout from self.buffer and update actor and critic using the rollout.
         target obs value R(lmd) and GAE is calculated in advance.
         The rollout is divided into mini-batches and processes in sequence.
+
+        obses_all (agent_num, buffer_size, obs_shape)
+        obses (buffer_size, obs_shape)
         """
         obses_all, actions_all, rewards_all, dones_all, log_probs_old_all, next_obses_all = \
             self.buffer.get()
+        agent_num, buffer_size, ... = obses_all.shape
         for obses, actions, rewards, dones, log_probs_old, next_obses in zip(
             obses_all, actions_all, rewards_all, dones_all, log_probs_old_all, next_obses_all
         ):
+            assert buffer_size == len(obses)
             with torch.no_grad():
                 values: Tensor = self.critic(obses)
                 next_values: Tensor = self.critic(next_obses)
-            targets, advantages = self.calc_gae(
-                values, rewards, dones, next_values, self.gamma, self.lmd
-            )
+            if self.gamma_idx is not None:
+                gamma: Tensor = obses[:, self.gamma_idx]
+                targets, advantages = self.calc_gae(
+                    values, rewards, dones, next_values, gamma, self.lmd
+                )
+            else:
+                targets, advantages = self.calc_gae(
+                    values, rewards, dones, next_values, self.gamma, self.lmd
+                )
             for _ in range(self.num_updates_per_rollout):
                 indices: np.ndarray = np.arange(self.rollout_length)
                 np.random.shuffle(indices)
