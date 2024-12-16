@@ -1,4 +1,5 @@
-from .devidend_provider import DividendProvider
+from .dividend_provider import DividendProvider
+from .dividend_provider import DividendProviderwEverySteps
 from .leader_aware_market_initializer import LeaderAwareMarketInitializer
 from .leaders_prioritizer import LeadersPrioritizer
 
