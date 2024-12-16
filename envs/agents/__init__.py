@@ -1,5 +1,6 @@
 from .a_fcn_agent import aFCNAgent
 from .cara_fcn_agent import CARAFCNAgent
+from .hetero_rl_agent import HeteroRLAgent
 from .history_aware_llm_agent import HistoryAwareLLMAgent
 from .leader_aware_llm_agent import LeaderAwareLLMAgent
 from .liquidity_provider_agent import HighFrequencyDummyAgent
