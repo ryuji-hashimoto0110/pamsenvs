@@ -134,7 +134,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         return runner
 
     def _register_classes(self, runner: Runner) -> None:
-        pass
+        runner.class_register(TotalTimeAwareMarket)
+        runner.class_register(HeteroRLAgent)
 
     """
     def _get_agent_traits_dic(
