@@ -1,5 +1,6 @@
 from ..agents import HeteroRLAgent
 from .environment import PamsAECEnv
+from ..events import DividendProviderwEverySteps
 from gymnasium import spaces
 from gymnasium import Space
 from ..markets import TotalTimeAwareMarket
@@ -136,6 +137,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def _register_classes(self, runner: Runner) -> None:
         runner.class_register(TotalTimeAwareMarket)
         runner.class_register(HeteroRLAgent)
+        runner.class_register(DividendProviderwEverySteps)
 
     """
     def _get_agent_traits_dic(
