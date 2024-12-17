@@ -140,7 +140,7 @@ class IPPO(Algorithm):
         self,
         obs_shape: tuple[int],
         action_shape: tuple[int],
-        agent_num: int,
+        num_agents: int,
         seed: int = 42,
         rollout_length: int = 512,
         num_updates_per_rollout: int = 1,
@@ -183,7 +183,7 @@ class IPPO(Algorithm):
         self.obs_shape: tuple[int] = obs_shape
         self.action_shape: tuple[int] = action_shape
         self.buffer: RolloutBuffer4IPPO = RolloutBuffer4IPPO(
-            buffer_size=rollout_length, agent_num=agent_num,
+            buffer_size=rollout_length, num_agents=num_agents,
             obs_shape=obs_shape, action_shape=action_shape,
             device=self.device
         )
@@ -231,12 +231,12 @@ class IPPO(Algorithm):
         target obs value R(lmd) and GAE is calculated in advance.
         The rollout is divided into mini-batches and processes in sequence.
 
-        obses_all (agent_num, buffer_size, obs_shape)
+        obses_all (num_agents, buffer_size, obs_shape)
         obses (buffer_size, obs_shape)
         """
         obses_all, actions_all, rewards_all, dones_all, log_probs_old_all, next_obses_all = \
             self.buffer.get()
-        agent_num, buffer_size, ... = obses_all.shape
+        num_agents, buffer_size, _ = obses_all.shape
         for obses, actions, rewards, dones, log_probs_old, next_obses in zip(
             obses_all, actions_all, rewards_all, dones_all, log_probs_old_all, next_obses_all
         ):
@@ -245,7 +245,7 @@ class IPPO(Algorithm):
                 values: Tensor = self.critic(obses)
                 next_values: Tensor = self.critic(next_obses)
             if self.gamma_idx is not None:
-                gamma: Tensor = obses[:, self.gamma_idx]
+                gamma: Tensor = obses[:, self.gamma_idx].flatten()
                 targets, advantages = self.calc_gae(
                     values, rewards, dones, next_values, gamma, self.lmd
                 )

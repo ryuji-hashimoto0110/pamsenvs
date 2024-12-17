@@ -20,7 +20,7 @@ class RolloutBuffer4IPPO:
     def __init__(
         self,
         buffer_size: int,
-        agent_num: int,
+        num_agents: int,
         obs_shape: tuple[int],
         action_shape: tuple[int],
         device: torch.device
@@ -31,11 +31,11 @@ class RolloutBuffer4IPPO:
             buffer_size (int): Buffer size.
             obs_shape (tuple[int]): Observation shape.
             action_shape (tuple[int]): Action shape.
-            agent_num (int): Number of agents.
+            num_agents (int): Number of agents.
             device (torch.device): Device.
         """
         self.buffer_size: int = int(buffer_size)
-        self.agent_num: int = int(agent_num)
+        self.num_agents: int = int(num_agents)
         self.obs_shape: tuple[int] = obs_shape
         self.action_shape: tuple[int] = action_shape
         self.device: torch.device = device
@@ -47,37 +47,37 @@ class RolloutBuffer4IPPO:
         RolloutBuffer4IPPO stores rollout experiences of all agents.
         """
         self.is_storing_dic: dict[int, bool] = {
-            agent_idx: True for agent_idx in range(self.agent_num)
+            agent_idx: True for agent_idx in range(self.num_agents)
         }
         self.next_idx_dic: dict[int, int] = {
-            agent_idx: 0 for agent_idx in range(self.agent_num)
+            agent_idx: 0 for agent_idx in range(self.num_agents)
         }
         self.obses: Tensor = torch.empty(
-            (self.agent_num, self.buffer_size, *self.obs_shape),
+            (self.num_agents, self.buffer_size, *self.obs_shape),
             dtype=torch.float, device=self.device
         )
         self.actions: Tensor = torch.empty(
-            (self.agent_num, self.buffer_size, *self.action_shape),
+            (self.num_agents, self.buffer_size, *self.action_shape),
             dtype=torch.float, device=self.device
         )
         self.rewards: Tensor = torch.empty(
-            (self.agent_num, self.buffer_size),
+            (self.num_agents, self.buffer_size),
             dtype=torch.float, device=self.device
         )
         self.rewards: Tensor = torch.empty(
-            (self.agent_num, self.buffer_size),
+            (self.num_agents, self.buffer_size),
             dtype=torch.float, device=self.device
         )
         self.dones: Tensor = torch.empty(
-            (self.agent_num, self.buffer_size),
+            (self.num_agents, self.buffer_size),
             dtype=torch.float, device=self.device
         )
         self.log_probs: Tensor = torch.empty(
-            (self.agent_num, self.buffer_size),
+            (self.num_agents, self.buffer_size),
             dtype=torch.float, device=self.device
         )
         self.next_obses: Tensor = torch.empty(
-            (self.agent_num, self.buffer_size, *self.obs_shape),
+            (self.num_agents, self.buffer_size, *self.obs_shape),
             dtype=torch.float, device=self.device
         )
 
