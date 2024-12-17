@@ -16,7 +16,7 @@ class HeteroRLAgent(Agent):
     ):
         super().setup(settings, accessible_markets_ids, *args, **kwargs)
         json_random: JsonRandom = JsonRandom(prng=self.prng)
-        self.last_order_time: int = -1
+        self.last_order_time: int = 0
         if "skillBoundedness" not in settings:
             raise ValueError("skillBoundedness is required for HeteroRLAgent.")
         else:
@@ -35,6 +35,12 @@ class HeteroRLAgent(Agent):
             self.discount_factor: float = json_random.random(
                 json_value=settings["discountFactor"]
             )
+        self.previous_utility: float = self.cash_amount
+        for market_id in accessible_markets_ids:
+            market: Market = self.simulator.id2market[market_id]
+            asset_volume: int = self.asset_volumes[market_id]
+            market_price: float = market.get_market_price()
+            self.previous_utility += asset_volume * market_price
 
     def submit_orders(self, markets: list[Market]) -> list[Order | Cancel]:
         return []
