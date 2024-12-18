@@ -106,7 +106,7 @@ class RolloutBuffer4IPPO:
             self.next_idx_dic[agent_idx] = 1
             return
         else:
-            self.next_obses[next_idx-1, agent_idx].copy_(
+            self.next_obses[agent_idx, next_idx-1].copy_(
                 obs_tensor.view(self.obs_shape)
             )
         self.obses[agent_idx, next_idx].copy_(obs_tensor.view(self.obs_shape))
