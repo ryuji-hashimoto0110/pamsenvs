@@ -136,6 +136,7 @@ class Algorithm(ABC):
             action_tensor=self._convert_action2tensor(action),
             reward=reward,
             done=done,
+            log_prob=log_prob,
         )
         if hasattr(env, "get_time"):
             current_episode_steps = env.get_time()
@@ -155,6 +156,7 @@ class Algorithm(ABC):
         action_tensor: Tensor,
         reward: float,
         done: bool,
+        log_prob: float
     ) -> None:
         pass
 
