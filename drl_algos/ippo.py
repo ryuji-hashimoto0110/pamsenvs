@@ -14,6 +14,7 @@ from buffers import RolloutBuffer4IPPO
 from drl_utils import initialize_module_orthogonal
 from drl_utils import calc_log_prob
 from drl_utils import reparametrize
+from rich import print
 import torch
 from torch import nn
 from torch import optim
@@ -152,6 +153,7 @@ class IPPO(Algorithm):
         clip_eps: float = 0.2,
         lmd: float = 0.95,
         max_grad_norm: float = 0.5,
+        display_process: bool = True
     ) -> None:
         """initialization.
         
@@ -200,6 +202,14 @@ class IPPO(Algorithm):
         self.lmd: float = lmd
         self.max_grad_norm: float = max_grad_norm
         self.agent_id2agent_idx_dic: dict[AgentID, int] = {}
+        if display_process:
+            print("[bold green]IPPO[/bold green]")
+            print(f"device: {self.device} obs: {obs_shape} action: {action_shape}")
+            print(f"num agents: {num_agents} buffer size: {rollout_length}")
+            print(f"num updates per rollout: {num_updates_per_rollout} batch size: {batch_size}")
+            print(f"gamma: {gamma} gamma idx: {gamma_idx} lr actor: {lr_actor} lr critic: {lr_critic}")
+            print(f"clip epsilon: {clip_eps} lambda: {lmd} max grad norm: {max_grad_norm}")
+            print()
 
     def assign_agent_id2agent_idx(self, agent_ids: list[AgentID]) -> None:
         """Assign agent_id to agent_idx. Usually called by Trainer."""

@@ -9,6 +9,7 @@ parent_path: Path = curr_path.parents[0]
 import sys
 sys.path.append(str(parent_path))
 from algorithm import Algorithm
+from rich import print
 from typing import Any
 from typing import Optional
 from typing import TypeVar
@@ -34,6 +35,7 @@ class Trainer:
         num_train_steps: int = 1e+07,
         eval_interval: int = 1e+05,
         num_eval_episodes: int = 10,
+        display_process: bool = True
     ) -> None:
         """initialization.
         
@@ -61,6 +63,13 @@ class Trainer:
         self.eval_interval: int = int(eval_interval)
         self.num_eval_episodes: int = int(num_eval_episodes)
         self.best_reward: float = -1e+10
+        self.display_process: bool = display_process
+        if self.display_process:
+            print("[bold green]Trainer[/bold green]")
+            print(f"env: {train_env}")
+            print(f"train steps: {num_train_steps} eval interval: {eval_interval}")
+            print(f"num eval episodes: {num_eval_episodes}")
+
 
     def _set_results_dic(
         self, other_indicators: list[str]
@@ -136,6 +145,7 @@ class Trainer:
             ) / self.num_eval_episodes
         self.results_dic["step"].append(current_total_steps)
         self.results_dic["total_reward"].append(average_total_reward)
+        print(f"step: {current_total_steps}, average total reward: {average_total_reward}")
         self._save_actor(current_total_steps, average_total_reward)
 
     def _save_actor(self, average_total_reward: float) -> None:
@@ -156,3 +166,4 @@ class Trainer:
             str(save_path)
         )
         print(f"model saved to >> {str(save_path)}")
+        print()
