@@ -118,7 +118,7 @@ class IPPOCritic(Module):
             nn.Tanh(),
             nn.Linear(128, 1),
         )
-        initialize_module_orthogonal(self.critic)
+        initialize_module_orthogonal(self.valuelayer)
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
         """Resize observation tensor."""
@@ -216,12 +216,14 @@ class IPPO(Algorithm):
         action_tensor: Tensor,
         reward: float,
         done: bool,
+        log_prob: float
     ) -> None:
         """Store experience in the buffer."""
         agent_idx: int = self.agent_id2agent_idx_dic[agent_id]
         self.buffer.append(
             agent_idx=agent_idx, obs_tensor=obs_tensor,
-            action_tensor=action_tensor, reward=reward, done=done
+            action_tensor=action_tensor, reward=reward,
+            done=done, log_prob=log_prob
         )
 
     def update(self):
@@ -242,10 +244,10 @@ class IPPO(Algorithm):
         ):
             assert buffer_size == len(obses)
             with torch.no_grad():
-                values: Tensor = self.critic(obses)
-                next_values: Tensor = self.critic(next_obses)
+                values: Tensor = self.critic(obses).view(-1)
+                next_values: Tensor = self.critic(next_obses).view(-1)
             if self.gamma_idx is not None:
-                gamma: Tensor = obses[:, self.gamma_idx].flatten()
+                gamma: Tensor = obses[:, self.gamma_idx]
                 targets, advantages = self.calc_gae(
                     values, rewards, dones, next_values, gamma, self.lmd
                 )
@@ -287,7 +289,7 @@ class IPPO(Algorithm):
         advantages: Tensor = torch.empty_like(rewards)
         advantages[-1] = td_err[-1]
         for t in reversed(range(len(rewards)-1)):
-            advantages[t] = td_err[t] + gamma * lmd * (1-dones[t]) * advantages[t+1]
+            advantages[t] = td_err[t] + gamma[t] * lmd * (1-dones[t]) * advantages[t+1]
         targets: Tensor = advantages + values
         advantages = advantages / (advantages.std() + 1e-08)
         return targets, advantages
@@ -299,7 +301,7 @@ class IPPO(Algorithm):
     ) -> None:
         """update critic using experiences.
         """
-        loss_critic: Tensor = (self.critic(obses) - targets).pow_(2).mean()
+        loss_critic: Tensor = (self.critic(obses).view(-1) - targets).pow_(2).mean()
         self.optim_critic.zero_grad()
         loss_critic.backward()
         nn.utils.clip_grad_norm_(self.critic.parameters(), self.max_grad_norm)
