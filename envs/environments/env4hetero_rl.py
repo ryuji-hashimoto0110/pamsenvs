@@ -123,7 +123,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         logger: Optional[Logger] = None
     ) -> Runner:
         runner: Runner = SequentialRunner(
-            episode_config_dic=episode_config_dic,
+            settings=episode_config_dic,
             logger=logger,
             prng=self._prng
         )
@@ -260,36 +260,39 @@ class AECEnv4HeteroRL(PamsAECEnv):
         asset_volume: float = agent.asset_volumes[market.market_id]
         asset_value: float = asset_volume * market_price
         total_wealth: float = cash_amount + asset_value
-        asset_ratio: float = asset_value / total_wealth
+        asset_ratio: float = asset_value / (total_wealth + 1e-06)
         return asset_ratio
     
     def _calc_inverted_buying_power(self, agent: Agent, market: Market) -> float:
         """Calculate market price / holding cash amount."""
         market_price: float = market.get_market_price()
         cash_amount: float = agent.cash_amount
-        inverted_buying_power: float = market_price / cash_amount
+        inverted_buying_power: float = market_price / (cash_amount + 1e-06)
         return inverted_buying_power
     
     def _calc_remaining_time_ratio(self, market: TotalTimeAwareMarket) -> float:
         """Calculate (T-t) / T where T is the total number of time steps in the episode."""
-        total_time: int = market.total_iteration_steps
+        total_time: Optional[int] = market.total_iteration_steps
+        if total_time is None:
+            return 1
         remaining_time: int = market.get_remaining_time()
-        remaining_time_ratio: float = remaining_time / total_time
+        remaining_time_ratio: float = remaining_time / (total_time + 1e-06)
         return remaining_time_ratio
     
     def _calc_return(self, market_prices: list[float]) -> float:
         """Calculate return log p_t - log p_{t-tau} where tau is the time interval between the current and previous observations."""
+        if len(market_prices) < 2:
+            return 0.0
         log_return: float = np.log(market_prices[-1]) - np.log(market_prices[0])
         return log_return
 
     def _calc_volatility(self, market_prices: list[float]) -> float:
         """Calculate volatility between t-tau and t."""
+        if len(market_prices) < 2:
+            return 0.0
         log_returns: ndarray = np.diff(np.log(market_prices))
         volatility: float
-        if len(log_returns) == 0:
-            volatility = 0.
-        else:
-            volatility = np.sum(log_returns ** 2) / len(log_returns)
+        volatility = np.sum(log_returns ** 2) / len(log_returns)
         return volatility
     
     def _get_asset_volume_existing_orders_ratio(
@@ -311,7 +314,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             elif (lower_bound <= price) and (price <= upper_bound):
                 existing_orders_volume += volume
         asset_volume: int = np.abs(agent.asset_volumes[market.market_id])
-        asset_volume_existing_orders_ratio: float = asset_volume / existing_orders_volume
+        asset_volume_existing_orders_ratio: float = asset_volume / (existing_orders_volume + 1e-06)
         return asset_volume_existing_orders_ratio
     
     def _blur_fundamental_return(self, agent: Agent, market: Market) -> float:
@@ -368,8 +371,12 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             order_price: float = mid_price + self.limit_order_range * mid_price * order_price_scale
             is_buy = False
-        order_volume: int = int(self.max_order_volume * order_volume_scale)
+        order_volume: int = np.abs(
+            np.ceil(self.max_order_volume * order_volume_scale)
+        )
         agent_id: AgentID = self.agent_selection
+        if order_volume == 0:
+            return []
         order: Order = Order(
             agent_id=agent_id,
             market_id=market.market_id,
