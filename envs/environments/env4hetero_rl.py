@@ -400,5 +400,5 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def __str__(self) -> str:
         obs_names: list[str] = self.get_obs_names()
         action_names: list[str] = self.get_action_names()
-        return f"AECEnv4HeteroRL obs: {obs_names} action: {action_names}"
+        return f"AECEnv4HeteroRL\n obs: {obs_names}\n action: {action_names}"
         
