@@ -54,7 +54,7 @@ class IPPOActor(Module):
             nn.Linear(128, 128),
             nn.Tanh(),
             nn.Linear(128, np.prod(action_shape)),
-        )
+        ).to(device)
         initialize_module_orthogonal(self.actlayer)
         self.log_stds: Tensor = nn.Parameter(torch.zeros(action_shape)).to(device)
 
@@ -118,7 +118,7 @@ class IPPOCritic(Module):
             nn.Linear(128, 128),
             nn.Tanh(),
             nn.Linear(128, 1),
-        )
+        ).to(device)
         initialize_module_orthogonal(self.valuelayer)
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
