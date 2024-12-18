@@ -43,7 +43,8 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--variable_ranges_path", type=str, required=False)
     parser.add_argument("--depth_range", type=float, default=0.01)
     parser.add_argument("--limit_order_range", type=float, default=0.1)
-    parser.add_argument("--max_order_volume", type=int, default=10)
+    parser.add_argument("--max_order_volume", type=int, default=50)
+    parser.add_argument("--short_selling_penalty", type=float, default=1e+03)
     return parser
 
 def convert_str2path(
@@ -124,10 +125,11 @@ def main(args) -> None:
         action_dim=2, obs_dim=11, depth_range=all_args.depth_range,
         limit_order_range=all_args.limit_order_range,
         max_order_volume=all_args.max_order_volume,
+        short_selling_penalty=all_args.short_selling_penalty
     )
     test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
     ippo: IPPO = IPPO(
-        obs_shape=(11,), action_shape=(2,), num_agents=num_agents,
+        obs_shape=(12,), action_shape=(2,), num_agents=num_agents,
         seed=all_args.seed, rollout_length=all_args.rollout_length,
         num_updates_per_rollout=all_args.num_updates_per_rollout,
         batch_size=all_args.batch_size, gamma_idx=-1,

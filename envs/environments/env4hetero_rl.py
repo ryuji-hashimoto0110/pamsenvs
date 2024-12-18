@@ -37,7 +37,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         seed: Optional[int] = None,
         depth_range: float = 0.01,
         limit_order_range: float = 0.1,
-        max_order_volume: int = 10
+        max_order_volume: int = 10,
+        short_selling_penalty: float = 1e+03
     ) -> None:
         """initialization.
 
@@ -63,6 +64,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.depth_range: float = depth_range
         self.limit_order_range: float = limit_order_range
         self.max_order_volume: int = max_order_volume
+        self.short_selling_penalty: float = short_selling_penalty
 
     def set_action_space(self) -> Space:
         return spaces.Box(low=-1, high=1, shape=(self.action_dim,))
@@ -182,13 +184,18 @@ class AECEnv4HeteroRL(PamsAECEnv):
     """
 
     def add_attributes(self) -> None:
-        pass
+        self.return_dic: dict[AgentID, float] = {}
+        self.volatility_dic: dict[AgentID, float] = {}
+        for agent_id in self.agents:
+            self.return_dic[agent_id] = 0.0
+            self.volatility_dic[agent_id] = 0.0
 
     def generate_obs(self, agent_id: AgentID) -> ObsType:
         """generate observation at time t.
         
         Observation of each agent is consists of:
             - Percentage of the agent's total wealth accounted for by the asset.
+            - holding asset volume / max order volume.
             - market price / holding cash amount.
             - (T-t) / T where T is the total number of time steps in the episode.
             - return log p_t - log p_{t-tau} where tau is the time interval between the current and previous observations.
@@ -209,7 +216,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         """
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
         market: TotalTimeAwareMarket = self.simulator.markets[0]
+        #print(f"t={market.get_time()}, p_t={market.get_market_price():.1f}, asset_volume={agent.asset_volumes[market.market_id]}")
         asset_ratio: float = self._calc_asset_ratio(agent, market)
+        liquidable_asset_ratio: float = self._liquidable_asset_ratio(agent, market)
         inverted_buying_power: float = self._calc_inverted_buying_power(agent, market)
         if not isinstance(agent, HeteroRLAgent):
             raise ValueError(f"agent {agent_id} is not HeteroRLAgent.")
@@ -225,6 +234,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         )
         log_return: float = self._calc_return(market_prices)
         volatility: float = self._calc_volatility(market_prices)
+        self.return_dic[agent_id] = log_return
+        self.volatility_dic[agent_id] = volatility
         asset_volume_buy_orders_ratio: float = self._get_asset_volume_existing_orders_ratio(
             agent, market, is_buy=True
         )
@@ -241,12 +252,13 @@ class AECEnv4HeteroRL(PamsAECEnv):
         discount_factor: float = agent.discount_factor
         obs: ObsType = np.array(
             [
-                asset_ratio, inverted_buying_power, remaining_time_ratio, log_return, volatility,
+                asset_ratio, liquidable_asset_ratio, 
+                inverted_buying_power, remaining_time_ratio, log_return, volatility,
                 asset_volume_buy_orders_ratio, asset_volume_sell_orders_ratio,
                 blurred_fundamental_return, skill_boundedness, risk_aversion_term, discount_factor
             ]
         )
-        obs = np.clip(obs, -1, 1)
+        obs = np.clip(obs, -3, 3)
         return obs
         
     def _calc_asset_ratio(
@@ -263,6 +275,16 @@ class AECEnv4HeteroRL(PamsAECEnv):
         asset_ratio: float = asset_value / (total_wealth + 1e-06)
         return asset_ratio
     
+    def _liquidable_asset_ratio(
+        self,
+        agent: Agent,
+        market: Market
+    ) -> float:
+        """Calculate holding asset volume / max order volume."""
+        asset_volume: float = agent.asset_volumes[market.market_id]
+        liquidable_asset_ratio: float = asset_volume / (self.max_order_volume + 1e-06)
+        return liquidable_asset_ratio
+    
     def _calc_inverted_buying_power(self, agent: Agent, market: Market) -> float:
         """Calculate market price / holding cash amount."""
         market_price: float = market.get_market_price()
@@ -273,9 +295,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def _calc_remaining_time_ratio(self, market: TotalTimeAwareMarket) -> float:
         """Calculate (T-t) / T where T is the total number of time steps in the episode."""
         total_time: Optional[int] = market.total_iteration_steps
+        remaining_time: int = market.get_remaining_time()
         if total_time is None:
             return 1
-        remaining_time: int = market.get_remaining_time()
         remaining_time_ratio: float = remaining_time / (total_time + 1e-06)
         return remaining_time_ratio
     
@@ -325,7 +347,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         if not hasattr(agent, "skill_boundedness"):
             raise ValueError(f"agent {agent.agent_id} does not have skill_boundedness.")
         skill_boundedness: float = agent.skill_boundedness
-        blurred_fundamental_return += self._prng.gauss(mu=0, sigma=skill_boundedness)
+        blurring_factor: float = self._prng.gauss(0, skill_boundedness)
+        blurred_fundamental_return += blurring_factor
         return blurred_fundamental_return
 
     def generate_reward(self, agent_id: AgentID) -> float:
@@ -337,21 +360,17 @@ class AECEnv4HeteroRL(PamsAECEnv):
         market: TotalTimeAwareMarket = self.simulator.markets[0]
         asset_volume: int = agent.asset_volumes[market.market_id]
         market_price: float = market.get_market_price()
-        current_time: int = market.get_time()
-        last_order_time: int = agent.last_order_time
-        if current_time < last_order_time:
-            raise ValueError(f"current_time {current_time} is less than last_order_time {last_order_time}.")
-        market_prices: list[float] = market.get_market_prices(
-            times=[t for t in range(last_order_time, current_time)]
-        )
-        log_return: float = self._calc_return(market_prices)
-        volatility: float = self._calc_volatility(market_prices)
+        total_wealth: float = cash_amount + asset_volume * market_price
+        log_return: float = self.return_dic[agent_id]
+        volatility: float = self.volatility_dic[agent_id]
         current_utility: float = (
-            cash_amount + asset_volume * market_price * log_return
+            total_wealth + asset_volume * market_price * log_return
         ) - 0.5 * agent.risk_aversion_term * (
             (asset_volume * market_price) ** 2
         ) * volatility
         reward: float = current_utility - previous_utility
+        if asset_volume < 0:
+            reward -= self.short_selling_penalty * np.abs(asset_volume)
         agent.previous_utility = current_utility
         return reward
 
@@ -398,7 +417,12 @@ class AECEnv4HeteroRL(PamsAECEnv):
         return ["order_price_scale", "order_volume_scale"]
     
     def __str__(self) -> str:
+        description: str = "[bold green]AECEnv4HeteroRL[/bold green]\n"
+        description += f"max order volume: {self.max_order_volume} " + \
+            f"limit order range: {self.limit_order_range} short selling penalty: {self.short_selling_penalty}\n"
         obs_names: list[str] = self.get_obs_names()
+        description += f"obs: {obs_names}\n"
         action_names: list[str] = self.get_action_names()
-        return f"AECEnv4HeteroRL\n obs: {obs_names}\n action: {action_names}"
+        description += f"action: {action_names}"
+        return description
         
