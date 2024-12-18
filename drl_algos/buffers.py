@@ -61,19 +61,19 @@ class RolloutBuffer4IPPO:
             dtype=torch.float, device=self.device
         )
         self.rewards: Tensor = torch.empty(
-            (self.num_agents, self.buffer_size),
+            (self.num_agents, self.buffer_size, 1),
             dtype=torch.float, device=self.device
         )
         self.rewards: Tensor = torch.empty(
-            (self.num_agents, self.buffer_size),
+            (self.num_agents, self.buffer_size, 1),
             dtype=torch.float, device=self.device
         )
         self.dones: Tensor = torch.empty(
-            (self.num_agents, self.buffer_size),
+            (self.num_agents, self.buffer_size, 1),
             dtype=torch.float, device=self.device
         )
         self.log_probs: Tensor = torch.empty(
-            (self.num_agents, self.buffer_size),
+            (self.num_agents, self.buffer_size, 1),
             dtype=torch.float, device=self.device
         )
         self.next_obses: Tensor = torch.empty(
