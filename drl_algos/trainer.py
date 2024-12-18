@@ -127,19 +127,20 @@ class Trainer:
         Args:
             current_total_steps (int): Current total steps.
         """
-        average_total_reward: float
+        average_total_reward: float = 0.0
         for _ in range(self.num_eval_episodes):
             self.test_env.reset()
             done: bool = False
             episode_reward_dic: dict[AgentID, float] = {
                 agent_id: 0.0 for agent_id in self.test_env.agents
             }
-            while not done:
-                for agent_id in self.test_env.agent_iter():
-                    obs: ObsType = self.test_env.last()
-                    action: ActionType = self.algo.exploit(obs)
-                    reward, done, info = self.test_env.step(action)
-                    episode_reward_dic[agent_id] += reward
+            for agent_id in self.test_env.agent_iter():
+                obs: ObsType = self.test_env.last()
+                action: ActionType = self.algo.exploit(obs)
+                reward, done, info = self.test_env.step(action)
+                episode_reward_dic[agent_id] += reward
+                if done:
+                    break
             average_total_reward += np.sum(
                 list(episode_reward_dic.values())
             ) / self.num_eval_episodes
