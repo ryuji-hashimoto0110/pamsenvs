@@ -56,7 +56,7 @@ class Trainer:
         self.algo: Algorithm = algo
         self.actor_best_save_path: Optional[Path] = actor_best_save_path
         self.actor_last_save_path: Optional[Path] = actor_last_save_path
-        self.results_dic: dict[str, dict[AgentID, list[float]]] = self._set_results_dic(other_indicators)
+        self.results_dic: dict[str, list[float]] = self._set_results_dic(other_indicators)
         self.num_train_steps: int = int(num_train_steps)
         self.eval_interval: int = int(eval_interval)
         self.num_eval_episodes: int = int(num_eval_episodes)
@@ -80,15 +80,11 @@ class Trainer:
         Returns:
             results_dic (dict[str, dict[AgentID, list[float]]]): Results dictionary.
         """
-        results_dic: dict[str, list[int] | dict[AgentID, list[float]]] = {}
+        results_dic: dict[str, list[int] | list[float]] = {}
         results_dic["step"] = []
-        results_dic["total_reward"] = {
-            agent_id: [] for agent_id in self.train_env.agents
-        }
+        results_dic["total_reward"] = []
         for indicator in other_indicators:
-            results_dic[indicator] = {
-                agent_id: [] for agent_id in self.train_env.agents
-            }
+            results_dic[indicator] = []
         return results_dic
     
     def train(self) -> None:
@@ -122,9 +118,7 @@ class Trainer:
         Args:
             current_total_steps (int): Current total steps.
         """
-        total_reward_dic: dict[AgentID, list[float]] = {
-            agent_id: [] for agent_id in self.test_env.agents
-        }
+        average_total_reward: float
         for _ in range(self.num_eval_episodes):
             self.test_env.reset()
             done: bool = False
@@ -137,51 +131,22 @@ class Trainer:
                     action: ActionType = self.algo.exploit(obs)
                     reward, done, info = self.test_env.step(action)
                     episode_reward_dic[agent_id] += reward
-            for agent_id in self.test_env.agents:
-                total_reward_dic[agent_id].append(episode_reward_dic[agent_id])
-        average_total_reward_dic: dict[AgentID, float] = {
-            agent_id: np.mean(total_reward_dic[agent_id]) for agent_id in self.test_env.agents
-        }
-        self._record_indicators(
-            current_total_steps, average_total_reward_dic, info
-        )
-        self._save_actor(current_total_steps, average_total_reward_dic)
-
-    def _record_indicators(
-        self,
-        current_total_steps: int,
-        average_total_reward_dic: dict[AgentID, float],
-        info: dict,
-    ) -> None:
-        """Record indicators.
-        
-        Record indicators in self.results_dic.
-
-        Args:
-            current_total_steps (int): Current total steps.
-            average_total_reward_dic (dict[AgentID, float]): Average total rewards.
-            info (Any): Other indicators.
-        """
+            average_total_reward += np.sum(
+                list(episode_reward_dic.values())
+            ) / self.num_eval_episodes
         self.results_dic["step"].append(current_total_steps)
-        for agent_id, average_total_reward in average_total_reward_dic.items():
-            self.results_dic["total_reward"][agent_id].append(average_total_reward)
-        for key, value in info.items():
-            if key in self.results_dic:
-                self.results_dic[key].append(value)
+        self.results_dic["total_reward"].append(average_total_reward)
+        self._save_actor(current_total_steps, average_total_reward)
 
-    def _save_actor(
-        self,
-        average_total_reward_dic: dict[AgentID, float],
-    ) -> None:
-        eval_average_reward: float = np.mean(average_total_reward_dic.values())
-        if eval_average_reward < self.best_reward:
+    def _save_actor(self, average_total_reward: float) -> None:
+        if average_total_reward < self.best_reward:
             if self.actor_last_save_path is None:
                 return
             save_path = self.actor_last_save_path
         else:
             if self.actor_best_save_path is None:
                 return
-            self.best_reward = eval_average_reward
+            self.best_reward = average_total_reward
             save_path = self.actor_best_save_path
         torch.save(
             {
