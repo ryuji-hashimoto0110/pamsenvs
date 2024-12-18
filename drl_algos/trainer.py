@@ -146,7 +146,7 @@ class Trainer:
             ) / self.num_eval_episodes
         self.results_dic["step"].append(current_total_steps)
         self.results_dic["total_reward"].append(average_total_reward)
-        print(f"step: {current_total_steps}, average total reward: {average_total_reward}")
+        print(f"step: {current_total_steps}, average total reward: {average_total_reward:.2f}")
         self._save_actor(average_total_reward)
 
     def _save_actor(self, average_total_reward: float) -> None:
