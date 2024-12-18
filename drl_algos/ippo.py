@@ -244,10 +244,10 @@ class IPPO(Algorithm):
         ):
             assert buffer_size == len(obses)
             with torch.no_grad():
-                values: Tensor = self.critic(obses).view(-1)
-                next_values: Tensor = self.critic(next_obses).view(-1)
+                values: Tensor = self.critic(obses)
+                next_values: Tensor = self.critic(next_obses)
             if self.gamma_idx is not None:
-                gamma: Tensor = obses[:, self.gamma_idx]
+                gamma: Tensor = obses[:, self.gamma_idx].unsqueeze_(1)
                 targets, advantages = self.calc_gae(
                     values, rewards, dones, next_values, gamma, self.lmd
                 )
@@ -301,7 +301,7 @@ class IPPO(Algorithm):
     ) -> None:
         """update critic using experiences.
         """
-        loss_critic: Tensor = (self.critic(obses).view(-1) - targets).pow_(2).mean()
+        loss_critic: Tensor = (self.critic(obses) - targets).pow_(2).mean()
         self.optim_critic.zero_grad()
         loss_critic.backward()
         nn.utils.clip_grad_norm_(self.critic.parameters(), self.max_grad_norm)
