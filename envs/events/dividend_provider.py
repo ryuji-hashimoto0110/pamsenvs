@@ -49,7 +49,7 @@ class DividendProviderwEverySteps(EventABC):
         end_time: int = self.session.session_start_time + self.session.iteration_steps
         event_hook = EventHook(
             event=self,
-            hook_type="session",
+            hook_type="market",
             time=[t for t in range(start_time, end_time, self.divident_interval)],
             is_before=False
         )
