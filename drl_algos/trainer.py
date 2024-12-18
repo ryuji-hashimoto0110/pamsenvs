@@ -136,7 +136,7 @@ class Trainer:
             }
             while not done:
                 for agent_id in self.test_env.agent_iter():
-                    obs: ObsType = self.test_env.observe(agent_id)
+                    obs: ObsType = self.test_env.last()
                     action: ActionType = self.algo.exploit(obs)
                     reward, done, info = self.test_env.step(action)
                     episode_reward_dic[agent_id] += reward
