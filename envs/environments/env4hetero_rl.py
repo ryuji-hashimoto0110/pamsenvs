@@ -386,4 +386,19 @@ class AECEnv4HeteroRL(PamsAECEnv):
             kind=LIMIT_ORDER
         )
         return [order]
+    
+    def get_obs_names(self) -> list[str]:
+        return [
+            "asset_ratio", "inverted_buying_power", "remaining_time_ratio", "log_return", "volatility",
+            "asset_volume_buy_orders_ratio", "asset_volume_sell_orders_ratio",
+            "blurred_fundamental_return", "skill_boundedness", "risk_aversion_term", "discount_factor"
+        ]
+    
+    def get_action_names(self) -> list[str]:
+        return ["order_price_scale", "order_volume_scale"]
+    
+    def __str__(self) -> str:
+        obs_names: list[str] = self.get_obs_names()
+        action_names: list[str] = self.get_action_names()
+        return f"AECEnv4HeteroRL obs: {obs_names} action: {action_names}"
         
