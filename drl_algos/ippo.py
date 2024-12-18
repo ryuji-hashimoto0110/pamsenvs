@@ -56,7 +56,7 @@ class IPPOActor(Module):
             nn.Linear(128, np.prod(action_shape)),
         )
         initialize_module_orthogonal(self.actlayer)
-        self.log_stds: Tensor = nn.Parameter(torch.zeros(action_shape))
+        self.log_stds: Tensor = nn.Parameter(torch.zeros(action_shape)).to(device)
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
         """Resize observation tensor."""
