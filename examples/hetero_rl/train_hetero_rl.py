@@ -36,7 +36,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--actor_best_save_name", type=str)
     parser.add_argument("--actor_last_save_name", type=str)
     parser.add_argument("--num_train_steps", type=int, default=int(1e+07))
-    parser.add_argument("--eval_interval", type=int, default=int(1e+05))
+    parser.add_argument("--eval_interval", type=int, default=int(1e+04))
     parser.add_argument("--num_eval_episodes", type=int, default=10)
     parser.add_argument("--agent_name", type=str, default="heteroRLAgent")
     parser.add_argument("--config_path", type=str)
