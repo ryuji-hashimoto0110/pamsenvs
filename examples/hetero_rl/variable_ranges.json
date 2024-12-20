@@ -1,3 +1,6 @@
 {
-    "Market": {}
+    "Market": {
+        "fundamentalDrift": [-0.0001, 0.0001],
+        "fundamentalVolatility": [0.0, 0.0003]
+    }
 }
