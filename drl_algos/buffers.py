@@ -135,6 +135,7 @@ class RolloutBuffer4IPPO:
         normed_rewards: Tensor = (
             self.rewards - self.rewards.mean()
         ) / (self.rewards.std() + 1e-06)
+        normed_rewards = normed_rewards.clamp(-1.0, 1.0)
         experiences: tuple[Tensor] = (
             self.obses, self.actions, normed_rewards, self.dones, self.log_probs, self.next_obses
         )
