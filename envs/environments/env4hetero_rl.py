@@ -38,7 +38,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         depth_range: float = 0.01,
         limit_order_range: float = 0.1,
         max_order_volume: int = 10,
-        short_selling_penalty: float = 1e+03
+        short_selling_penalty: float = 1e+03,
+        negative_utility_penality: float = 1e+03
     ) -> None:
         """initialization.
 
@@ -65,6 +66,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.limit_order_range: float = limit_order_range
         self.max_order_volume: int = max_order_volume
         self.short_selling_penalty: float = short_selling_penalty
+        self.negative_utility_penality: float = negative_utility_penality
 
     def set_action_space(self) -> Space:
         return spaces.Box(low=-1, high=1, shape=(self.action_dim,))
@@ -231,8 +233,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         market_prices: list[float] = market.get_market_prices(
             times=[t for t in range(last_order_time, current_time)]
         )
-        #if market.get_time() % 100 == 0:
-        #    print(f"t={market.get_time()}, p_t={market.get_market_price():.1f}, asset_volume={agent.asset_volumes[market.market_id]}")
+        if market.get_time() % 2000 == 1999:
+            print(f"t={market.get_time()}, p_t={market.get_market_price():.1f}, asset_volume={agent.asset_volumes[market.market_id]}")
         log_return: float = self._calc_return(market_prices)
         volatility: float = self._calc_volatility(market_prices)
         self.return_dic[agent_id] = log_return
@@ -369,9 +371,14 @@ class AECEnv4HeteroRL(PamsAECEnv):
         ) - 0.5 * agent.risk_aversion_term * (
             (asset_volume * market_price) ** 2
         ) * volatility
-        reward: float = current_utility - previous_utility
+        if current_utility < 0:
+            reward: float = self.negative_utility_penality
+        elif previous_utility < 0:
+            reward: float = 0.0
+        else:
+            reward: float = np.log(current_utility / previous_utility)
         if asset_volume < 0:
-            reward -= self.short_selling_penalty * np.abs(asset_volume)
+            reward: float = self.short_selling_penalty * np.abs(asset_volume)
         agent.previous_utility = current_utility
         return reward
 
@@ -394,6 +401,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         order_volume: int = np.abs(
             np.ceil(self.max_order_volume * order_volume_scale)
         )
+        if market.get_time() % 2000 == 1999:
+            print(f"t={market.get_time()}, order_price={order_price:.1f}, order_volume={order_volume}")
         agent_id: AgentID = self.agent_selection
         if order_volume == 0:
             return []
