@@ -38,8 +38,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         depth_range: float = 0.01,
         limit_order_range: float = 0.1,
         max_order_volume: int = 10,
-        short_selling_penalty: float = 1e+03,
-        negative_utility_penality: float = 1e+03
+        short_selling_penalty: float = -0.5,
+        negative_utility_penality: float = -0.9
     ) -> None:
         """initialization.
 
@@ -378,7 +378,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             reward: float = np.log(current_utility / previous_utility)
         if asset_volume < 0:
-            reward: float = self.short_selling_penalty * np.abs(asset_volume)
+            reward: float = self.short_selling_penalty
         agent.previous_utility = current_utility
         return reward
 

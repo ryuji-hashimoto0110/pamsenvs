@@ -42,10 +42,10 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--config_path", type=str)
     parser.add_argument("--variable_ranges_path", type=str, required=False)
     parser.add_argument("--depth_range", type=float, default=0.01)
-    parser.add_argument("--limit_order_range", type=float, default=0.1)
+    parser.add_argument("--limit_order_range", type=float, default=0.05)
     parser.add_argument("--max_order_volume", type=int, default=50)
-    parser.add_argument("--short_selling_penalty", type=float, default=1e+03)
-    parser.add_argument("--negative_utility_penality", type=float, default=1e+03)
+    parser.add_argument("--short_selling_penalty", type=float, default=-0.5)
+    parser.add_argument("--negative_utility_penality", type=float, default=-0.9)
     return parser
 
 def convert_str2path(
