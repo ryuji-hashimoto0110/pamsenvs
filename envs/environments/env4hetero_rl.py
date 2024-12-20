@@ -404,7 +404,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             volume=order_volume,
             is_buy=is_buy,
             kind=LIMIT_ORDER,
-            ttl=len(self.num_agents)
+            ttl=self.num_agents
         )
         return [order]
     
