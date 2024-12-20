@@ -216,7 +216,6 @@ class AECEnv4HeteroRL(PamsAECEnv):
         """
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
         market: TotalTimeAwareMarket = self.simulator.markets[0]
-        #print(f"t={market.get_time()}, p_t={market.get_market_price():.1f}, asset_volume={agent.asset_volumes[market.market_id]}")
         asset_ratio: float = self._calc_asset_ratio(agent, market)
         liquidable_asset_ratio: float = self._liquidable_asset_ratio(agent, market)
         inverted_buying_power: float = self._calc_inverted_buying_power(agent, market)
@@ -232,6 +231,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         market_prices: list[float] = market.get_market_prices(
             times=[t for t in range(last_order_time, current_time)]
         )
+        #if market.get_time() % 100 == 0:
+        #    print(f"t={market.get_time()}, p_t={market.get_market_price():.1f}, asset_volume={agent.asset_volumes[market.market_id]}")
         log_return: float = self._calc_return(market_prices)
         volatility: float = self._calc_volatility(market_prices)
         self.return_dic[agent_id] = log_return
@@ -402,7 +403,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
             price=order_price,
             volume=order_volume,
             is_buy=is_buy,
-            kind=LIMIT_ORDER
+            kind=LIMIT_ORDER,
+            ttl=len(self.num_agents)
         )
         return [order]
     
