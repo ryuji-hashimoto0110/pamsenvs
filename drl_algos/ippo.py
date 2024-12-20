@@ -56,7 +56,9 @@ class IPPOActor(Module):
             nn.Linear(128, np.prod(action_shape)),
         ).to(device)
         initialize_module_orthogonal(self.actlayer)
-        self.log_stds: Tensor = nn.Parameter(torch.zeros(action_shape)).to(device)
+        self.log_stds: Tensor = nn.Parameter(
+            torch.zeros(1, action_shape[0])
+        ).to(device)
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
         """Resize observation tensor."""
@@ -75,7 +77,9 @@ class IPPOActor(Module):
         """Sample action and calculate log probability."""
         obses = self._resize_obses(obses)
         means: Tensor = self.actlayer(obses)
-        actions, log_prob = reparametrize(means, self.log_stds)
+        actions, log_prob = reparametrize(
+            means, self.log_stds.clamp(-20,2)
+        )
         actions = actions.clamp(-0.999, 0.999)
         return actions, log_prob
     
