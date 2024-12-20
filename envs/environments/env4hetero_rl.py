@@ -378,7 +378,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             reward: float = np.log(current_utility / previous_utility)
         if asset_volume < 0:
-            reward: float = self.short_selling_penalty
+            reward -= self.short_selling_penalty
         agent.previous_utility = current_utility
         return reward
 
