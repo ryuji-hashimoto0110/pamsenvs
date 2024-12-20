@@ -22,12 +22,12 @@ def get_config() -> ArgumentParser:
     parser.add_argument(
         "--algo_name", type=str, default="ippo", choices=["ippo"]
     )
-    parser.add_argument("--rollout_length", type=int, default=12)
+    parser.add_argument("--rollout_length", type=int, default=1024)
     parser.add_argument("--num_updates_per_rollout", type=int, default=1)
-    parser.add_argument("--batch_size", type=int, default=12)
+    parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--gamma", type=float, default=0.995)
-    parser.add_argument("--lr_actor", type=float, default=1e-04)
-    parser.add_argument("--lr_critic", type=float, default=1e-04)
+    parser.add_argument("--lr_actor", type=float, default=3e-04)
+    parser.add_argument("--lr_critic", type=float, default=5e-04)
     parser.add_argument("--clip_eps", type=float, default=0.2)
     parser.add_argument("--lmd", type=float, default=0.95)
     parser.add_argument("--max_grad_norm", type=float, default=0.5)
@@ -45,6 +45,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--limit_order_range", type=float, default=0.1)
     parser.add_argument("--max_order_volume", type=int, default=50)
     parser.add_argument("--short_selling_penalty", type=float, default=1e+03)
+    parser.add_argument("--negative_utility_penality", type=float, default=1e+03)
     return parser
 
 def convert_str2path(
@@ -125,7 +126,8 @@ def main(args) -> None:
         action_dim=2, obs_dim=11, depth_range=all_args.depth_range,
         limit_order_range=all_args.limit_order_range,
         max_order_volume=all_args.max_order_volume,
-        short_selling_penalty=all_args.short_selling_penalty
+        short_selling_penalty=all_args.short_selling_penalty,
+        negative_utility_penality=all_args.negative_utility_penality,
     )
     test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
     ippo: IPPO = IPPO(
