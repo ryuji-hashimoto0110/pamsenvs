@@ -182,6 +182,9 @@ class IPPO(Algorithm):
         super(IPPO, self).__init__()
         np.random.seed(seed)
         torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.use_deterministic_algorithms = True
         self.obs_shape: tuple[int] = obs_shape
         self.action_shape: tuple[int] = action_shape
         self.buffer: RolloutBuffer4IPPO = RolloutBuffer4IPPO(
