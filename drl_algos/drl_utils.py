@@ -6,10 +6,14 @@ from torch.nn import Module
 
 def initialize_module_orthogonal(module: Module) -> None:
     for name, param in module.named_parameters():
-        if "weight" in name:
-            nn.init.orthogonal_(param)
-        elif "bias" in name:
-            nn.init.zeros_(param)
+        device: torch.device = param.device
+        with torch.no_grad():
+            if "weight" in name:
+                tmp = torch.empty_like(param, device="cpu")
+                nn.init.orthogonal_(tmp)
+                param.copy_(tmp.to(device))
+            elif "bias" in name:
+                nn.init.zeros_(param)
 
 def calc_log_prob(
     log_stds: Tensor,
