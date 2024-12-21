@@ -376,7 +376,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         ) * volatility
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
-        reward = np.tanh(utility_diff / normalization_factor)
+        reward = utility_diff / normalization_factor
         if asset_volume < 0:
             reward -= self.short_selling_penalty
         agent.previous_utility = current_utility
