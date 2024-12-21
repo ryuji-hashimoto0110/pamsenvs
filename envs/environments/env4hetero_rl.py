@@ -401,7 +401,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         asset_volume: int = agent.asset_volumes[market.market_id]
         market_price: float = market.get_market_price()
         total_wealth: float = cash_amount + asset_volume * market_price
-        log_return: float = min(1, self.return_dic[agent_id])
+        log_return: float = max(
+            -1, min(1, self.return_dic[agent_id])
+        )
         volatility: float = min(1, self.volatility_dic[agent_id])
         current_utility: float = (
             total_wealth + asset_volume * market_price * log_return
