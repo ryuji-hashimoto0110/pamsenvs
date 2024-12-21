@@ -128,6 +128,7 @@ class Algorithm(ABC):
         reward, done, _ = env.step(action)
         if done:
             env.reset()
+            self._initialize_buffer()
         self._store_experience(
             agent_id=agent_id,
             obs_tensor=self._convert_obs2tensor(obs),
@@ -156,5 +157,9 @@ class Algorithm(ABC):
         done: bool,
         log_prob: float
     ) -> None:
+        pass
+
+    @abstractmethod
+    def _initialize_buffer(self) -> None:
         pass
 

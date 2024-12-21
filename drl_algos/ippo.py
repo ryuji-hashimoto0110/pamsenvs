@@ -226,6 +226,9 @@ class IPPO(Algorithm):
 
     def is_ready_to_update(self, current_total_steps):
         return self.buffer.is_filled()
+    
+    def _initialize_buffer(self):
+        self.buffer.initialize_buffer()
 
     def _store_experience(
         self,

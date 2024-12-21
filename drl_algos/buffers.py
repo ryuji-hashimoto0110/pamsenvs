@@ -39,9 +39,9 @@ class RolloutBuffer4IPPO:
         self.obs_shape: tuple[int] = obs_shape
         self.action_shape: tuple[int] = action_shape
         self.device: torch.device = device
-        self._initialize_buffer()
+        self.initialize_buffer()
 
-    def _initialize_buffer(self) -> None:
+    def initialize_buffer(self) -> None:
         """Initialize buffer.
         
         RolloutBuffer4IPPO stores rollout experiences of all agents.
@@ -124,7 +124,7 @@ class RolloutBuffer4IPPO:
         Returns:
             bool: If the buffer is filled.
         """
-        return not any(self.is_storing_dic.values())
+        return not all(self.is_storing_dic.values())
 
     def get(self) -> tuple[Tensor]:
         """Get all experiences.
@@ -132,11 +132,21 @@ class RolloutBuffer4IPPO:
         Returns:
             experiences (tuple[Tensor]): All experiences.
         """
-        normed_rewards: Tensor = self.rewards / (self.rewards.std() + 1e-06)
-        print(normed_rewards.quantile(0.05), normed_rewards.quantile(0.25), normed_rewards.quantile(0.75), normed_rewards.quantile(0.95))
+        filled_indices: ndarray = np.where(
+            np.array(list(self.is_storing_dic.values())) == False
+        )[0]
+        normed_rewards: Tensor = self.rewards[filled_indices] / (self.rewards[filled_indices].std() + 1e-06)
+        #print(normed_rewards.quantile(0.05), normed_rewards.quantile(0.25), normed_rewards.quantile(0.75), normed_rewards.quantile(0.95))
         normed_rewards = normed_rewards.clamp(-1.5, 1.5)
         experiences: tuple[Tensor] = (
-            self.obses, self.actions, normed_rewards, self.dones, self.log_probs, self.next_obses
+            self.obses[filled_indices],
+            self.actions[filled_indices],
+            normed_rewards,
+            self.dones[filled_indices],
+            self.log_probs[filled_indices],
+            self.next_obses[filled_indices]
         )
-        self._initialize_buffer()
+        for agent_idx in filled_indices:
+            self.is_storing_dic[agent_idx] = True
+            self.next_idx_dic[agent_idx] = 0
         return experiences
