@@ -19,7 +19,7 @@ variable_ranges_path="variable_ranges.json"
 depth_range=0.05
 limit_order_range=0.05
 max_order_volume=50
-short_selling_penalty=0.5
+short_selling_penalty=0.0
 agent_trait_memory=0.95
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
