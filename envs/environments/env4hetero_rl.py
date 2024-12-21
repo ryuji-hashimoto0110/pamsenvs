@@ -317,9 +317,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         """Calculate volatility between t-tau and t."""
         if len(market_prices) < 2:
             return 0.0
-        log_returns: ndarray = np.diff(np.log(market_prices))
-        volatility: float
-        volatility = np.sum(log_returns ** 2) / len(log_returns)
+        log_returns: ndarray = np.log(market_prices[1:]) - np.log(market_prices[:len(market_prices)-1])
+        avg_log_return: float = np.mean(log_returns)
+        volatility: float = np.sum((log_returns - avg_log_return)**2)
         return volatility
     
     def _get_asset_volume_existing_orders_ratio(
