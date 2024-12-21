@@ -29,6 +29,8 @@ class HeteroRLAgent(Agent):
             self.risk_aversion_term: float = json_random.random(
                 json_value=settings["riskAversionTerm"]
             )
+            if self.prng.random() < 0.01:
+                self.risk_aversion_term = 0.0
         if "discountFactor" not in settings:
             raise ValueError("discountFactor is required for HeteroRLAgent.")
         else:
