@@ -143,6 +143,7 @@ class IPPO(Algorithm):
     """IPPO algorithm class."""
     def __init__(
         self,
+        device: str,
         obs_shape: tuple[int],
         action_shape: tuple[int],
         num_agents: int,
@@ -183,7 +184,7 @@ class IPPO(Algorithm):
             max_grad_norm (float): Threshold to clip the norm of the gradient.
                 Gradient clipping is used to avoid exploding gradients. Defaults to 0.5.
         """
-        super(IPPO, self).__init__()
+        super(IPPO, self).__init__(device=device)
         np.random.seed(seed)
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)

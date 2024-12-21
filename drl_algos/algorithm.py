@@ -22,11 +22,9 @@ class Algorithm(ABC):
         self.critic (Module)
             .critic.forward(obs_tensor: Tensor, action_tensor: Tensor) -> value_tensor: Tensor
     """
-    def __init__(self) -> None:
+    def __init__(self, device: str) -> None:
         self.actor: Module
-        self.device: torch.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        )
+        self.device: torch.device = torch.device(device)
 
     @torch.no_grad()
     def explore(
