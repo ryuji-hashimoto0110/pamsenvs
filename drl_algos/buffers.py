@@ -132,9 +132,7 @@ class RolloutBuffer4IPPO:
         Returns:
             experiences (tuple[Tensor]): All experiences.
         """
-        normed_rewards: Tensor = (
-            self.rewards - self.rewards.mean()
-        ) / (self.rewards.std() + 1e-06)
+        normed_rewards: Tensor = self.rewards / (self.rewards.std() + 1e-06)
         print(normed_rewards.quantile(0.05), normed_rewards.quantile(0.25), normed_rewards.quantile(0.75), normed_rewards.quantile(0.95))
         normed_rewards = normed_rewards.clamp(-1.5, 1.5)
         experiences: tuple[Tensor] = (
