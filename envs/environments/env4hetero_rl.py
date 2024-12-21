@@ -255,6 +255,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         if not hasattr(agent, "discount_factor"):
             raise ValueError(f"agent {agent.agent_id} does not have discount_factor.")
         discount_factor: float = agent.discount_factor
+        #print(f"{asset_ratio=:.2f}, {liquidable_asset_ratio=:.2f}, {inverted_buying_power=:.2f}, {remaining_time_ratio=:.2f}, {log_return=:.2f}, {volatility=:.2f}, {asset_volume_buy_orders_ratio=:.2f}, {asset_volume_sell_orders_ratio=:.2f}, {blurred_fundamental_return=:.2f}")
         obs: ObsType = np.array(
             [
                 asset_ratio, liquidable_asset_ratio, 
@@ -373,12 +374,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         ) - 0.5 * agent.risk_aversion_term * (
             (asset_volume * market_price) ** 2
         ) * volatility
-        if current_utility < 0:
-            reward: float = - self.negative_utility_penality
-        elif previous_utility < 0:
-            reward: float = 0.0
-        else:
-            reward: float = np.log(current_utility / previous_utility)
+        utility_diff = current_utility - previous_utility
+        normalization_factor = max(abs(previous_utility), 1.0)
+        reward = utility_diff / normalization_factor
         if asset_volume < 0:
             reward -= self.short_selling_penalty
         agent.previous_utility = current_utility
