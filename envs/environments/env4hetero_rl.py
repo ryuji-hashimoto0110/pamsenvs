@@ -141,6 +141,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
 
     def _register_classes(self, runner: Runner) -> None:
         runner.class_register(TotalTimeAwareMarket)
+        runner.class_register(CARAFCNAgent)
         runner.class_register(HeteroRLAgent)
         runner.class_register(DividendProviderwEverySteps)
 
