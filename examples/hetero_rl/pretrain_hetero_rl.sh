@@ -21,6 +21,7 @@ limit_order_range=0.05
 max_order_volume=50
 short_selling_penalty=0.5
 agent_trait_memory=0.95
+device="cuda:1"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
 --num_updates_per_rollout $num_updates_per_rollout \
@@ -43,4 +44,5 @@ python train_hetero_rl.py \
 --actor_save_path $actor_save_path \
 --actor_best_save_name $actor_best_save_name \
 --actor_last_save_name $actor_last_save_name \
---agent_name $agent_name
+--agent_name $agent_name \
+--device $device

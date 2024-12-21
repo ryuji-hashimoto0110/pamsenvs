@@ -14,6 +14,7 @@ from drl_algos import Trainer
 from envs.environments import AECEnv4HeteroRL
 from pams.simulator import Simulator
 import random
+import torch
 from typing import Any
 from typing import Optional
 
@@ -45,6 +46,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--max_order_volume", type=int, default=50)
     parser.add_argument("--short_selling_penalty", type=float, default=0.5)
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
+    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     return parser
 
 def convert_str2path(
@@ -130,6 +132,7 @@ def main(args) -> None:
     )
     test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
     ippo: IPPO = IPPO(
+        device=all_args.device,
         obs_shape=(10,), action_shape=(2,), num_agents=num_agents,
         seed=all_args.seed, rollout_length=all_args.rollout_length,
         num_updates_per_rollout=all_args.num_updates_per_rollout,
