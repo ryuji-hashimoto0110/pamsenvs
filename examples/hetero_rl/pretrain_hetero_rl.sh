@@ -1,6 +1,6 @@
-rollout_length=1024
+rollout_length=16
 num_updates_per_rollout=10
-batch_size=1024
+batch_size=16
 lr_actor=1e-04
 lr_critic=1e-04
 clip_eps=0.2
