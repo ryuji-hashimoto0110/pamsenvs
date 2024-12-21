@@ -1,0 +1,91 @@
+{
+    "simulation": {
+		"markets": ["Market"],
+		"agents": ["Agent", "FCNAgent"],
+		"sessions": [
+			{	
+				"sessionName": "0",
+				"iterationSteps": 100,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0,
+                "events": ["provide_dividend"]
+			},
+			{	
+				"sessionName": "1",
+				"iterationSteps": 1000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0,
+                "events": ["provide_dividend"]
+			},
+            {	
+				"sessionName": "00",
+				"iterationSteps": 10,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0,
+                "events": ["provide_dividend"]
+			},
+            {	
+				"sessionName": "2",
+				"iterationSteps": 1000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0,
+                "events": ["provide_dividend"]
+			}
+		]
+	},
+	"provide_dividend": {
+		"class": "DividendProviderwEverySteps",
+		"dividendRate": 0.0001,
+		"dividendInterval": 1
+	},
+    "Market": {
+        "class": "TotalTimeAwareMarket",
+		"tickSize": 0.0001,
+		"marketPrice": 300.0,
+		"fundamentalDrift": 0,
+        "fundamentalVolatility": 0
+    },
+    "Agent": {
+        "class": "HeteroRLAgent",
+		"prefix": "agent",
+		"from": 0,
+		"to": 0,
+		"markets": ["Market"],
+		"assetVolume": {"uniform": [0,100]},
+		"cashAmount": {"uniform": [10000,30000]},
+        "skillBoundedness": {"expon": [0.01]},
+		"riskAversionTerm": {"expon": [0.1]},
+		"discountFactor": {"uniform": [0.9, 0.999]}
+    },
+	"FCNAgent": {
+        "class": "CARAFCNAgent",
+		"isCARA": true,
+        "numAgents": 199,
+		"markets": ["Market"],
+		"assetVolume": {"uniform": [0,100]},
+		"cashAmount": {"uniform": [10000,30000]},
+		"fundamentalWeight": {"expon": [10.0]},
+		"chartWeight": {"expon": [1.5]},
+		"noiseWeight": {"expon": [1.0]},
+        "riskAversionTerm": 0.1,
+		"heterogeneousRiskAversionTerm": true,
+		"alphaDiff": 1,
+		"noiseScale": 0.0001,
+		"timeWindowSize": 100,
+		"heterogeneousTimeWindowSize": true,
+		"tauDiff": 15,
+		"meanReversionTime": 200,
+		"chartFollowRate": 1,
+		"isAdaptive": false
+    }
+}
