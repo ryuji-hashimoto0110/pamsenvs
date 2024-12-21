@@ -241,12 +241,12 @@ class AECEnv4HeteroRL(PamsAECEnv):
         volatility: float = self._calc_volatility(market_prices)
         self.return_dic[agent_id] = log_return
         self.volatility_dic[agent_id] = volatility
-        asset_volume_buy_orders_ratio: float = self._get_asset_volume_existing_orders_ratio(
-            agent, market, is_buy=True
-        )
-        asset_volume_sell_orders_ratio: float = self._get_asset_volume_existing_orders_ratio(
-            agent, market, is_buy=False
-        )
+        #asset_volume_buy_orders_ratio: float = self._get_asset_volume_existing_orders_ratio(
+        #    agent, market, is_buy=True
+        #)
+        #asset_volume_sell_orders_ratio: float = self._get_asset_volume_existing_orders_ratio(
+        #    agent, market, is_buy=False
+        #)
         blurred_fundamental_return: float = self._blur_fundamental_return(agent, market)
         skill_boundedness: float = agent.skill_boundedness
         if not hasattr(agent, "risk_aversion_term"):
@@ -260,7 +260,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             [
                 asset_ratio, liquidable_asset_ratio, 
                 inverted_buying_power, remaining_time_ratio, log_return, volatility,
-                asset_volume_buy_orders_ratio, asset_volume_sell_orders_ratio,
+                #asset_volume_buy_orders_ratio, asset_volume_sell_orders_ratio,
                 blurred_fundamental_return, skill_boundedness, risk_aversion_term, discount_factor
             ]
         )
@@ -376,7 +376,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         ) * volatility
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
-        reward = utility_diff / normalization_factor
+        reward = np.tanh(utility_diff / normalization_factor)
         if asset_volume < 0:
             reward -= self.short_selling_penalty
         agent.previous_utility = current_utility
