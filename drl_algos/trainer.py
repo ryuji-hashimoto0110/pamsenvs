@@ -52,9 +52,9 @@ class Trainer:
             num_eval_episodes (int): Number of evaluation episodes. Default to 10.
         """
         self.train_env: AECEnv = train_env
-        self.train_env.seed(seed)
+        self.seed: int = seed
+        self.train_env.seed(self.seed)
         self.test_env: AECEnv = test_env
-        self.test_env.seed(seed+42)
         self.algo: Algorithm = algo
         self.actor_best_save_path: Optional[Path] = actor_best_save_path
         self.actor_last_save_path: Optional[Path] = actor_last_save_path
@@ -128,6 +128,7 @@ class Trainer:
             current_total_steps (int): Current total steps.
         """
         average_total_reward: float = 0.0
+        self.test_env.seed(self.seed+42)
         for _ in range(self.num_eval_episodes):
             self.test_env.reset()
             done: bool = False
