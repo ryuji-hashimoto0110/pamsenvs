@@ -44,7 +44,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--limit_order_range", type=float, default=0.05)
     parser.add_argument("--max_order_volume", type=int, default=50)
     parser.add_argument("--short_selling_penalty", type=float, default=0.5)
-    parser.add_argument("--negative_utility_penality", type=float, default=0.9)
+    parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     return parser
 
 def convert_str2path(
@@ -126,7 +126,7 @@ def main(args) -> None:
         limit_order_range=all_args.limit_order_range,
         max_order_volume=all_args.max_order_volume,
         short_selling_penalty=all_args.short_selling_penalty,
-        negative_utility_penality=all_args.negative_utility_penality,
+        agent_trait_memory=all_args.agent_trait_memory,
     )
     test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
     ippo: IPPO = IPPO(

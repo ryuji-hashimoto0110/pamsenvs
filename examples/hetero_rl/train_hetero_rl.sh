@@ -16,11 +16,11 @@ num_eval_episodes=10
 agent_name="Agent"
 config_path="config.json"
 variable_ranges_path="variable_ranges.json"
-depth_range=0.01
+depth_range=0.05
 limit_order_range=0.05
 max_order_volume=50
 short_selling_penalty=0.5
-negative_utility_penality=0.9
+agent_trait_memory=0.95
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
 --num_updates_per_rollout $num_updates_per_rollout \
@@ -37,7 +37,7 @@ python train_hetero_rl.py \
 --depth_range $depth_range \
 --limit_order_range $limit_order_range \
 --max_order_volume $max_order_volume \
---short_selling_penalty $short_selling_penalty \
+--agent_trait_memory $agent_trait_memory \
 --config_path $config_path \
 --variable_ranges_path $variable_ranges_path \
 --actor_save_path $actor_save_path \

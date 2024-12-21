@@ -40,7 +40,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         limit_order_range: float = 0.1,
         max_order_volume: int = 10,
         short_selling_penalty: float = 0.5,
-        negative_utility_penality: float = 0.9
+        agent_trait_memory: float = 0.9
     ) -> None:
         """initialization.
 
@@ -67,7 +67,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.limit_order_range: float = limit_order_range
         self.max_order_volume: int = max_order_volume
         self.short_selling_penalty: float = short_selling_penalty
-        self.negative_utility_penality: float = negative_utility_penality
+        self.agent_trait_memory: float = agent_trait_memory
+        self.previous_agent_trait_dic: dict[AgentID, dict[str, float]] = {}
 
     def set_action_space(self) -> Space:
         return spaces.Box(low=-1, high=1, shape=(self.action_dim,))
@@ -193,6 +194,41 @@ class AECEnv4HeteroRL(PamsAECEnv):
         for agent_id in self.agents:
             self.return_dic[agent_id] = 0.0
             self.volatility_dic[agent_id] = 0.0
+            self._smooth_agent_trait(agent_id)
+            if agent_id == 0:
+                print(f"agent {agent_id} skill_boundedness: {self.simulator.agents[agent_id].skill_boundedness}")
+
+    def _smooth_agent_trait(self, agent_id: AgentID) -> None:
+        agent: HeteroRLAgent = self.simulator.agents[agent_id]
+        if agent_id in self.previous_agent_trait_dic.keys():
+            previous_skill_boundedness: float = self.previous_agent_trait_dic[agent_id]["skill_boundedness"]
+            new_skill_boundedness: float = max(
+                0,
+                self.agent_trait_memory * previous_skill_boundedness + \
+                    (1 - self.agent_trait_memory) * agent.skill_boundedness
+            )
+            agent.skill_boundedness = new_skill_boundedness
+            previous_risk_aversion_term: float = self.previous_agent_trait_dic[agent_id]["risk_aversion_term"]
+            new_risk_aversion_term: float = max(
+                0,
+                self.agent_trait_memory * previous_risk_aversion_term + \
+                    (1 - self.agent_trait_memory) * agent.risk_aversion_term
+            )
+            agent.risk_aversion_term = new_risk_aversion_term
+            previous_discount_factor: float = self.previous_agent_trait_dic[agent_id]["discount_factor"]
+            new_discount_factor: float = max(
+                min(
+                    1,
+                    self.agent_trait_memory * previous_discount_factor + \
+                        (1 - self.agent_trait_memory) * agent.discount_factor
+                ), 0
+            )
+            agent.discount_factor = new_discount_factor
+        self.previous_agent_trait_dic[agent_id] = {
+            "skill_boundedness": agent.skill_boundedness,
+            "risk_aversion_term": agent.risk_aversion_term,
+            "discount_factor": agent.discount_factor
+        }
 
     def generate_obs(self, agent_id: AgentID) -> ObsType:
         """generate observation at time t.
