@@ -195,8 +195,6 @@ class AECEnv4HeteroRL(PamsAECEnv):
             self.return_dic[agent_id] = 0.0
             self.volatility_dic[agent_id] = 0.0
             self._smooth_agent_trait(agent_id)
-            if agent_id == 0:
-                print(f"agent {agent_id} skill_boundedness: {self.simulator.agents[agent_id].skill_boundedness}")
 
     def _smooth_agent_trait(self, agent_id: AgentID) -> None:
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
