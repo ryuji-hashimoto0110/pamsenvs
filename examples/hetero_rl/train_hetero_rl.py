@@ -25,7 +25,6 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--rollout_length", type=int, default=64)
     parser.add_argument("--num_updates_per_rollout", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=64)
-    parser.add_argument("--gamma", type=float, default=0.995)
     parser.add_argument("--lr_actor", type=float, default=5e-05)
     parser.add_argument("--lr_critic", type=float, default=1e-04)
     parser.add_argument("--clip_eps", type=float, default=0.2)
@@ -44,8 +43,8 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--depth_range", type=float, default=0.01)
     parser.add_argument("--limit_order_range", type=float, default=0.05)
     parser.add_argument("--max_order_volume", type=int, default=50)
-    parser.add_argument("--short_selling_penalty", type=float, default=-0.5)
-    parser.add_argument("--negative_utility_penality", type=float, default=-0.9)
+    parser.add_argument("--short_selling_penalty", type=float, default=0.5)
+    parser.add_argument("--negative_utility_penality", type=float, default=0.9)
     return parser
 
 def convert_str2path(
