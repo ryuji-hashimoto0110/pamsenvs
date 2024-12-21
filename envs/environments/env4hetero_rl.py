@@ -1,3 +1,4 @@
+from ..agents import CARAFCNAgent
 from ..agents import HeteroRLAgent
 from .environment import PamsAECEnv
 from ..events import DividendProviderwEverySteps
