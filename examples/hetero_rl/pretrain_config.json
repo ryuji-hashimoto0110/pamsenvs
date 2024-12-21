@@ -81,9 +81,9 @@
 		"heterogeneousRiskAversionTerm": true,
 		"alphaDiff": 1,
 		"noiseScale": 0.0001,
-		"timeWindowSize": 100,
+		"timeWindowSize": 80,
 		"heterogeneousTimeWindowSize": true,
-		"tauDiff": 15,
+		"tauDiff": 20,
 		"meanReversionTime": 200,
 		"chartFollowRate": 1,
 		"isAdaptive": false
