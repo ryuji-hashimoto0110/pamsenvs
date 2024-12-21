@@ -289,7 +289,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         if not hasattr(agent, "discount_factor"):
             raise ValueError(f"agent {agent.agent_id} does not have discount_factor.")
         discount_factor: float = agent.discount_factor
-        #print(f"{asset_ratio=:.2f}, {liquidable_asset_ratio=:.2f}, {inverted_buying_power=:.2f}, {remaining_time_ratio=:.2f}, {log_return=:.2f}, {volatility=:.2f}, {asset_volume_buy_orders_ratio=:.2f}, {asset_volume_sell_orders_ratio=:.2f}, {blurred_fundamental_return=:.2f}")
+        #print(f"{asset_ratio=:.2f}, {liquidable_asset_ratio=:.2f}, {inverted_buying_power=:.2f}, {remaining_time_ratio=:.2f}, {log_return=:.2f}, {volatility=:.2f}, {blurred_fundamental_return=:.2f}")
         obs: ObsType = np.array(
             [
                 asset_ratio, liquidable_asset_ratio, 
@@ -438,7 +438,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             np.ceil(self.max_order_volume * order_volume_scale)
         )
         if market.get_time() % 2000 == 1999:
-            print(f"t={market.get_time()}, order_price={order_price:.1f}, order_volume={order_volume}")
+            print(f"t={market.get_time()}, is_buy={is_buy}, order_price={order_price:.1f}, order_volume={order_volume}")
         agent_id: AgentID = self.agent_selection
         if order_volume == 0:
             return []
