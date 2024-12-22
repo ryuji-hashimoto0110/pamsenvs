@@ -145,6 +145,8 @@ class PamsAECEnv(AECEnv, ABC):
         self.markets: list[Market] = self.simulator.markets
         self._start_simulation()
         target_agent_id, unplaced_local_orders, done = self.iterate_markets_til_target_agent_is_called()
+        if done:
+            self.reset()
         assert target_agent_id is not None and unplaced_local_orders is not None
         self.agent_selection: AgentID = target_agent_id
         self.unplaced_local_orders: list[list[Order | Cancel]] = unplaced_local_orders
