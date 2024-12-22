@@ -1,9 +1,9 @@
 rollout_length=16
 num_updates_per_rollout=10
 batch_size=16
-lr_actor=1e-04
-lr_critic=1e-04
-clip_eps=0.2
+lr_actor=1e-05
+lr_critic=1e-05
+clip_eps=0.05
 lmd=0.997
 max_grad_norm=0.5
 seed=42
