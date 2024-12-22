@@ -20,6 +20,7 @@ depth_range=0.05
 limit_order_range=0.05
 max_order_volume=50
 short_selling_penalty=0.0
+execution_vonus=0.1
 agent_trait_memory=0.95
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
@@ -37,6 +38,8 @@ python train_hetero_rl.py \
 --depth_range $depth_range \
 --limit_order_range $limit_order_range \
 --max_order_volume $max_order_volume \
+--short_selling_penalty $short_selling_penalty \
+--execution_vonus $execution_vonus \
 --agent_trait_memory $agent_trait_memory \
 --config_path $config_path \
 --variable_ranges_path $variable_ranges_path \

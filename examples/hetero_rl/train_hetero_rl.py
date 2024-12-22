@@ -45,6 +45,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--limit_order_range", type=float, default=0.05)
     parser.add_argument("--max_order_volume", type=int, default=50)
     parser.add_argument("--short_selling_penalty", type=float, default=0.5)
+    parser.add_argument("--execution_vonus", type=float, default=0.1)
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     return parser
@@ -124,16 +125,17 @@ def main(args) -> None:
     train_env: AECEnv4HeteroRL = AECEnv4HeteroRL(
         config_dic=config_dic, variable_ranges_dic=variable_ranges_dic,
         simulator_class=Simulator, target_agent_names=target_agent_names,
-        action_dim=2, obs_dim=10, depth_range=all_args.depth_range,
+        action_dim=2, obs_dim=12, depth_range=all_args.depth_range,
         limit_order_range=all_args.limit_order_range,
         max_order_volume=all_args.max_order_volume,
         short_selling_penalty=all_args.short_selling_penalty,
+        execution_vonus=all_args.execution_vonus,
         agent_trait_memory=all_args.agent_trait_memory,
     )
     test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
     ippo: IPPO = IPPO(
         device=all_args.device,
-        obs_shape=(10,), action_shape=(2,), num_agents=num_agents,
+        obs_shape=(12,), action_shape=(2,), num_agents=num_agents,
         seed=all_args.seed, rollout_length=all_args.rollout_length,
         num_updates_per_rollout=all_args.num_updates_per_rollout,
         batch_size=all_args.batch_size, gamma_idx=-1,
