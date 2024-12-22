@@ -17,6 +17,7 @@ class HeteroRLAgent(Agent):
         super().setup(settings, accessible_markets_ids, *args, **kwargs)
         json_random: JsonRandom = JsonRandom(prng=self.prng)
         self.last_order_time: int = 0
+        self.num_executed_orders: int = 0
         if "skillBoundedness" not in settings:
             raise ValueError("skillBoundedness is required for HeteroRLAgent.")
         else:
@@ -49,3 +50,7 @@ class HeteroRLAgent(Agent):
     
     def submitted_order(self, log: OrderLog) -> None:
         self.last_order_time = log.time
+        self.num_executed_orders = 0
+
+    def executed_order(self, log):
+        self.num_executed_orders += log.volume
