@@ -295,7 +295,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         obs: ObsType = np.array(
             [
                 asset_ratio, liquidable_asset_ratio, 
-                inverted_buying_power, log_return, volatility, # remaining_time_ratio,
+                inverted_buying_power, remaining_time_ratio, log_return, volatility,
                 asset_volume_buy_orders_ratio, asset_volume_sell_orders_ratio,
                 blurred_fundamental_return, skill_boundedness, risk_aversion_term, discount_factor
             ]
@@ -460,7 +460,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
     
     def get_obs_names(self) -> list[str]:
         return [
-            "asset_ratio", "inverted_buying_power", "log_return", "volatility", # "remaining_time_ratio", 
+            "asset_ratio", "inverted_buying_power", "remaining_time_ratio", "log_return", "volatility",
             "asset_volume_buy_orders_ratio", "asset_volume_sell_orders_ratio",
             "blurred_fundamental_return", "skill_boundedness", "risk_aversion_term", "discount_factor"
         ]
