@@ -202,12 +202,12 @@ class IPPO(Algorithm):
         self.optim_actor: Optimizer = optim.Adam(self.actor.parameters(), lr=lr_actor)
         self.scheduler_actor = optim.lr_scheduler.LambdaLR(
             self.optim_actor,
-            lr_lambda=lambda epoch: max(1e-07 / lr_actor, 0.995**(epoch//50))
+            lr_lambda=lambda epoch: max(1e-06 / lr_actor, 0.995**(epoch//50))
         )
         self.optim_critic: Optimizer = optim.Adam(self.critic.parameters(), lr=lr_critic)
         self.scheduler_critic = optim.lr_scheduler.LambdaLR(
             self.optim_critic,
-            lr_lambda=lambda epoch: max(2e-07 / lr_critic, 0.995**(epoch//50))
+            lr_lambda=lambda epoch: max(2e-06 / lr_critic, 0.995**(epoch//50))
         )
         self.rollout_length: int = rollout_length
         self.num_updates_per_rollout: int = num_updates_per_rollout
