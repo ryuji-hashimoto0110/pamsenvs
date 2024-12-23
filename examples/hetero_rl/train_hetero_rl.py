@@ -125,7 +125,7 @@ def main(args) -> None:
     train_env: AECEnv4HeteroRL = AECEnv4HeteroRL(
         config_dic=config_dic, variable_ranges_dic=variable_ranges_dic,
         simulator_class=Simulator, target_agent_names=target_agent_names,
-        action_dim=2, obs_dim=12, depth_range=all_args.depth_range,
+        action_dim=2, obs_dim=11, depth_range=all_args.depth_range,
         limit_order_range=all_args.limit_order_range,
         max_order_volume=all_args.max_order_volume,
         short_selling_penalty=all_args.short_selling_penalty,
@@ -135,7 +135,7 @@ def main(args) -> None:
     test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
     ippo: IPPO = IPPO(
         device=all_args.device,
-        obs_shape=(12,), action_shape=(2,), num_agents=num_agents,
+        obs_shape=(11,), action_shape=(2,), num_agents=num_agents,
         seed=all_args.seed, rollout_length=all_args.rollout_length,
         num_updates_per_rollout=all_args.num_updates_per_rollout,
         batch_size=all_args.batch_size, gamma_idx=-1,

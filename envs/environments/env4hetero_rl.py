@@ -295,7 +295,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         obs: ObsType = np.array(
             [
                 asset_ratio, liquidable_asset_ratio, 
-                inverted_buying_power, remaining_time_ratio, log_return, volatility,
+                inverted_buying_power, log_return, volatility, # remaining_time_ratio,
                 asset_volume_buy_orders_ratio, asset_volume_sell_orders_ratio,
                 blurred_fundamental_return, skill_boundedness, risk_aversion_term, discount_factor
             ]
@@ -410,12 +410,16 @@ class AECEnv4HeteroRL(PamsAECEnv):
         ) - 0.5 * agent.risk_aversion_term * (
             (asset_volume * market_price) ** 2
         ) * volatility
+        #print(f"{total_wealth=:.1f}, {asset_volume=:.1f}, {log_return=:.2f}, {agent.risk_aversion_term=:.2f}, {volatility=:.2f}")
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
         reward = utility_diff / normalization_factor
+        #print(f"{reward=:.2f}")
         if asset_volume < 0:
             reward -= self.short_selling_penalty
         reward += self.execution_vonus * agent.num_executed_orders
+        #print(f"{reward=:.2f}")
+        #print()
         agent.previous_utility = current_utility
         return reward
 
@@ -456,7 +460,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
     
     def get_obs_names(self) -> list[str]:
         return [
-            "asset_ratio", "inverted_buying_power", "remaining_time_ratio", "log_return", "volatility",
+            "asset_ratio", "inverted_buying_power", "log_return", "volatility", # "remaining_time_ratio", 
             "asset_volume_buy_orders_ratio", "asset_volume_sell_orders_ratio",
             "blurred_fundamental_return", "skill_boundedness", "risk_aversion_term", "discount_factor"
         ]
