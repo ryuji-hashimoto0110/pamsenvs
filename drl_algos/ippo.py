@@ -200,15 +200,15 @@ class IPPO(Algorithm):
         self.actor: IPPOActor = IPPOActor(obs_shape, action_shape, self.device)
         self.critic: IPPOCritic = IPPOCritic(obs_shape, self.device)
         self.optim_actor: Optimizer = optim.Adam(self.actor.parameters(), lr=lr_actor)
-        self.scheduler_actor = optim.lr_scheduler.LambdaLR(
-            self.optim_actor,
-            lr_lambda=lambda epoch: max(1e-06 / lr_actor, 0.995**(epoch//50))
-        )
+        #self.scheduler_actor = optim.lr_scheduler.LambdaLR(
+        #    self.optim_actor,
+        #    lr_lambda=lambda epoch: max(1e-06 / lr_actor, 0.995**(epoch//50))
+        #)
         self.optim_critic: Optimizer = optim.Adam(self.critic.parameters(), lr=lr_critic)
-        self.scheduler_critic = optim.lr_scheduler.LambdaLR(
-            self.optim_critic,
-            lr_lambda=lambda epoch: max(2e-06 / lr_critic, 0.995**(epoch//50))
-        )
+        #self.scheduler_critic = optim.lr_scheduler.LambdaLR(
+        #    self.optim_critic,
+        #    lr_lambda=lambda epoch: max(2e-06 / lr_critic, 0.995**(epoch//50))
+        #)
         self.rollout_length: int = rollout_length
         self.num_updates_per_rollout: int = num_updates_per_rollout
         self.batch_size: int = batch_size
@@ -296,8 +296,9 @@ class IPPO(Algorithm):
                         log_probs_old[sub_indices],
                         advantages[sub_indices]
                     )
-            self.scheduler_actor.step()
-            self.scheduler_critic.step()
+            #self.scheduler_actor.step()
+            #self.scheduler_critic.step()
+            #print(self.scheduler_actor.get_lr())
 
     def calc_gae(
         self,
