@@ -62,7 +62,7 @@
 		"to": 199,
 		"markets": ["Market"],
 		"assetVolume": {"uniform": [0,100]},
-		"cashAmount": {"uniform": [0,30000]},
+		"cashAmount": {"uniform": [10000,30000]},
         "skillBoundedness": {"expon": [0.01]},
 		"riskAversionTerm": {"expon": [0.5]},
 		"discountFactor": {"uniform": [0.9, 0.999]}
