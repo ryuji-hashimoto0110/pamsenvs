@@ -347,20 +347,17 @@ class AECEnv4HeteroRL(PamsAECEnv):
         """Calculate return log p_t - log p_{t-tau} where tau is the time interval between the current and previous observations."""
         if len(market_prices) < 2:
             return 0.0
-        market_price_arr: ndarray = np.array(market_prices)
-        log_return: float = (market_price_arr[-1] / market_price_arr[0]) / market_price_arr[0]
+        #market_price_arr: ndarray = np.array(market_prices)
+        log_return: float = np.log(market_prices[-1]) - np.log(market_prices[0])
         return log_return
 
     def _calc_volatility(self, market_prices: list[float]) -> float:
         """Calculate volatility between t-tau and t."""
         if len(market_prices) < 2:
             return 0.0
-        market_price_arr: ndarray = np.array(market_prices)
-        log_returns: ndarray = (
-            market_price_arr[1:] / market_price_arr[:len(market_price_arr)-1]
-        ) / market_price_arr[:len(market_price_arr)-1]
-        avg_log_return: float = np.mean(log_returns)
-        volatility: float = np.sum((log_returns - avg_log_return)**2)
+        log_return_arr: ndarray = np.log(market_prices[1:]) - np.log(market_prices[:len(market_prices)-1])
+        avg_log_return: float = np.mean(log_return_arr)
+        volatility: float = np.sum((log_return_arr - avg_log_return)**2)
         return volatility
     
     def _get_asset_volume_existing_orders_ratio(
@@ -415,9 +412,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
             (asset_volume * market_price) ** 2
         ) * volatility
         #print(f"{current_utility=:.2f}, {total_wealth=:.2f}, {asset_volume=:.2f}, {market_price=:.2f}, {log_return=:.2f}, {volatility=:.2f}")
-        utility_diff = current_utility - previous_utility
-        normalization_factor = max(abs(previous_utility), 1.0)
-        reward = utility_diff / normalization_factor
+        #utility_diff = current_utility - previous_utility
+        #normalization_factor = max(abs(previous_utility), 1.0)
+        reward = np.log(current_utility + 1e-06) - np.log(previous_utility + 1e-06)
         #print(f"{reward=:.2f}")
         if asset_volume < 0:
             reward -= self.short_selling_penalty
