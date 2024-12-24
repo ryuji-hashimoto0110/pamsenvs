@@ -78,7 +78,7 @@ class IPPOActor(Module):
         obses = self._resize_obses(obses)
         means: Tensor = self.actlayer(obses)
         actions, log_prob = reparametrize(
-            means, self.log_stds.clamp(-20,1.0)
+            means, self.log_stds.clamp(-20,0.0)
         )
         actions = actions.clamp(-0.999, 0.999)
         return actions, log_prob
