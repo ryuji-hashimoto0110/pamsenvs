@@ -412,9 +412,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
             (asset_volume * market_price) ** 2
         ) * volatility
         #print(f"{current_utility=:.2f}, {total_wealth=:.2f}, {asset_volume=:.2f}, {market_price=:.2f}, {log_return=:.2f}, {volatility=:.2f}")
-        #utility_diff = current_utility - previous_utility
-        #normalization_factor = max(abs(previous_utility), 1.0)
-        reward = np.log(current_utility + 1e-06) - np.log(previous_utility + 1e-06)
+        utility_diff = current_utility - previous_utility
+        normalization_factor = max(abs(previous_utility), 1.0)
+        reward = utility_diff / normalization_factor
         #print(f"{reward=:.2f}")
         if asset_volume < 0:
             reward -= self.short_selling_penalty
