@@ -133,6 +133,7 @@ def main(args) -> None:
         agent_trait_memory=all_args.agent_trait_memory,
     )
     test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
+    test_env.agent_trait_memory = 0.0
     ippo: IPPO = IPPO(
         device=all_args.device,
         obs_shape=(12,), action_shape=(2,), num_agents=num_agents,
