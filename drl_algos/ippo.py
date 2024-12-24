@@ -78,7 +78,7 @@ class IPPOActor(Module):
         obses = self._resize_obses(obses)
         means: Tensor = self.actlayer(obses)
         actions, log_prob = reparametrize(
-            means, self.log_stds.clamp(-20,2)
+            means, self.log_stds.clamp(-20,1.0)
         )
         actions = actions.clamp(-0.999, 0.999)
         return actions, log_prob
@@ -200,15 +200,15 @@ class IPPO(Algorithm):
         self.actor: IPPOActor = IPPOActor(obs_shape, action_shape, self.device)
         self.critic: IPPOCritic = IPPOCritic(obs_shape, self.device)
         self.optim_actor: Optimizer = optim.Adam(self.actor.parameters(), lr=lr_actor)
-        #self.scheduler_actor = optim.lr_scheduler.LambdaLR(
-        #    self.optim_actor,
-        #    lr_lambda=lambda epoch: max(1e-06 / lr_actor, 0.995**(epoch//50))
-        #)
+        self.scheduler_actor = optim.lr_scheduler.LambdaLR(
+            self.optim_actor,
+            lr_lambda=lambda epoch: max(1e-06 / lr_actor, 0.995**(epoch//50))
+        )
         self.optim_critic: Optimizer = optim.Adam(self.critic.parameters(), lr=lr_critic)
-        #self.scheduler_critic = optim.lr_scheduler.LambdaLR(
-        #    self.optim_critic,
-        #    lr_lambda=lambda epoch: max(2e-06 / lr_critic, 0.995**(epoch//50))
-        #)
+        self.scheduler_critic = optim.lr_scheduler.LambdaLR(
+            self.optim_critic,
+            lr_lambda=lambda epoch: max(2e-06 / lr_critic, 0.995**(epoch//50))
+        )
         self.rollout_length: int = rollout_length
         self.num_updates_per_rollout: int = num_updates_per_rollout
         self.batch_size: int = batch_size
