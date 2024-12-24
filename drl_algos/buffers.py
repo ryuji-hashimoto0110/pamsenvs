@@ -136,7 +136,8 @@ class RolloutBuffer4IPPO:
             np.array(list(self.is_storing_dic.values())) == False
         )[0]
         normed_rewards: Tensor = self.rewards[filled_indices] / (self.rewards[filled_indices].std() + 1e-06)
-        normed_rewards = normed_rewards.clamp(-1, 1)
+        print(normed_rewards.quantile(0.01), normed_rewards.quantile(0.25), normed_rewards.quantile(0.5), normed_rewards.quantile(0.75), normed_rewards.quantile(0.99))
+        normed_rewards = normed_rewards.clamp(-5, 5)
         experiences: tuple[Tensor] = (
             self.obses[filled_indices],
             self.actions[filled_indices],
