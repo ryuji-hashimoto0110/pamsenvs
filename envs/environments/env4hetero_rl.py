@@ -424,7 +424,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         reward += self.execution_vonus * agent.num_executed_orders
         #print(f"{reward=:.2f}")
         #print()
-        agent.previous_utility = current_utility
+        #agent.previous_utility = current_utility
         return reward
 
     def generate_info(self, agent_id: AgentID) -> InfoType:
