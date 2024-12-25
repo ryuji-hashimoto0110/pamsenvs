@@ -191,11 +191,13 @@ class AECEnv4HeteroRL(PamsAECEnv):
     """
 
     def add_attributes(self) -> None:
+        self.num_execution_dic: dict[AgentID, int] = {}
         self.return_dic: dict[AgentID, float] = {}
         self.volatility_dic: dict[AgentID, float] = {}
         for agent_id in self.agents:
             self.return_dic[agent_id] = 0.0
             self.volatility_dic[agent_id] = 0.0
+            self.num_execution_dic[agent_id] = 0
             self._smooth_agent_trait(agent_id)
 
     def _smooth_agent_trait(self, agent_id: AgentID) -> None:
@@ -411,7 +413,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         ) - 0.5 * agent.risk_aversion_term * (
             (asset_volume * market_price) ** 2
         ) * volatility
-        #print(f"{current_utility=:.2f}, {total_wealth=:.2f}, {asset_volume=:.2f}, {market_price=:.2f}, {log_return=:.2f}, {volatility=:.2f}")
+        #print(f"{current_utility=:.2f}, {total_wealth=:.2f}, {market_price=:.2f}, {agent.risk_aversion_term=:.3f}, {asset_volume * market_price * log_return:.2f}, {0.5 * agent.risk_aversion_term * ((asset_volume * market_price) ** 2) * volatility:.2f}")
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
         reward = utility_diff / normalization_factor
@@ -425,8 +427,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         return reward
 
     def generate_info(self, agent_id: AgentID) -> InfoType:
-        pass
-
+        agent: HeteroRLAgent = self.simulator.agents[agent_id]
+        self.num_execution_dic[agent_id] += agent.num_executed_orders
+        return {"execution_volume": self.num_execution_dic[agent_id]}
+        
     def convert_action2orders(self, action: ActionType) -> list[Order | Cancel]:
         order_price_scale, order_volume_scale = action
         market: TotalTimeAwareMarket = self.simulator.markets[0]

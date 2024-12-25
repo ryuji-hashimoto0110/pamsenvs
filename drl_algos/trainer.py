@@ -128,8 +128,10 @@ class Trainer:
             current_total_steps (int): Current total steps.
         """
         average_total_reward: float = 0.0
+        average_total_execution_volume: float = 0.0
         self.test_env.seed(self.seed+42)
         for _ in range(self.num_eval_episodes):
+            total_execution_volume: int = 0
             self.test_env.reset()
             done: bool = False
             episode_reward_dic: dict[AgentID, float] = {
@@ -140,14 +142,18 @@ class Trainer:
                 action: ActionType = self.algo.exploit(obs)
                 reward, done, info = self.test_env.step(action)
                 episode_reward_dic[agent_id] += reward
+                total_execution_volume += info["execution_volume"]
                 if done:
                     break
             average_total_reward += np.sum(
                 list(episode_reward_dic.values())
             ) / self.num_eval_episodes
+            average_total_execution_volume += total_execution_volume / self.num_eval_episodes
         self.results_dic["step"].append(current_total_steps)
         self.results_dic["total_reward"].append(average_total_reward)
-        print(f"step: {current_total_steps}, average total reward: {average_total_reward:.2f}")
+        if "execution_volume" in self.results_dic:
+            self.results_dic["execution_volume"].append(average_total_execution_volume)
+        print(f"step: {current_total_steps}, average total reward: {average_total_reward:.2f}, average total execution volume: {average_total_execution_volume:.2f}")
         self._save_actor(average_total_reward)
 
     def _save_actor(self, average_total_reward: float) -> None:
