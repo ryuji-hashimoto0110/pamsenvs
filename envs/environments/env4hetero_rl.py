@@ -293,7 +293,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         if not hasattr(agent, "discount_factor"):
             raise ValueError(f"agent {agent.agent_id} does not have discount_factor.")
         discount_factor: float = agent.discount_factor
-        #print(f"{asset_ratio=:.2f}, {liquidable_asset_ratio=:.2f}, {inverted_buying_power=:.2f}, {remaining_time_ratio=:.2f}, {log_return=:.2f}, {volatility=:.2f}, {blurred_fundamental_return=:.2f}")
+        #print(f"{asset_volume_buy_orders_ratio=:.4f}, {asset_volume_sell_orders_ratio=:.4f}")
         obs: ObsType = np.array(
             [
                 asset_ratio, liquidable_asset_ratio, 
@@ -365,7 +365,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def _get_asset_volume_existing_orders_ratio(
         self, agent: Agent, market: Market, is_buy: bool
     ) -> float:
-        """Calculate the percentage of the number of buy and sell limit orders with prices between [p_t-0.01p_t, p_t+0.01p_t] accounted for by the agent's holding asset volume."""
+        """Calculate the percentage of the number of buy and sell limit orders with prices between [p_t-0.01p_t, p_t+0.01p_t] accounted for by the agent's holding asset volume.
+        
+        """
         price_volume_dic: dict[Optional[float], int] = market.get_buy_order_book() if is_buy \
             else market.get_sell_order_book()
         mid_price: float = market.get_mid_price()
@@ -379,7 +381,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
             if price is None:
                 existing_orders_volume += volume
             elif (lower_bound <= price) and (price <= upper_bound):
-                existing_orders_volume += volume
+                weight: float = 1 / (1 + np.abs(price - mid_price) / mid_price)
+                existing_orders_volume += volume * weight
         asset_volume: int = np.abs(agent.asset_volumes[market.market_id])
         asset_volume_existing_orders_ratio: float = asset_volume / (existing_orders_volume + 1e-06)
         return asset_volume_existing_orders_ratio
