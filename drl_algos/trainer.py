@@ -1,6 +1,7 @@
 from pettingzoo import AECEnv
 import numpy as np
 from numpy import ndarray
+from pams.market import Market
 import pathlib
 from pathlib import Path
 import torch
@@ -129,6 +130,7 @@ class Trainer:
         """
         average_total_reward: float = 0.0
         average_total_execution_volume: float = 0.0
+        average_price_range: float = 0.0
         self.test_env.seed(self.seed+42)
         for _ in range(self.num_eval_episodes):
             total_execution_volume: int = 0
@@ -142,19 +144,34 @@ class Trainer:
                 action: ActionType = self.algo.exploit(obs)
                 reward, done, info = self.test_env.step(action)
                 episode_reward_dic[agent_id] += reward
-                total_execution_volume += info["execution_volume"]
+                if "execution_volume" in info:
+                    total_execution_volume += info["execution_volume"]
                 if done:
                     break
             average_total_reward += np.sum(
                 list(episode_reward_dic.values())
             ) / self.num_eval_episodes
             average_total_execution_volume += total_execution_volume / self.num_eval_episodes
+            average_price_range += self._get_price_range(self.test_env) / self.num_eval_episodes
         self.results_dic["step"].append(current_total_steps)
         self.results_dic["total_reward"].append(average_total_reward)
         if "execution_volume" in self.results_dic:
             self.results_dic["execution_volume"].append(average_total_execution_volume)
-        print(f"step: {current_total_steps}, average total reward: {average_total_reward:.2f}, average total execution volume: {average_total_execution_volume:.2f}")
+        if "lr_actor" in self.results_dic:
+            if hasattr(self.algo.actor, "get_lr"):
+                self.results_dic["lr_actor"].append(self.algo.actor.get_lr())
+        if "price_range" in self.results_dic:
+            self.results_dic["price_range"].append(average_price_range)
+        print(f"step: {current_total_steps}, total reward: {average_total_reward:.2f}, total execution volume: {average_total_execution_volume:.2f}, price range: {average_price_range:.2f}")
         self._save_actor(average_total_reward)
+
+    def _get_price_range(self, env: AECEnv) -> float:
+        price_range: float = 0.0
+        if hasattr(env, "markets"):
+            market: Market = env.markets[0]
+            prices: list[float] = market.get_market_prices()
+            price_range = np.max(prices) - np.min(prices)
+        return price_range
 
     def _save_actor(self, average_total_reward: float) -> None:
         if average_total_reward < self.best_reward:

@@ -151,7 +151,7 @@ def main(args) -> None:
         train_env=train_env, test_env=test_env, algo=ippo,
         seed=all_args.seed, actor_best_save_path=actor_best_save_path,
         actor_last_save_path=actor_last_save_path,
-        other_indicators=["execution_volume"],
+        other_indicators=["execution_volume", "lr_actor, price_range"],
         num_train_steps=all_args.num_train_steps,
         num_eval_episodes=all_args.num_eval_episodes,
         eval_interval=all_args.eval_interval
