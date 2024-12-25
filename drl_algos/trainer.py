@@ -158,8 +158,8 @@ class Trainer:
         if "execution_volume" in self.results_dic:
             self.results_dic["execution_volume"].append(average_total_execution_volume)
         if "lr_actor" in self.results_dic:
-            if hasattr(self.algo.actor, "scheduler"):
-                self.results_dic["lr_actor"].append(self.algo.actor.scheduler.get_lr())
+            if hasattr(self.algo.actor, "cheduler_actor"):
+                self.results_dic["lr_actor"].append(self.algo.actor.cheduler_actor.get_lr())
         if "price_range" in self.results_dic:
             self.results_dic["price_range"].append(average_price_range)
         print(f"step: {current_total_steps}, total reward: {average_total_reward:.2f}, total execution volume: {average_total_execution_volume:.2f}, price range: {average_price_range:.2f}")
