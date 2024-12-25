@@ -1,8 +1,8 @@
 rollout_length=16
 num_updates_per_rollout=1
 batch_size=16
-lr_actor=8e-05
-lr_critic=1e-04
+lr_actor=5e-05
+lr_critic=8e-05
 clip_eps=0.1
 lmd=0.96
 max_grad_norm=0.5
@@ -10,9 +10,9 @@ seed=42
 actor_save_path="../../datas/checkpoints"
 actor_best_save_name="best.pth"
 actor_last_save_name="last.pth"
-num_train_steps=100000000
-eval_interval=100000
-num_eval_episodes=1
+num_train_steps=10000000
+eval_interval=10000
+num_eval_episodes=5
 agent_name="Agent"
 config_path="config.json"
 variable_ranges_path="variable_ranges.json"
@@ -20,9 +20,9 @@ depth_range=0.03
 limit_order_range=0.03
 max_order_volume=50
 short_selling_penalty=0.5
-execution_vonus=0.01
-agent_trait_memory=0.5
-device="cpu"
+execution_vonus=0.2
+agent_trait_memory=0.0
+device="cuda:0"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
 --num_updates_per_rollout $num_updates_per_rollout \
