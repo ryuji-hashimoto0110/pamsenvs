@@ -403,7 +403,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "skill_boundedness":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 0.06)
         elif obs_name == "risk_aversion_term":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.61)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 4.8)
         elif obs_name == "discount_factor":
             obs_comp = self._minmax_rescaling(obs_comp, 0.9, 0.999)
         else:

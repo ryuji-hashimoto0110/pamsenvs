@@ -64,7 +64,7 @@
 		"assetVolume": {"expon": [20]},
         "cashAmount": {"expon": [6000]},
         "skillBoundedness": {"expon": [0.01]},
-		"riskAversionTerm": {"expon": [0.1]},
+		"riskAversionTerm": {"expon": [1.0]},
 		"discountFactor": {"uniform": [0.9, 0.999]}
     }
 }
