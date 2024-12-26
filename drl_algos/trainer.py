@@ -131,6 +131,9 @@ class Trainer:
         average_total_reward: float = 0.0
         average_total_execution_volume: float = 0.0
         average_price_range: float = 0.0
+        obs_dics: list[dict[int, list[float | int]]] = []
+        action_dics: list[dict[int, list[float | int]]] = []
+        reward_dics: list[dict[int, list[float | int]]] = []
         self.test_env.seed(self.seed+42)
         for _ in range(self.num_eval_episodes):
             total_execution_volume: int = 0
@@ -153,6 +156,12 @@ class Trainer:
             ) / self.num_eval_episodes
             average_total_execution_volume += total_execution_volume / self.num_eval_episodes
             average_price_range += self._get_price_range(self.test_env) / self.num_eval_episodes
+            if hasattr(self.test_env, "obs_dic"):
+                obs_dics.append(self.test_env.obs_dic)
+            if hasattr(self.test_env, "action_dic"):
+                action_dics.append(self.test_env.action_dic)
+            if hasattr(self.test_env, "reward_dic"):
+                reward_dics.append(self.test_env.reward_dic)
         self.results_dic["step"].append(current_total_steps)
         self.results_dic["total_reward"].append(average_total_reward)
         if "execution_volume" in self.results_dic:
@@ -162,6 +171,12 @@ class Trainer:
                 self.results_dic["lr_actor"].append(self.algo.scheduler_actor.get_lr())
         if "price_range" in self.results_dic:
             self.results_dic["price_range"].append(average_price_range)
+        if "obs_dics" in self.results_dic:
+            self.results_dic["obs_dics"] = obs_dics
+        if "action_dics" in self.results_dic:
+            self.results_dic["action_dics"] = action_dics
+        if "reward_dics" in self.results_dic:
+            self.results_dic["reward_dics"] = reward_dics
         print(f"step: {current_total_steps}, total reward: {average_total_reward:.2f}, total execution volume: {average_total_execution_volume:.2f}, price range: {average_price_range:.2f}")
         self._save_actor(average_total_reward)
 

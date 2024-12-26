@@ -16,6 +16,7 @@ from pams.order import Order
 from pams.runners import Runner
 from pams.runners import SequentialRunner
 from pams.simulator import Simulator
+from typing import Literal
 from typing import Optional
 from typing import TypeVar
 
@@ -36,6 +37,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         obs_dim: int,
         logger: Optional[Logger] = None,
         seed: Optional[int] = None,
+        obs_names: list[str] = [],
+        action_names: list[str] = [],
         depth_range: float = 0.01,
         limit_order_range: float = 0.1,
         max_order_volume: int = 10,
@@ -63,6 +66,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
             logger=logger,
             seed=seed
         )
+        assert len(obs_names) == obs_dim, f"length of the obs_names {len(obs_names)} is not equal to obs_dim {obs_dim}."
+        self.obs_names = obs_names
+        assert len(action_names) == action_dim, f"length of the action_names {len(action_names)} is not equal to action_dim {action_dim}."
+        self.action_names = action_names
         self.variables_dic: dict[str, dict[str, float]] = {}
         self.depth_range: float = depth_range
         self.limit_order_range: float = limit_order_range
@@ -199,6 +206,19 @@ class AECEnv4HeteroRL(PamsAECEnv):
             self.volatility_dic[agent_id] = 0.0
             self.num_execution_dic[agent_id] = 0
             self._smooth_agent_trait(agent_id)
+        self.obs_dic: dict[str, list[float | int]] = {"step": [], "agent_id": []}
+        for obs_name in self.obs_names:
+            self.obs_dic[obs_name] = []
+        self.action_dic: dict[str, list[float | int]] = {
+            "step": [], "agent_id": [], "order_price": [], "order_volume": []
+        }
+        for action_name in self.action_names:
+            self.action_dic[action_name] = []
+        self.reward_dic: dict[str, list[float | int]] = {
+            "step": [], "agent_id": [], "scaled_utility_diff": [],
+            "short_selling_penalty": [], "execution_vonus": [],
+            "total_reward": []
+        }
 
     def _smooth_agent_trait(self, agent_id: AgentID) -> None:
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
@@ -256,54 +276,145 @@ class AECEnv4HeteroRL(PamsAECEnv):
         Returns:
             obs (ObsType): observation.
         """
+        obs_list: list[float] = []
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
         market: TotalTimeAwareMarket = self.simulator.markets[0]
+        current_time: int = market.get_time()
+        self.obs_dic["step"].append(current_time)
+        self.obs_dic["agent_id"].append(agent_id)
         asset_ratio: float = self._calc_asset_ratio(agent, market)
+        if "asset_ratio" in self.obs_names:
+            asset_ratio = self._preprocess_obs(asset_ratio, "asset_ratio")
+            obs_list.append(asset_ratio)
+            self.obs_dic["asset_ratio"].append(asset_ratio)
         liquidable_asset_ratio: float = self._liquidable_asset_ratio(agent, market)
+        if "liquidable_asset_ratio" in self.obs_names:
+            liquidable_asset_ratio = self._preprocess_obs(liquidable_asset_ratio, "liquidable_asset_ratio")
+            obs_list.append(liquidable_asset_ratio)
+            self.obs_dic["liquidable_asset_ratio"].append(liquidable_asset_ratio)
         inverted_buying_power: float = self._calc_inverted_buying_power(agent, market)
+        if "inverted_buying_power" in self.obs_names:
+            inverted_buying_power = self._preprocess_obs(inverted_buying_power, "inverted_buying_power")
+            obs_list.append(inverted_buying_power)
+            self.obs_dic["inverted_buying_power"].append(inverted_buying_power)
         if not isinstance(agent, HeteroRLAgent):
             raise ValueError(f"agent {agent_id} is not HeteroRLAgent.")
         if not isinstance(market, TotalTimeAwareMarket):
             raise ValueError(f"market is not TotalTimeAwareMarket.")
         remaining_time_ratio: float = self._calc_remaining_time_ratio(market)
-        current_time: int = market.get_time()
+        if "remaining_time_ratio" in self.obs_names:
+            remaining_time_ratio = self._preprocess_obs(remaining_time_ratio, "remaining_time_ratio")
+            obs_list.append(remaining_time_ratio)
+            self.obs_dic["remaining_time_ratio"].append(remaining_time_ratio)
         last_order_time: int = agent.last_order_time
         if current_time < last_order_time:
             raise ValueError(f"current_time {current_time} is less than last_order_time {last_order_time}.")
         market_prices: list[float] = market.get_market_prices(
             times=[t for t in range(last_order_time, current_time)]
         )
-        if market.get_time() % 2000 == 1999:
-            print(f"t={market.get_time()}, p_f={market.get_fundamental_price():.1f}, p_t={market.get_market_price():.1f}, asset_volume={agent.asset_volumes[market.market_id]}")
         log_return: float = self._calc_return(market_prices)
+        if "log_return" in self.obs_names:
+            log_return = self._preprocess_obs(log_return, "log_return")
+            obs_list.append(log_return)
+            self.obs_dic["log_return"].append(log_return)
         volatility: float = self._calc_volatility(market_prices)
+        if "volatility" in self.obs_names:
+            volatility = self._preprocess_obs(volatility, "volatility")
+            obs_list.append(volatility)
+            self.obs_dic["volatility"].append(volatility)
         self.return_dic[agent_id] = log_return
         self.volatility_dic[agent_id] = volatility
         asset_volume_buy_orders_ratio: float = self._get_asset_volume_existing_orders_ratio(
             agent, market, is_buy=True
         )
+        if "asset_volume_buy_orders_ratio" in self.obs_names:
+            asset_volume_buy_orders_ratio = self._preprocess_obs(
+                asset_volume_buy_orders_ratio, "asset_volume_buy_orders_ratio"
+            )
+            obs_list.append(asset_volume_buy_orders_ratio)
+            self.obs_dic["asset_volume_buy_orders_ratio"].append(asset_volume_buy_orders_ratio)
         asset_volume_sell_orders_ratio: float = self._get_asset_volume_existing_orders_ratio(
             agent, market, is_buy=False
         )
+        if "asset_volume_sell_orders_ratio" in self.obs_names:
+            asset_volume_sell_orders_ratio = self._preprocess_obs(
+                asset_volume_sell_orders_ratio, "asset_volume_sell_orders_ratio"
+            )
+            obs_list.append(asset_volume_sell_orders_ratio)
+            self.obs_dic["asset_volume_sell_orders_ratio"].append(asset_volume_sell_orders_ratio)
         blurred_fundamental_return: float = self._blur_fundamental_return(agent, market)
+        if "blurred_fundamental_return" in self.obs_names:
+            blurred_fundamental_return = self._preprocess_obs(
+                blurred_fundamental_return, "blurred_fundamental_return"
+            )
+            obs_list.append(blurred_fundamental_return)
+            self.obs_dic["blurred_fundamental_return"].append(blurred_fundamental_return)
         skill_boundedness: float = agent.skill_boundedness
+        if "skill_boundedness" in self.obs_names:
+            skill_boundedness = self._preprocess_obs(skill_boundedness, "skill_boundedness")
+            obs_list.append(skill_boundedness)
+            self.obs_dic["skill_boundedness"].append(skill_boundedness)
         if not hasattr(agent, "risk_aversion_term"):
             raise ValueError(f"agent {agent.agent_id} does not have risk_aversion_term.")
         risk_aversion_term: float = agent.risk_aversion_term
+        if "risk_aversion_term" in self.obs_names:
+            risk_aversion_term = self._preprocess_obs(risk_aversion_term, "risk_aversion_term")
+            obs_list.append(risk_aversion_term)
+            self.obs_dic["risk_aversion_term"].append(risk_aversion_term)
         if not hasattr(agent, "discount_factor"):
             raise ValueError(f"agent {agent.agent_id} does not have discount_factor.")
         discount_factor: float = agent.discount_factor
-        #print(f"{asset_volume_buy_orders_ratio=:.4f}, {asset_volume_sell_orders_ratio=:.4f}")
-        obs: ObsType = np.array(
-            [
-                asset_ratio, liquidable_asset_ratio, 
-                inverted_buying_power, remaining_time_ratio, log_return, volatility,
-                asset_volume_buy_orders_ratio, asset_volume_sell_orders_ratio,
-                blurred_fundamental_return, skill_boundedness, risk_aversion_term, discount_factor
-            ]
-        )
-        obs = np.clip(obs, -3, 3)
+        if "discount_factor" in self.obs_names:
+            discount_factor = self._preprocess_obs(discount_factor, "discount_factor")
+            obs_list.append(discount_factor)
+            self.obs_dic["discount_factor"].append(discount_factor)
+        obs: ObsType = np.array(obs_list)
         return obs
+    
+    def _preprocess_obs(
+        self,
+        obs_comp: float,
+        obs_name: Literal[
+            "asset_ratio", "liquidable_asset_ratio", "inverted_buying_power",
+            "remaining_time_ratio", "log_return", "volatility",
+            "asset_volume_buy_orders_ratio", "asset_volume_sell_orders_ratio",
+            "blurred_fundamental_return", "skill_boundedness", "risk_aversion_term",
+            "discount_factor"
+        ]
+    ) -> float:
+        if obs_name == "asset_ratio":
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
+        elif obs_name == "liquidable_asset_ratio":
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 3)
+        elif obs_name == "inverted_buying_power":
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 10)
+        elif obs_name == "remaining_time_ratio":
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
+        elif obs_name == "log_return":
+            obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
+        elif obs_name == "volatility":
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.04)
+        elif obs_name == "asset_volume_buy_orders_ratio":
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
+        elif obs_name == "asset_volume_sell_orders_ratio":
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
+        elif obs_name == "blurred_fundamental_return":
+            obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
+        elif obs_name == "skill_boundedness":
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.06)
+        elif obs_name == "risk_aversion_term":
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.61)
+        elif obs_name == "discount_factor":
+            obs_comp = self._minmax_rescaling(obs_comp, 0.9, 0.999)
+        else:
+            raise NotImplementedError(f"obs_name {obs_name} is not implemented.")
+        obs_comp = np.clip(obs_comp, -1, 1)
+        return obs_comp
+
+    def _minmax_rescaling(self, x: float, min_val: float, max_val: float) -> float:
+        """Min-max rescaling. set the variable x to the range [-1, 1]."""
+        rescaled_x: float = 2 * (x - min_val) / (max_val - min_val) - 1
+        return rescaled_x
         
     def _calc_asset_ratio(
         self,
@@ -406,6 +517,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
             raise ValueError(f"agent {agent_id} does not have previous_utility.")
         previous_utility: float = agent.previous_utility
         market: TotalTimeAwareMarket = self.simulator.markets[0]
+        current_time: int = market.get_time()
+        self.reward_dic["step"].append(current_time)
+        self.reward_dic["agent_id"].append(agent_id)
         asset_volume: int = agent.asset_volumes[market.market_id]
         market_price: float = market.get_market_price()
         total_wealth: float = cash_amount + asset_volume * market_price
@@ -416,17 +530,18 @@ class AECEnv4HeteroRL(PamsAECEnv):
         ) - 0.5 * agent.risk_aversion_term * (
             (asset_volume * market_price) ** 2
         ) * volatility
-        #print(f"{current_utility=:.2f}, {total_wealth=:.2f}, {market_price=:.2f}, {agent.risk_aversion_term=:.3f}, {asset_volume * market_price * log_return:.2f}, {0.5 * agent.risk_aversion_term * ((asset_volume * market_price) ** 2) * volatility:.2f}")
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
         reward = utility_diff / normalization_factor
-        #print(f"{reward=:.2f}")
+        self.reward_dic["scaled_utility_diff"].append(reward)
         if asset_volume < 0:
             reward -= self.short_selling_penalty
+            self.reward_dic["short_selling_penalty"].append(-self.short_selling_penalty)
+        else:
+            self.reward_dic["short_selling_penalty"].append(0)
         reward += self.execution_vonus * agent.num_executed_orders
-        #print(f"{reward=:.2f}")
-        #print()
-        #agent.previous_utility = current_utility
+        self.reward_dic["execution_vonus"].append(self.execution_vonus * agent.num_executed_orders)
+        self.reward_dic["total_reward"].append(reward)
         return reward
 
     def generate_info(self, agent_id: AgentID) -> InfoType:
@@ -436,6 +551,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         
     def convert_action2orders(self, action: ActionType) -> list[Order | Cancel]:
         order_price_scale, order_volume_scale = action
+        self.action_dic["order_price_scale"].append(order_price_scale)
+        self.action_dic["order_volume_scale"].append(order_volume_scale)
         market: TotalTimeAwareMarket = self.simulator.markets[0]
         mid_price: float = market.get_mid_price()
         if mid_price is None:
@@ -450,9 +567,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         order_volume: int = np.abs(
             np.ceil(self.max_order_volume * order_volume_scale)
         )
-        if market.get_time() % 2000 == 1999:
-            print(f"t={market.get_time()}, is_buy={is_buy}, order_price={order_price:.1f}, order_volume={order_volume}")
         agent_id: AgentID = self.agent_selection
+        current_time: int = market.get_time()
+        self.action_dic["step"].append(current_time)
+        self.action_dic["agent_id"].append(agent_id)
         if order_volume == 0:
             return []
         order: Order = Order(
@@ -464,25 +582,15 @@ class AECEnv4HeteroRL(PamsAECEnv):
             kind=LIMIT_ORDER,
             ttl=len(self.simulator.agents)
         )
+        self.action_dic["order_price"].append(order_price)
+        self.action_dic["order_volume"].append(order_volume)
         return [order]
-    
-    def get_obs_names(self) -> list[str]:
-        return [
-            "asset_ratio", "inverted_buying_power", "remaining_time_ratio", "log_return", "volatility",
-            "asset_volume_buy_orders_ratio", "asset_volume_sell_orders_ratio",
-            "blurred_fundamental_return", "skill_boundedness", "risk_aversion_term", "discount_factor"
-        ]
-    
-    def get_action_names(self) -> list[str]:
-        return ["order_price_scale", "order_volume_scale"]
     
     def __str__(self) -> str:
         description: str = "[bold green]AECEnv4HeteroRL[/bold green]\n"
         description += f"max order volume: {self.max_order_volume} " + \
             f"limit order range: {self.limit_order_range} short selling penalty: {self.short_selling_penalty}\n"
-        obs_names: list[str] = self.get_obs_names()
-        description += f"obs: {obs_names}\n"
-        action_names: list[str] = self.get_action_names()
-        description += f"action: {action_names}"
+        description += f"obs: {self.obs_names}\n"
+        description += f"action: {self.action_names}"
         return description
         

@@ -41,6 +41,8 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--agent_name", type=str, default="heteroRLAgent")
     parser.add_argument("--config_path", type=str)
     parser.add_argument("--variable_ranges_path", type=str, required=False)
+    parser.add_argument("--obs_names", type=str, nargs="+")
+    parser.add_argument("--action_names", type=str, nargs="+")
     parser.add_argument("--depth_range", type=float, default=0.01)
     parser.add_argument("--limit_order_range", type=float, default=0.05)
     parser.add_argument("--max_order_volume", type=int, default=50)
@@ -122,10 +124,13 @@ def main(args) -> None:
     variable_ranges_dic: dict[str, list[float]] = json.load(
         fp=open(str(variable_ranges_path), mode="r")
     )
+    obs_names: list[str] = all_args.obs_names
+    action_names: list[str] = all_args.action_names
     train_env: AECEnv4HeteroRL = AECEnv4HeteroRL(
         config_dic=config_dic, variable_ranges_dic=variable_ranges_dic,
         simulator_class=Simulator, target_agent_names=target_agent_names,
-        action_dim=2, obs_dim=12, depth_range=all_args.depth_range,
+        action_dim=len(action_names), obs_dim=len(obs_names), depth_range=all_args.depth_range,
+        obs_names=obs_names, action_names=action_names,
         limit_order_range=all_args.limit_order_range,
         max_order_volume=all_args.max_order_volume,
         short_selling_penalty=all_args.short_selling_penalty,
@@ -151,7 +156,10 @@ def main(args) -> None:
         train_env=train_env, test_env=test_env, algo=ippo,
         seed=all_args.seed, actor_best_save_path=actor_best_save_path,
         actor_last_save_path=actor_last_save_path,
-        other_indicators=["execution_volume", "lr_actor", "price_range"],
+        other_indicators=[
+            "execution_volume", "lr_actor", "price_range",
+            "obs_dics", "action_dics", "reward_dics"
+        ],
         num_train_steps=all_args.num_train_steps,
         num_eval_episodes=all_args.num_eval_episodes,
         eval_interval=all_args.eval_interval
