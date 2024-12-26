@@ -387,7 +387,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "liquidable_asset_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 3)
         elif obs_name == "inverted_buying_power":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 10)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
         elif obs_name == "remaining_time_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
         elif obs_name == "log_return":
