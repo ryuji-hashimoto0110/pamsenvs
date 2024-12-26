@@ -119,7 +119,7 @@ class IPPOCritic(Module):
         super(IPPOCritic, self).__init__()
         self.obs_shape: ndarray = obs_shape
         self.valuelayer: Module = nn.Sequential(
-            nn.Linear(np.prod(obs_shape), 128),
+            nn.Linear(np.prod(obs_shape), 256),
             nn.LeakyReLU(),
             nn.Linear(256,256),
             nn.LeakyReLU(),
