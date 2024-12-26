@@ -142,6 +142,7 @@ class Trainer:
             episode_reward_dic: dict[AgentID, float] = {
                 agent_id: 0.0 for agent_id in self.test_env.agents
             }
+            episode_length: int = 0
             for agent_id in self.test_env.agent_iter():
                 obs: ObsType = self.test_env.last()
                 action: ActionType = self.algo.exploit(obs)
@@ -151,9 +152,11 @@ class Trainer:
                     total_execution_volume += info["execution_volume"]
                 if done:
                     break
+                else:
+                    episode_length += 1
             average_total_reward += np.sum(
                 list(episode_reward_dic.values())
-            ) / self.num_eval_episodes
+            ) / (episode_length * self.num_eval_episodes)
             average_total_execution_volume += total_execution_volume / self.num_eval_episodes
             average_price_range += self._get_price_range(self.test_env) / self.num_eval_episodes
             if hasattr(self.test_env, "obs_dic"):
