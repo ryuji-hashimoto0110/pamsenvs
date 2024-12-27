@@ -226,7 +226,7 @@ class FlexSaver(Logger):
         log_dic: dict[str, dict[str, dict[str, list | dict, str]]] = self._prepare_log_dic(log)
         execution_price: float = log.price
         execution_price_str: str = self._convert_price2str(execution_price)
-        execution_volume: int = log.volume
+        execution_volume: int = int(log.volume)
         log_dic["Data"]["message"].append(
             {"tag":"1P", "price":str(execution_price_str)}
         )
@@ -319,7 +319,7 @@ class FlexSaver(Logger):
                 price_str: str = "MO"
             else:
                 price_str: str = self._convert_price2str(price)
-            str_volume_price_dic[f"{price_str}"] = f"{volume}"
+            str_volume_price_dic[f"{price_str}"] = f"{int(volume)}"
         if is_buy:
             log_dic["Data"]["buy_book"] = str_volume_price_dic
         else:
