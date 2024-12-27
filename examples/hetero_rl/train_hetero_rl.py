@@ -112,9 +112,7 @@ def get_target_agent_names(config_dic: dict[str, Any], agent_name: str) -> list[
     num_agents = len(target_agent_names)
     return target_agent_names, num_agents
 
-def main(args) -> None:
-    parser = get_config()
-    all_args = parser.parse_known_args(args)[0]
+def create_env(all_args) -> tuple[AECEnv4HeteroRL, int]:
     config_path: Path = convert_str2path(all_args.config_path, mkdir=False)
     config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
     target_agent_names, num_agents = get_target_agent_names(
@@ -126,7 +124,7 @@ def main(args) -> None:
     )
     obs_names: list[str] = all_args.obs_names
     action_names: list[str] = all_args.action_names
-    train_env: AECEnv4HeteroRL = AECEnv4HeteroRL(
+    env: AECEnv4HeteroRL = AECEnv4HeteroRL(
         config_dic=config_dic, variable_ranges_dic=variable_ranges_dic,
         simulator_class=Simulator, target_agent_names=target_agent_names,
         action_dim=len(action_names), obs_dim=len(obs_names), depth_range=all_args.depth_range,
@@ -137,8 +135,9 @@ def main(args) -> None:
         execution_vonus=all_args.execution_vonus,
         agent_trait_memory=all_args.agent_trait_memory,
     )
-    test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
-    test_env.agent_trait_memory = 0.0
+    return env, num_agents
+
+def create_ippo(all_args, num_agents) -> IPPO:
     ippo: IPPO = IPPO(
         device=all_args.device,
         obs_shape=(12,), action_shape=(2,), num_agents=num_agents,
@@ -149,6 +148,15 @@ def main(args) -> None:
         clip_eps=all_args.clip_eps, lmd=all_args.lmd,
         max_grad_norm=all_args.max_grad_norm
     )
+    return ippo
+
+def main(args) -> None:
+    parser = get_config()
+    all_args = parser.parse_known_args(args)[0]
+    train_env, num_agents = create_env(all_args)
+    test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
+    test_env.agent_trait_memory = 0.0
+    ippo: IPPO = create_ippo(all_args, num_agents)
     actor_save_path: Path = convert_str2path(all_args.actor_save_path, mkdir=True)
     actor_best_save_path: Path = actor_save_path / all_args.actor_best_save_name
     actor_last_save_path: Path = actor_save_path / all_args.actor_last_save_name
