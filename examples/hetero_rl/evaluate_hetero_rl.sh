@@ -2,8 +2,7 @@ ohlcv_folder_path="../../datas/real_datas/intraday/flex_ohlcv/1min"
 ticker_folder_names="2802 3382 4063 4452 4568 4578 6501 6502 7203 7267 8001 8035 8058 8306 8411 9202 9613 9984"
 tickers="2802 3382 4063 4452 4568 4578 6501 6502 7203 7267 8001 8035 8058 8306 8411 9202 9613 9984"
 resample_rule="1min"
-point_cloud_type="return tail_return"
-return_ts
+point_cloud_type="return tail_return return_ts"
 lags="1 10 20 30 40 50 60 70"
 algo_name="ippo"
 agent_name="Agent"
@@ -31,6 +30,12 @@ market_name="Market"
 decision_histories_save_path="../../datas/artificial_datas/hetero_rl_decision_histories/temp"
 indicators_save_path="../../stylized_facts/results/hetero_rl/wo.csv"
 python evaluate_hetero_rl.py \
+--ohlcv_folder_path ${ohlcv_folder_path} \
+--ticker_folder_names ${ticker_folder_names} \
+--tickers ${tickers} \
+--resample_rule ${resample_rule} \
+--point_cloud_type ${point_cloud_type} \
+--lags ${lags} \
 --algo_name ${algo_name} \
 --agent_name ${agent_name} \
 --config_path ${config_path} \
