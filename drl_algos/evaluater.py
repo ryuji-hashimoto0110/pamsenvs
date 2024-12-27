@@ -10,8 +10,10 @@ from algorithm import Algorithm
 from envs.environments import AECEnv4HeteroRL
 from flex_processors import FlexProcessor
 from logs import FlexSaver
+from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
+from ots import DDEvaluater
 from stylized_facts import StylizedFactsChecker
 import torch
 from tqdm import tqdm
@@ -25,12 +27,12 @@ ActionType = TypeVar("ActionType")
 AgentID = TypeVar("AgentID")
 ObsType = TypeVar("ObsType")
 
-# OTDistanceを評価
-
 class Evaluater:
     """Evaluater class."""
     def __init__(
         self,
+        dd_evaluaters: list[DDEvaluater],
+        num_points: int,
         env: AECEnv4HeteroRL,
         algo: Algorithm,
         actor_load_path: Path,
@@ -43,7 +45,7 @@ class Evaluater:
         market_name: str,
         decision_histories_save_path: Path,
         figs_save_path: Path,
-        indicators_save_path: Path
+        indicators_save_path: Path,
     ) -> None:
         """initialization.
         
@@ -57,6 +59,11 @@ class Evaluater:
             figs_save_path (Path): Path to save figures.
             indicators_save_path (Path): Path to save indicators.
         """
+        self.dd_evaluaters: list[DDEvaluater] = dd_evaluaters
+        if len(dd_evaluaters) == 0:
+            raise ValueError("specify at least 1 DDEvaluater.")
+        self.num_points: int = num_points
+        self.real_tickers: list[int] = list(dd_evaluaters[0].ticker_path_dic.keys())
         self.env: AECEnv4HeteroRL = env
         self.algo: Algorithm = algo
         if actor_load_path.exists():
@@ -113,6 +120,32 @@ class Evaluater:
         )
         save_path: Path = self.indicators_save_path / "stylized_facts.csv"
         checker.check_stylized_facts(save_path=save_path)
+        for dd_evaluater in self.dd_evaluaters:
+            dd_evaluater.add_ticker_path(
+                ticker="temp", path=self.ohlcv_dfs_path
+            )
+        try:
+            statistics: list[float] = []
+            ot_distances: list[float] = []
+            for dd_evaluater in self.dd_evaluaters:
+                art_point_cloud, statistics_ = dd_evaluater.get_point_cloud_from_ticker(
+                    ticker="temp", num_points=self.num_points,
+                    save2dic=False, return_statistics=True
+                )
+                statistics.extend(statistics_)
+                for ticker in self.real_tickers:
+                    real_point_cloud: ndarray = dd_evaluater.get_point_cloud_from_ticker(
+                        ticker=ticker, num_points=self.num_points, save2dic=True
+                    )
+                    ot_distance: float = dd_evaluater.calc_ot_distance(
+                        art_point_cloud, real_point_cloud, is_per_bit=True
+                    )
+                    ot_distances.append(ot_distance)
+                print(f"statistics: {statistics_}")
+                print(f"ot_distances: {ot_distances}")
+            dd_results: list[int | float] = statistics + ot_distances
+        except Exception as e:
+            print(e)
 
     def save_1episode(
         self,
