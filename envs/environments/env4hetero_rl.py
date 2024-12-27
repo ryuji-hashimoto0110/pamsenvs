@@ -210,7 +210,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         for obs_name in self.obs_names:
             self.obs_dic[obs_name] = []
         self.action_dic: dict[str, list[float | int]] = {
-            "step": [], "agent_id": [], "order_price": [], "order_volume": []
+            "step": [], "agent_id": [], "order_price": [], "order_volume": [], "is_buy": []
         }
         for action_name in self.action_names:
             self.action_dic[action_name] = []
@@ -564,12 +564,13 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             order_price: float = mid_price + self.limit_order_range * mid_price * order_price_scale
             is_buy = False
+        self.action_dic["is_buy"].append(int(is_buy))
         order_volume: int = np.abs(
             np.ceil(self.max_order_volume * order_volume_scale)
         )
         agent_id: AgentID = self.agent_selection
         current_time: int = market.get_time()
-        self.action_dic["step"].append(current_time)
+        self.action_dic["step"].append(current_time-1)
         self.action_dic["agent_id"].append(agent_id)
         if order_volume == 0:
             return []
