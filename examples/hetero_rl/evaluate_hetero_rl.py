@@ -10,11 +10,25 @@ import sys
 sys.path.append(str(root_path))
 from drl_algos import Evaluater
 from drl_algos import IPPO
+from ots.evaluate_distances_real import create_ddevaluaters
 import torch
 from typing import Optional
 
 def get_config() -> ArgumentParser:
     parser: ArgumentParser = argparse.ArgumentParser()
+    # for DDEvaluater
+    parser.add_argument("--ohlcv_folder_path", type=str, default=None)
+    parser.add_argument("--ticker_folder_names", type=str, nargs="*", default=None)
+    parser.add_argument("--ticker_file_names", type=str, nargs="*", default=None)
+    parser.add_argument("--tickers", type=str, nargs="+", default=None)
+    parser.add_argument("--resample_rule", type=str, default=None)
+    parser.add_argument("--is_bybit", action="store_true")
+    parser.add_argument("--lags", type=int, nargs="+", default=[10])
+    parser.add_argument(
+        "--point_cloud_type", type=str,
+        choices=["return", "tail_return", "rv_returns", "return_ts"]
+    )
+    # for algo, env
     parser.add_argument(
         "--algo_name", type=str, default="ippo", choices=["ippo"]
     )
@@ -33,6 +47,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument(
         "--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu"
     )
+    # for Evaluater
     parser.add_argument("--actor_load_path", type=str, default=None)
     parser.add_argument("--txts_save_path", type=str, default=None)
     parser.add_argument("--tick_dfs_save_path", type=str, default=None)
@@ -49,6 +64,7 @@ def get_config() -> ArgumentParser:
 def main(args) -> None:
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
+    dd_evaluaters = create_ddevaluaters(all_args)
     env, num_agents = create_env(all_args)
     ippo: IPPO = IPPO(
         device=all_args.device,
@@ -56,6 +72,7 @@ def main(args) -> None:
         seed=all_args.seed,
     )
     evaluater: Evaluater = Evaluater(
+        dd_evaluaters=dd_evaluaters, num_points=1500,
         env=env, algo=ippo, actor_load_path=convert_str2path(all_args.actor_load_path, False),
         txts_save_path=convert_str2path(all_args.txts_save_path, True),
         tick_dfs_save_path=convert_str2path(all_args.tick_dfs_save_path, True),
