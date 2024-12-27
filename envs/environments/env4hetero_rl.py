@@ -393,7 +393,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "log_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
         elif obs_name == "volatility":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 5e-05)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 7e-05)
         elif obs_name == "asset_volume_buy_orders_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
         elif obs_name == "asset_volume_sell_orders_ratio":
@@ -401,20 +401,83 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "blurred_fundamental_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
         elif obs_name == "skill_boundedness":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.06)
+            obs_comp = self._minmax_rescaling(
+                obs_comp,
+                min_val=0,
+                setting=self.config_dic["Agent"]["skillBoundedness"]
+            )
         elif obs_name == "risk_aversion_term":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 4.8)
+            obs_comp = self._minmax_rescaling(
+                obs_comp,
+                min_val=0,
+                setting=self.config_dic["Agent"]["riskAversionTerm"]
+            )
         elif obs_name == "discount_factor":
-            obs_comp = self._minmax_rescaling(obs_comp, 0.9, 0.999)
+            obs_comp = self._minmax_rescaling(
+                obs_comp,
+                max_val=1,
+                setting=self.config_dic["Agent"]["discountFactor"]
+            )
         else:
             raise NotImplementedError(f"obs_name {obs_name} is not implemented.")
         obs_comp = np.clip(obs_comp, -1, 1)
         return obs_comp
 
-    def _minmax_rescaling(self, x: float, min_val: float, max_val: float) -> float:
+    def _minmax_rescaling(
+        self,
+        x: float,
+        min_val: Optional[float] = None,
+        max_val: Optional[float] = None,
+        setting: Optional[float | list[float] | dict[str, float | list[float]]] = None,
+    ) -> float:
         """Min-max rescaling. set the variable x to the range [-1, 1]."""
-        rescaled_x: float = 2 * (x - min_val) / (max_val - min_val) - 1
+        if max_val is not None and min_val is not None:
+            rescaled_x: float = 2 * (x - min_val) / (max_val - min_val) - 1
+        elif setting is not None:
+            if min_val is None:
+                min_val = self._get_percentile(setting, 0.999)
+            if max_val is None:
+                max_val = self._get_percentile(setting, 0.001)
+            if min_val == max_val:
+                rescaled_x: float = 0
+            else:
+                rescaled_x: float = 2 * (x - min_val) / (max_val - min_val) - 1
+        else:
+            raise ValueError("Either min_val and max_val or setting must be specified.")
         return rescaled_x
+    
+    def _get_percentile(
+        self,
+        setting: float | list[float] | dict[str, float | list[float]],
+        upper_prob: float = 0.01
+    ) -> float:
+        """get percentile.
+        
+        This method is usually used to get the maximum value of the distribution of any variable.
+        
+        Args:
+            setting (float | list[float] | dict[str, float | list[float]]): setting of the distribution.
+                Ex: 1.0, [0, 10], {"expon": [1.0]}, {"uniform": [0, 10]}
+            upper_prob (float): upper probability. Defaults to 0.01.
+        """
+        if isinstance(setting, float):
+            return setting
+        elif isinstance(setting, list):
+            assert len(setting) == 2
+            umin, umax = setting
+            return umax - (umax - umin) * upper_prob
+        elif isinstance(setting, dict):
+            if "expon" in setting:
+                lam: float = setting["expon"][0]
+                return - lam * np.log(upper_prob)
+            elif "uniform" in setting:
+                assert len(setting["uniform"]) == 2
+                umin, umax = setting["uniform"]
+                return umax - (umax - umin) * upper_prob
+            else:
+                raise NotImplementedError
+        else:
+            raise NotImplementedError
         
     def _calc_asset_ratio(
         self,
