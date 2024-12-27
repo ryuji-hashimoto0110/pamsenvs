@@ -102,7 +102,7 @@ def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
             seed=seed, resample_rule=resample_rule, 
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
-        evaluaters: list[DDEvaluater] = [evaluater]
+        evaluaters.append(evaluater)
     if "return_ts" in point_cloud_types:
         lags: list[int] = all_args.lags
         print(f"lags: {lags}")
