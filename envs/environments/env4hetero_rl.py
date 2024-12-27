@@ -518,7 +518,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         previous_utility: float = agent.previous_utility
         market: TotalTimeAwareMarket = self.simulator.markets[0]
         current_time: int = market.get_time()
-        self.reward_dic["step"].append(current_time)
+        self.reward_dic["step"].append(current_time-1)
         self.reward_dic["agent_id"].append(agent_id)
         asset_volume: int = agent.asset_volumes[market.market_id]
         market_price: float = market.get_market_price()
@@ -570,9 +570,11 @@ class AECEnv4HeteroRL(PamsAECEnv):
         )
         agent_id: AgentID = self.agent_selection
         current_time: int = market.get_time()
-        self.action_dic["step"].append(current_time-1)
+        self.action_dic["step"].append(current_time)
         self.action_dic["agent_id"].append(agent_id)
         if order_volume == 0:
+            self.action_dic["order_price"].append(None)
+            self.action_dic["order_volume"].append(order_volume)
             return []
         order: Order = Order(
             agent_id=agent_id,
