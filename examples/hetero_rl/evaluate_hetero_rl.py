@@ -25,7 +25,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--is_bybit", action="store_true")
     parser.add_argument("--lags", type=int, nargs="+", default=[10])
     parser.add_argument(
-        "--point_cloud_type", type=str,
+        "--point_cloud_types", type=str,
         choices=["return", "tail_return", "rv_returns", "return_ts"]
     )
     # for algo, env
