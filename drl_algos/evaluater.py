@@ -141,6 +141,7 @@ class Evaluater:
                         art_point_cloud, real_point_cloud, is_per_bit=True
                     )
                     ot_distances.append(ot_distance)
+                print(dd_evaluater)
                 print(f"statistics: {statistics_}")
                 print(f"ot_distances: {ot_distances}")
             dd_results: list[int | float] = statistics + ot_distances
