@@ -82,7 +82,7 @@ def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
     print(tree)
     resample_rule: str = all_args.resample_rule
     is_bybit: bool = all_args.is_bybit
-    point_cloud_types: str = all_args.point_cloud_types
+    point_cloud_types: list[str] = all_args.point_cloud_types
     print(f"resample_rule: {resample_rule} is_bybit: {is_bybit} point_cloud_type: {point_cloud_types}")
     evaluaters: list[DDEvaluater] = []
     if "return" in  point_cloud_types:
