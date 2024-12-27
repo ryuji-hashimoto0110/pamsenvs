@@ -26,7 +26,7 @@ def get_config():
     parser.add_argument("--is_bybit", action="store_true")
     parser.add_argument("--lags", type=int, nargs="+", default=[10])
     parser.add_argument(
-        "--point_cloud_type", type=str,
+        "--point_cloud_types", type=str, nargs="+",
         choices=["return", "tail_return", "return_ts", "rv_returns"]
     )
     parser.add_argument("--distance_matrix_save_path", type=str, default=None)
@@ -82,30 +82,30 @@ def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
     print(tree)
     resample_rule: str = all_args.resample_rule
     is_bybit: bool = all_args.is_bybit
-    point_cloud_type: str = all_args.point_cloud_type
-    print(f"resample_rule: {resample_rule} is_bybit: {is_bybit} point_cloud_type: {point_cloud_type}")
-    if point_cloud_type == "return":
+    point_cloud_types: str = all_args.point_cloud_types
+    print(f"resample_rule: {resample_rule} is_bybit: {is_bybit} point_cloud_type: {point_cloud_types}")
+    evaluaters: list[DDEvaluater] = []
+    if "return" in  point_cloud_types:
         evaluater: DDEvaluater = ReturnDDEvaluater(
             seed=seed, resample_rule=resample_rule, 
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
-        evaluaters: list[DDEvaluater] = [evaluater]
-    elif point_cloud_type == "tail_return":
+        evaluaters.append(evaluater)
+    if "tail_return" in  point_cloud_types:
         evaluater: DDEvaluater = TailReturnDDEvaluater(
             seed=seed, resample_rule=resample_rule,
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
-        evaluaters: list[DDEvaluater] = [evaluater]
-    elif point_cloud_type == "rv_returns":
+        evaluaters.append(evaluater)
+    if "rv_returns" in point_cloud_types:
         evaluater: DDEvaluater = RVsDDEvaluater(
             seed=seed, resample_rule=resample_rule, 
             is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
         )
         evaluaters: list[DDEvaluater] = [evaluater]
-    elif point_cloud_type == "return_ts":
+    if "return_ts" in point_cloud_types:
         lags: list[int] = all_args.lags
         print(f"lags: {lags}")
-        evaluaters: list[DDEvaluater] = []
         if 2 <= len(lags):
             evaluater: DDEvaluater = ReturnTSDDEvaluater(
                 lags=lags,
@@ -120,8 +120,6 @@ def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
                 is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
             )
             evaluaters.append(evaluater)
-    else:
-        raise NotImplementedError(f"{point_cloud_type} is not implemented.")
     return evaluaters
 
 def main(args):
