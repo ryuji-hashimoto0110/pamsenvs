@@ -73,6 +73,9 @@ class ReturnDDEvaluater(DDEvaluater):
                 dfs.append(df)
         return dfs
     
+    def __str__(self) -> str:
+        return f"ReturnDDEvaluater"
+    
     def _calc_return_arr_from_df(
         self,
         ohlcv_df: DataFrame,
@@ -221,6 +224,9 @@ class TailReturnDDEvaluater(ReturnDDEvaluater):
         tail_index: float = 1 / (1 / k * np.sum(point_cloud))
         statistics: list[float] = [tail_index]
         return statistics
+    
+    def __str__(self) -> str:
+        return f"TailReturnDDEvaluater"
         
     def _get_tail_return(
         self,
@@ -326,6 +332,9 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
             return [f"acorr({self.lags[0]})"]
         else:
             return ["tail (acorr)", "first negative lag"]
+        
+    def __str__(self) -> str:
+        return f"ReturnTSDDEvaluater"
 
     def calc_statistics(self, point_cloud: ndarray) -> list[float]:
         statistics: list[float] = []
@@ -450,10 +459,9 @@ class RVsDDEvaluater(DDEvaluater):
             np.log(price_arr[:, 1:]) - np.log(price_arr[:, :-1])
         )
         daily_return_arr: ndarray = np.sum(intraday_return_arr, axis=1).flatten()
-        daily_return_arr = 0 < daily_return_arr
-        #(
-        #    daily_return_arr - np.mean(daily_return_arr)
-        #) / (np.std(daily_return_arr) + 1e-10)
+        daily_return_arr = (
+            daily_return_arr - np.mean(daily_return_arr)
+        ) / (np.std(daily_return_arr) + 1e-10)
         #daily_return_arr = np.clip(daily_return_arr, -7, 7)
         assert num_days == len(daily_return_arr)
         daily_rv_arr: ndarray = np.sum(intraday_return_arr**2, axis=1).flatten()
@@ -464,13 +472,13 @@ class RVsDDEvaluater(DDEvaluater):
         assert num_days == len(daily_log_rv_arr)
         point_cloud: ndarray = np.concatenate(
             [
-                #daily_log_rv_arr[:-1].reshape(-1, 1),
+                daily_log_rv_arr[:-1].reshape(-1, 1),
                 daily_return_arr[:-1].reshape(-1, 1),
                 daily_log_rv_arr[1:].reshape(-1, 1),
             ],
             axis=1
         )
-        assert point_cloud.shape == (num_days-1, 2)
+        assert point_cloud.shape == (num_days-1, 3)
         indices: ndarray = self.prng.choice(
             np.arange(num_days-1), num_points, replace=False
         )
