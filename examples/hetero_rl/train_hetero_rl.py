@@ -176,8 +176,8 @@ def main(args) -> None:
                 config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}
                 all_args.seed = random.randint(0, 10000)
                 actor_save_path: Path = convert_str2path(all_args.actor_save_path, mkdir=True)
-                actor_best_save_name = all_args.actor_best_save_name + f"-{sigma_str}-{alpha_str}-{gamma_str}.pth"
-                actor_last_save_name = all_args.actor_last_save_name + f"-{sigma_str}-{alpha_str}-{gamma_str}.pth"
+                actor_best_save_name = all_args.actor_best_save_name + f"-{sigma_str}-{alpha_str}-{gamma_str}-{all_args.seed}.pth"
+                actor_last_save_name = all_args.actor_last_save_name + f"-{sigma_str}-{alpha_str}-{gamma_str}-{all_args.seed}.pth"
                 actor_best_save_path: Path = actor_save_path / actor_best_save_name
                 actor_last_save_path: Path = actor_save_path / actor_last_save_name
                 train_env, num_agents = create_env(all_args, config_dic)
