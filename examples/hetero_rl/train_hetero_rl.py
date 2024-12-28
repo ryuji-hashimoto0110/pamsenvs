@@ -174,7 +174,6 @@ def main(args) -> None:
             for gamma in gammas:
                 gamma_str: str = f"{gamma:.3f}".replace(".", "")
                 config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}
-                all_args.seed = random.randint(0, 10000)
                 actor_save_path: Path = convert_str2path(all_args.actor_save_path, mkdir=True)
                 actor_best_save_name = all_args.actor_best_save_name + f"-{sigma_str}-{alpha_str}-{gamma_str}-{all_args.seed}.pth"
                 actor_last_save_name = all_args.actor_last_save_name + f"-{sigma_str}-{alpha_str}-{gamma_str}-{all_args.seed}.pth"
