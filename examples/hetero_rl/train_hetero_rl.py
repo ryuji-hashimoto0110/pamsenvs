@@ -50,6 +50,15 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--execution_vonus", type=float, default=0.1)
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
+    parser.add_argument(
+        "--sigmas", type=float, nargs="+", default=[0.00, 0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.20]
+    )
+    parser.add_argument(
+        "--alphas", type=float, nargs="+", default=[0.00, 0.10, 0.30, 0.50, 0.70, 0.90, 1.10, 2.00]
+    )
+    parser.add_argument(
+        "--gammas", type=float, nargs="+", default=[0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.999]
+    )
     return parser
 
 def convert_str2path(
@@ -112,9 +121,7 @@ def get_target_agent_names(config_dic: dict[str, Any], agent_name: str) -> list[
     num_agents = len(target_agent_names)
     return target_agent_names, num_agents
 
-def create_env(all_args) -> tuple[AECEnv4HeteroRL, int]:
-    config_path: Path = convert_str2path(all_args.config_path, mkdir=False)
-    config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
+def create_env(all_args, config_dic: dict[str, Any]) -> tuple[AECEnv4HeteroRL, int]:
     target_agent_names, num_agents = get_target_agent_names(
         config_dic=config_dic, agent_name=all_args.agent_name
     )
@@ -153,26 +160,44 @@ def create_ippo(all_args, num_agents) -> IPPO:
 def main(args) -> None:
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
-    train_env, num_agents = create_env(all_args)
-    test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
-    test_env.agent_trait_memory = 0.0
-    ippo: IPPO = create_ippo(all_args, num_agents)
-    actor_save_path: Path = convert_str2path(all_args.actor_save_path, mkdir=True)
-    actor_best_save_path: Path = actor_save_path / all_args.actor_best_save_name
-    actor_last_save_path: Path = actor_save_path / all_args.actor_last_save_name
-    trainer: Trainer = Trainer(
-        train_env=train_env, test_env=test_env, algo=ippo,
-        seed=all_args.seed, actor_best_save_path=actor_best_save_path,
-        actor_last_save_path=actor_last_save_path,
-        other_indicators=[
-            "execution_volume", "lr_actor", "price_range",
-            "obs_dics", "action_dics", "reward_dics"
-        ],
-        num_train_steps=all_args.num_train_steps,
-        num_eval_episodes=all_args.num_eval_episodes,
-        eval_interval=all_args.eval_interval
-    )
-    trainer.train()
+    sigmas: list[float] = all_args.sigmas
+    alphas: list[float] = all_args.alphas
+    gammas: list[float] = all_args.gammas
+    config_path: Path = convert_str2path(all_args.config_path, mkdir=False)
+    config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
+    for sigma in sigmas:
+        sigma_str: str = f"{sigma:.2f}".replace(".", "")
+        config_dic["Agent"]["skillBoundedness"] = {"expon": [sigma]}
+        for alpha in alphas:
+            alpha_str: str = f"{alpha:.2f}".replace(".", "")
+            config_dic["Agent"]["riskAversionTerm"] = {"expon": [alpha]}
+            for gamma in gammas:
+                gamma_str: str = f"{gamma:.3f}".replace(".", "")
+                config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}
+                all_args.seed = random.randint(0, 10000)
+                actor_save_path: Path = convert_str2path(all_args.actor_save_path, mkdir=True)
+                actor_best_save_name = all_args.actor_best_save_name + f"-{sigma_str}-{alpha_str}-{gamma_str}.pth"
+                actor_last_save_name = all_args.actor_last_save_name + f"-{sigma_str}-{alpha_str}-{gamma_str}.pth"
+                actor_best_save_path: Path = actor_save_path / actor_best_save_name
+                actor_last_save_path: Path = actor_save_path / actor_last_save_name
+                train_env, num_agents = create_env(all_args, config_dic)
+                test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
+                test_env.agent_trait_memory = 0.0
+                ippo: IPPO = create_ippo(all_args, num_agents)
+                trainer: Trainer = Trainer(
+                    train_env=train_env, test_env=test_env, algo=ippo,
+                    seed=all_args.seed,
+                    actor_best_save_path=actor_best_save_path,
+                    actor_last_save_path=actor_last_save_path,
+                    other_indicators=[
+                        "execution_volume", "lr_actor", "price_range",
+                        "obs_dics", "action_dics", "reward_dics"
+                    ],
+                    num_train_steps=all_args.num_train_steps,
+                    num_eval_episodes=all_args.num_eval_episodes,
+                    eval_interval=all_args.eval_interval
+                )
+                trainer.train()
 
 if __name__ == "__main__":
     main(sys.argv[1:])

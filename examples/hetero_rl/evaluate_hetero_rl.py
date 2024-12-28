@@ -1,5 +1,6 @@
 import argparse
 from argparse import ArgumentParser
+import json
 from train_hetero_rl import convert_str2path
 from train_hetero_rl import create_env
 import pathlib
@@ -12,6 +13,7 @@ from drl_algos import Evaluater
 from drl_algos import IPPO
 from ots.evaluate_distances_real import create_ddevaluaters
 import torch
+from typing import Any
 from typing import Optional
 
 def get_config() -> ArgumentParser:
@@ -65,6 +67,8 @@ def main(args) -> None:
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
     dd_evaluaters = create_ddevaluaters(all_args)
+    config_path: Path = convert_str2path(all_args.config_path, mkdir=False)
+    config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
     env, num_agents = create_env(all_args)
     ippo: IPPO = IPPO(
         device=all_args.device,
