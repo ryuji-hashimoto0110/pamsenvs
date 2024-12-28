@@ -206,7 +206,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
             self.volatility_dic[agent_id] = 0.0
             self.num_execution_dic[agent_id] = 0
             self._smooth_agent_trait(agent_id)
-        self.obs_dic: dict[str, list[float | int]] = {"step": [], "agent_id": []}
+        self.obs_dic: dict[str, list[float | int]] = {
+            "step": [], "agent_id": [], "asset_volume": [], "cash_amount": [],
+            "market_price": [], "fundamental_price": []
+        }
         for obs_name in self.obs_names:
             self.obs_dic[obs_name] = []
         self.action_dic: dict[str, list[float | int]] = {
@@ -282,6 +285,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         current_time: int = market.get_time()
         self.obs_dic["step"].append(current_time)
         self.obs_dic["agent_id"].append(agent_id)
+        self.obs_dic["asset_volume"].append(agent.asset_volumes[market.market_id])
+        self.obs_dic["cash_amount"].append(agent.cash_amount)
+        self.obs_dic["market_price"].append(market.get_market_price())
+        self.obs_dic["fundamental_price"].append(market.get_fundamental_price())
         asset_ratio: float = self._calc_asset_ratio(agent, market)
         if "asset_ratio" in self.obs_names:
             asset_ratio = self._preprocess_obs(asset_ratio, "asset_ratio")
