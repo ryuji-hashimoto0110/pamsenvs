@@ -172,7 +172,7 @@ def main(args) -> None:
             alpha_str: str = f"{alpha:.2f}".replace(".", "")
             config_dic["Agent"]["riskAversionTerm"] = {"expon": [alpha]}
             for gamma in gammas:
-                gamma_str: str = f"{gamma:.3f}".replace(".", "")
+                gamma_str: str = f"{gamma:.2f}".replace(".", "")
                 config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}
                 actor_save_path: Path = convert_str2path(all_args.actor_save_path, mkdir=True)
                 actor_best_save_name = all_args.actor_best_save_name + f"-{sigma_str}-{alpha_str}-{gamma_str}-{all_args.seed}.pth"
