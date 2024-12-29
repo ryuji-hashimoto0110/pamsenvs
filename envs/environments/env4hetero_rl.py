@@ -284,17 +284,17 @@ class AECEnv4HeteroRL(PamsAECEnv):
             times=[t for t in range(last_order_time, current_time)]
         )
         log_return: float = self._calc_return(market_prices)
+        self.return_dic[agent_id] = log_return
         if "log_return" in self.obs_names:
             log_return = self._preprocess_obs(log_return, "log_return")
             obs_list.append(log_return)
             self.obs_dic["log_return"].append(log_return)
         volatility: float = self._calc_volatility(market_prices)
+        self.volatility_dic[agent_id] = volatility
         if "volatility" in self.obs_names:
             volatility = self._preprocess_obs(volatility, "volatility")
             obs_list.append(volatility)
             self.obs_dic["volatility"].append(volatility)
-        self.return_dic[agent_id] = log_return
-        self.volatility_dic[agent_id] = volatility
         asset_volume_buy_orders_ratio: float = self._get_asset_volume_existing_orders_ratio(
             agent, market, is_buy=True
         )
