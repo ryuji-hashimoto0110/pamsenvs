@@ -1,8 +1,8 @@
-rollout_length=130
+rollout_length=128
 num_updates_per_rollout=1
-batch_size=120
-lr_actor=5e-05
-lr_critic=8e-05
+batch_size=128
+lr_actor=1e-04
+lr_critic=1e-04
 clip_eps=0.1
 lmd=0.96
 max_grad_norm=0.5
@@ -16,7 +16,7 @@ num_eval_episodes=1
 agent_name="Agent"
 config_path="config.json"
 variable_ranges_path="variable_ranges.json"
-obs_names="asset_ratio liquidable_asset_ratio inverted_buying_power "\
+obs_names="asset_ratio liquidable_asset_ratio inverted_buying_power remaining_time_ratio "\
 "log_return volatility asset_volume_buy_orders_ratio asset_volume_sell_orders_ratio "\
 "blurred_fundamental_return skill_boundedness risk_aversion_term discount_factor"
 action_names="order_price_scale order_volume_scale"
