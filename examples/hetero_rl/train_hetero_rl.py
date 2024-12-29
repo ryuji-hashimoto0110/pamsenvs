@@ -52,7 +52,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     parser.add_argument(
-        "--sigmas", type=float, nargs="+", default=[0.00, 0.03, 0.06, 0.09, 0.20]
+        "--sigmas", type=float, nargs="+", default=[0.00, 0.005, 0.01, 0.015, 0.030]
     )
     parser.add_argument(
         "--alphas", type=float, nargs="+", default=[0.00, 0.30, 0.60, 0.90, 2.00]
@@ -169,7 +169,7 @@ def main(args) -> None:
     config_path: Path = convert_str2path(all_args.config_path, mkdir=False)
     config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
     for sigma in sigmas:
-        sigma_str: str = f"{sigma:.2f}".replace(".", "")
+        sigma_str: str = f"{sigma:.3f}".replace(".", "")
         config_dic["Agent"]["skillBoundedness"] = {"expon": [sigma]}
         for alpha in alphas:
             alpha_str: str = f"{alpha:.2f}".replace(".", "")

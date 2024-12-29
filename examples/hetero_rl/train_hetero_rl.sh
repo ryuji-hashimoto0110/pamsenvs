@@ -1,6 +1,6 @@
-rollout_length=128
+rollout_length=16
 num_updates_per_rollout=1
-batch_size=128
+batch_size=16
 lr_actor=1e-04
 lr_critic=1e-04
 clip_eps=0.1
@@ -27,7 +27,7 @@ short_selling_penalty=0.5
 execution_vonus=0.2
 initial_fundamental_penalty=20
 agent_trait_memory=0.0
-sigmas="0.03"
+sigmas="0.00"
 alphas="0.90"
 gammas="0.80"
 device="cpu"

@@ -15,7 +15,7 @@
 			},
 			{	
 				"sessionName": "1",
-				"iterationSteps": 10000,
+				"iterationSteps": 1000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -34,7 +34,7 @@
 			},
             {	
 				"sessionName": "2",
-				"iterationSteps": 10000,
+				"iterationSteps": 1000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -59,7 +59,7 @@
         "class": "HeteroRLAgent",
 		"prefix": "agent",
 		"from": 0,
-		"to": 179,
+		"to": 200,
 		"markets": ["Market"],
 		"assetVolume": {"expon": [20]},
         "cashAmount": {"expon": [6000]},
