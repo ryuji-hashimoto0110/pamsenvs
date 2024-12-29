@@ -47,6 +47,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--limit_order_range", type=float, default=0.05)
     parser.add_argument("--max_order_volume", type=int, default=50)
     parser.add_argument("--short_selling_penalty", type=float, default=0.5)
+    parser.add_argument("--initial_fundamental_penalty", type=float, default=2000)
     parser.add_argument("--execution_vonus", type=float, default=0.1)
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
@@ -140,6 +141,7 @@ def create_env(all_args, config_dic: dict[str, Any]) -> tuple[AECEnv4HeteroRL, i
         max_order_volume=all_args.max_order_volume,
         short_selling_penalty=all_args.short_selling_penalty,
         execution_vonus=all_args.execution_vonus,
+        initial_fundamental_penalty=all_args.initial_fundamental_penalty,
         agent_trait_memory=all_args.agent_trait_memory,
     )
     return env, num_agents

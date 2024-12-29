@@ -25,6 +25,7 @@ limit_order_range=0.05
 max_order_volume=50
 short_selling_penalty=0.5
 execution_vonus=0.2
+initial_fundamental_penalty=2000
 agent_trait_memory=0.0
 sigmas="0.03"
 alphas="0.90"
@@ -50,6 +51,7 @@ python train_hetero_rl.py \
 --max_order_volume $max_order_volume \
 --short_selling_penalty $short_selling_penalty \
 --execution_vonus $execution_vonus \
+--initial_fundamental_penalty $initial_fundamental_penalty \
 --agent_trait_memory $agent_trait_memory \
 --config_path $config_path \
 --variable_ranges_path $variable_ranges_path \
