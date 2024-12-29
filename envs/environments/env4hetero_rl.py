@@ -44,7 +44,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         max_order_volume: int = 10,
         short_selling_penalty: float = 0.5,
         execution_vonus: float = 0.1,
-        initial_fundamental_penalty: float = 400,
+        initial_fundamental_penalty: float = 2000,
         agent_trait_memory: float = 0.9
     ) -> None:
         """initialization.
@@ -631,7 +631,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def __str__(self) -> str:
         description: str = "[bold green]AECEnv4HeteroRL[/bold green]\n"
         description += f"max order volume: {self.max_order_volume} " + \
-            f"limit order range: {self.limit_order_range} short selling penalty: {self.short_selling_penalty}\n"
+            f"limit order range: {self.limit_order_range} short selling penalty: {self.short_selling_penalty} " + \
+            f"execution vonus: {self.execution_vonus} initial fundamental penalty: {self.fundamental_penalty}\n"
         description += f"obs: {self.obs_names}\n"
         description += f"action: {self.action_names}"
         return description
