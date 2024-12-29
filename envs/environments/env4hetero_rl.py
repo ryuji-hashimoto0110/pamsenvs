@@ -159,7 +159,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
 
     def reset(self) -> None:
         super().reset()
-        self.fundamental_penalty *= 0.99
+        self.fundamental_penalty *= 0.98
 
     def add_attributes(self) -> None:
         self.num_execution_dic: dict[AgentID, int] = {}
@@ -579,7 +579,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         fundamental_return: float = np.abs(
             np.log(fundamental_price) - np.log(market_price)
         )
+        #print(reward)
         reward -= self.fundamental_penalty * fundamental_return
+        #print(reward)
+        #print()
         self.reward_dic["execution_vonus"].append(self.execution_vonus * agent.num_executed_orders)
         self.reward_dic["total_reward"].append(reward)
         return reward
