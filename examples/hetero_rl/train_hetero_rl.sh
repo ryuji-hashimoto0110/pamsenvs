@@ -26,6 +26,9 @@ max_order_volume=50
 short_selling_penalty=0.5
 execution_vonus=0.2
 agent_trait_memory=0.0
+sigmas="0.00, 0.03, 0.06, 0.09, 0.20"
+alphas="0.00, 0.30, 0.60, 0.90, 2.00"
+gammas="0.80, 0.85, 0.90, 0.95, 0.999"
 device="cpu"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
@@ -54,4 +57,7 @@ python train_hetero_rl.py \
 --actor_best_save_name $actor_best_save_name \
 --actor_last_save_name $actor_last_save_name \
 --agent_name $agent_name \
---device $device
+--device $device \
+--sigmas $sigmas \
+--alphas $alphas \
+--gammas $gammas
