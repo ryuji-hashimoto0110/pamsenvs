@@ -44,7 +44,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         max_order_volume: int = 10,
         short_selling_penalty: float = 0.5,
         execution_vonus: float = 0.1,
-        fundamental_penalty: float = 10,
+        initial_fundamental_penalty: float = 400,
         agent_trait_memory: float = 0.9
     ) -> None:
         """initialization.
@@ -77,7 +77,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.max_order_volume: int = max_order_volume
         self.short_selling_penalty: float = short_selling_penalty
         self.execution_vonus: float = execution_vonus
-        self.fundamental_penalty: float = fundamental_penalty
+        self.fundamental_penalty: float = initial_fundamental_penalty
         self.agent_trait_memory: float = agent_trait_memory
         self.previous_agent_trait_dic: dict[AgentID, dict[str, float]] = {}
 
@@ -157,47 +157,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         runner.class_register(HeteroRLAgent)
         runner.class_register(DividendProviderwEverySteps)
 
-    """
-    def _get_agent_traits_dic(
-        self,
-        runner: Runner
-    ) -> dict[AgentID, dict[str, float | dict[MarketID, float]]]:
-        get agent traits.
-
-        'agent traits' are the attributes of agents that are used to generate 
-        observations and rewards, containing:
-            - last order time
-            - holding asset volume
-            - holding cash amount
-            - skill boundedness
-            - risk aversion term
-            - discount factor
-        simulator: Simulator = runner.simulator
-        agent_traits_dic: dict[AgentID, dict[str, float]] = {}
-        for agent in simulator.agents:
-            agent_id: AgentID = agent.agent_id
-            agent_traits_dic[agent_id] = {
-                "holding_cash_amount": agent.cash_amount,
-                "holding_asset_volume": agent.asset_volumes.copy()
-            }
-            if hasattr(agent, "last_order_time"):
-                agent_traits_dic[agent_id]["last_order_time"] = agent.last_order_time
-            else:
-                raise ValueError(f"agent {agent_id} does not have last_order_time.")
-            if hasattr(agent, "skill_boundedness"):
-                agent_traits_dic[agent_id]["skill_boundedness"] = agent.skill_boundedness
-            else:
-                raise ValueError(f"agent {agent_id} does not have skill_boundedness.")
-            if hasattr(agent, "risk_aversion_term"):
-                agent_traits_dic[agent_id]["risk_aversion_term"] = agent.risk_aversion_term
-            else:
-                raise ValueError(f"agent {agent_id} does not have risk_aversion_term.")
-            if hasattr(agent, "discount_factor"):
-                agent_traits_dic[agent_id]["discount_factor"] = agent.discount_factor
-            else:
-                raise ValueError(f"agent {agent_id} does not have discount_factor.")
-        return agent_traits_dic
-    """
+    def reset(self) -> None:
+        super().reset()
+        self.fundamental_penalty *= 0.5
 
     def add_attributes(self) -> None:
         self.num_execution_dic: dict[AgentID, int] = {}
