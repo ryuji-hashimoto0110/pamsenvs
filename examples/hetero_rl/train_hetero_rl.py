@@ -147,7 +147,8 @@ def create_env(all_args, config_dic: dict[str, Any]) -> tuple[AECEnv4HeteroRL, i
 def create_ippo(all_args, num_agents) -> IPPO:
     ippo: IPPO = IPPO(
         device=all_args.device,
-        obs_shape=(12,), action_shape=(2,), num_agents=num_agents,
+        obs_shape=(len(all_args.obs_names),),
+        action_shape=(len(all_args.action_names),), num_agents=num_agents,
         seed=all_args.seed, rollout_length=all_args.rollout_length,
         num_updates_per_rollout=all_args.num_updates_per_rollout,
         batch_size=all_args.batch_size, gamma_idx=-1,
