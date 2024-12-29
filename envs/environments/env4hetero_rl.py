@@ -44,6 +44,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         max_order_volume: int = 10,
         short_selling_penalty: float = 0.5,
         execution_vonus: float = 0.1,
+        fundamental_penalty: float = 10,
         agent_trait_memory: float = 0.9
     ) -> None:
         """initialization.
@@ -76,6 +77,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.max_order_volume: int = max_order_volume
         self.short_selling_penalty: float = short_selling_penalty
         self.execution_vonus: float = execution_vonus
+        self.fundamental_penalty: float = fundamental_penalty
         self.agent_trait_memory: float = agent_trait_memory
         self.previous_agent_trait_dic: dict[AgentID, dict[str, float]] = {}
 
@@ -610,6 +612,11 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             self.reward_dic["short_selling_penalty"].append(0)
         reward += self.execution_vonus * agent.num_executed_orders
+        fundamental_price: float = market.get_fundamental_price()
+        fundamental_return: float = np.abs(
+            np.log(fundamental_price) - np.log(market_price)
+        )
+        reward -= self.fundamental_penalty * fundamental_return
         self.reward_dic["execution_vonus"].append(self.execution_vonus * agent.num_executed_orders)
         self.reward_dic["total_reward"].append(reward)
         return reward
