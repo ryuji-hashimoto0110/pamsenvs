@@ -159,7 +159,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
 
     def reset(self) -> None:
         super().reset()
-        self.fundamental_penalty *= 0.5
+        self.fundamental_penalty *= 0.99
 
     def add_attributes(self) -> None:
         self.num_execution_dic: dict[AgentID, int] = {}
@@ -559,6 +559,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         total_wealth: float = cash_amount + asset_volume * market_price
         log_return: float = self.return_dic[agent_id]
         volatility: float = self.volatility_dic[agent_id]
+        #print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume:.1f} {market_price:.1f} {total_wealth:.1f} {log_return:.4f} {volatility:.6f}")
         current_utility: float = (
             total_wealth + asset_volume * market_price * log_return
         ) - 0.5 * agent.risk_aversion_term * (
