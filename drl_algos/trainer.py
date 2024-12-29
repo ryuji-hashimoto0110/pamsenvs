@@ -156,7 +156,7 @@ class Trainer:
                     episode_length += 1
             average_total_reward += np.sum(
                 list(episode_reward_dic.values())
-            ) / (episode_length * self.num_eval_episodes)
+            ) / self.num_eval_episodes
             average_total_execution_volume += total_execution_volume / self.num_eval_episodes
             average_price_range += self._get_price_range(self.test_env) / self.num_eval_episodes
             if hasattr(self.test_env, "obs_dic"):
