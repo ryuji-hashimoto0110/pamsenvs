@@ -43,6 +43,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         limit_order_range: float = 0.1,
         max_order_volume: int = 10,
         short_selling_penalty: float = 0.5,
+        cash_shortage_penalty: float = 0.5,
         execution_vonus: float = 0.1,
         initial_fundamental_penalty: float = 2000,
         agent_trait_memory: float = 0.9
@@ -76,6 +77,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.limit_order_range: float = limit_order_range
         self.max_order_volume: int = max_order_volume
         self.short_selling_penalty: float = short_selling_penalty
+        self.cash_shortage_penalty: float = cash_shortage_penalty
         self.execution_vonus: float = execution_vonus
         self.fundamental_penalty: float = initial_fundamental_penalty
         self.agent_trait_memory: float = agent_trait_memory
@@ -183,8 +185,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
             self.action_dic[action_name] = []
         self.reward_dic: dict[str, list[float | int]] = {
             "step": [], "agent_id": [], "scaled_utility_diff": [],
-            "short_selling_penalty": [], "execution_vonus": [],
-            "total_reward": []
+            "short_selling_penalty": [], "cash_shortage_penalty": [],
+            "fundamental_penalty": [],
+            "execution_vonus": [], "total_reward": []
         }
 
     def _smooth_agent_trait(self, agent_id: AgentID) -> None:
@@ -559,31 +562,49 @@ class AECEnv4HeteroRL(PamsAECEnv):
         total_wealth: float = cash_amount + asset_volume * market_price
         log_return: float = self.return_dic[agent_id]
         volatility: float = self.volatility_dic[agent_id]
-        #print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume:.1f} {market_price:.1f} {total_wealth:.1f} {log_return:.4f} {volatility:.6f}")
+        asset_fraction: float = asset_volume * market_price / total_wealth
         current_utility: float = (
-            total_wealth + asset_volume * market_price * log_return
+            total_wealth * (1 + asset_fraction * log_return)
         ) - 0.5 * agent.risk_aversion_term * (
-            (asset_volume * market_price) ** 2
-        ) * volatility
+            asset_fraction ** 2
+        ) * volatility * total_wealth
+        agent.previous_utility = current_utility
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
-        reward = utility_diff / normalization_factor
-        self.reward_dic["scaled_utility_diff"].append(reward)
+        scaled_utility_diff: float = utility_diff / normalization_factor
+        #print(f"{previous_utility=:.2f}, {current_utility=:.2f} {scaled_utility_diff=:.2f}")
+        #print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume=:.1f} {market_price=:.1f} {total_wealth=:.1f} {log_return=:.4f} {volatility=:.6f} alpha={agent.risk_aversion_term:.2f}")
+        reward = scaled_utility_diff
+        self.reward_dic["scaled_utility_diff"].append(scaled_utility_diff)
         if asset_volume < 0:
-            reward -= self.short_selling_penalty
-            self.reward_dic["short_selling_penalty"].append(-self.short_selling_penalty)
+            short_selling_penalty: float = self.short_selling_penalty
+            reward -= short_selling_penalty
         else:
-            self.reward_dic["short_selling_penalty"].append(0)
-        reward += self.execution_vonus * agent.num_executed_orders
+            short_selling_penalty: float = 0
+        self.reward_dic["short_selling_penalty"].append(-short_selling_penalty)
+        if cash_amount < 0:
+            cash_shortage_penalty: float = self.cash_shortage_penalty
+            reward -= cash_shortage_penalty
+        else:
+            cash_shortage_penalty: float = 0
+        self.reward_dic["cash_shortage_penalty"].append(-cash_shortage_penalty)
+        execution_vonus: float = self.execution_vonus * agent.num_executed_orders
+        reward += execution_vonus
+        self.reward_dic["execution_vonus"].append(execution_vonus)
         fundamental_price: float = market.get_fundamental_price()
         fundamental_return: float = np.abs(
             np.log(fundamental_price) - np.log(market_price)
         )
-        #print(reward)
-        reward -= self.fundamental_penalty * fundamental_return
-        #print(reward)
-        #print()
-        self.reward_dic["execution_vonus"].append(self.execution_vonus * agent.num_executed_orders)
+        fundamental_penalty: float = self.fundamental_penalty * fundamental_return
+        reward -= fundamental_penalty
+        self.reward_dic["fundamental_penalty"].append(-fundamental_penalty)
+        #print(
+        #    f"utility diff: {utility_diff / normalization_factor:.2f} " + \
+        #    f"short selling penalty: {self.reward_dic['short_selling_penalty'][-1]:.2f} " + \
+        #    f"cash shortage penalty: {self.reward_dic['cash_shortage_penalty'][-1]:.2f} " + \
+        #    f"fundamental penalty: {self.reward_dic['fundamental_penalty'][-1]:.2f} " + \
+        #    f"execution vonus: {self.reward_dic['execution_vonus'][-1]:.2f}"
+        #)
         self.reward_dic["total_reward"].append(reward)
         return reward
 
