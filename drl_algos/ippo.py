@@ -49,15 +49,15 @@ class IPPOActor(Module):
         super(IPPOActor, self).__init__()
         self.obs_shape: ndarray = obs_shape
         self.actlayer: Module = nn.Sequential(
-            nn.Linear(np.prod(obs_shape), 128),
+            nn.Linear(np.prod(obs_shape), 256),
             nn.Tanh(),
-            nn.Linear(128, 128),
+            nn.Linear(256, 256),
             nn.Tanh(),
-            nn.Linear(128, np.prod(action_shape)),
+            nn.Linear(256, np.prod(action_shape)),
         ).to(device)
         initialize_module_orthogonal(self.actlayer)
         self.log_stds: Tensor = nn.Parameter(
-            torch.zeros(1, action_shape[0])
+            -3*torch.ones(1, action_shape[0])
         ).to(device)
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
@@ -120,11 +120,11 @@ class IPPOCritic(Module):
         super(IPPOCritic, self).__init__()
         self.obs_shape: ndarray = obs_shape
         self.valuelayer: Module = nn.Sequential(
-            nn.Linear(np.prod(obs_shape), 128),
+            nn.Linear(np.prod(obs_shape), 256),
             nn.Tanh(),
-            nn.Linear(128, 128),
+            nn.Linear(256, 256),
             nn.Tanh(),
-            nn.Linear(128, 1),
+            nn.Linear(256, 1),
         ).to(device)
         initialize_module_orthogonal(self.valuelayer)
 
@@ -302,6 +302,7 @@ class IPPO(Algorithm):
             self.scheduler_actor.step()
             self.scheduler_critic.step()
             #print(self.scheduler_actor.get_lr())
+        #print(self.actor.log_stds)
 
     def calc_gae(
         self,
