@@ -45,7 +45,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         short_selling_penalty: float = 0.5,
         cash_shortage_penalty: float = 0.5,
         execution_vonus: float = 0.1,
-        initial_fundamental_penalty: float = 2000,
+        initial_fundamental_penalty: float = 1.0,
+        fundamental_penalty_decay: float = 0.9,
         agent_trait_memory: float = 0.9
     ) -> None:
         """initialization.
@@ -80,6 +81,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.cash_shortage_penalty: float = cash_shortage_penalty
         self.execution_vonus: float = execution_vonus
         self.fundamental_penalty: float = initial_fundamental_penalty
+        self.fundamental_penalty_decay: float = fundamental_penalty_decay
         self.agent_trait_memory: float = agent_trait_memory
         self.previous_agent_trait_dic: dict[AgentID, dict[str, float]] = {}
 
@@ -161,7 +163,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
 
     def reset(self) -> None:
         super().reset()
-        self.fundamental_penalty *= 0.98
+        self.fundamental_penalty *= self.fundamental_penalty_decay
 
     def add_attributes(self) -> None:
         self.num_execution_dic: dict[AgentID, int] = {}
@@ -367,7 +369,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "log_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
         elif obs_name == "volatility":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.04)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.004)
         elif obs_name == "asset_volume_buy_orders_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
         elif obs_name == "asset_volume_sell_orders_ratio":
@@ -565,15 +567,14 @@ class AECEnv4HeteroRL(PamsAECEnv):
         asset_fraction: float = asset_volume * market_price / total_wealth
         current_utility: float = (
             total_wealth * (1 + asset_fraction * log_return)
-        ) - 0.5 * agent.risk_aversion_term * (
-            asset_fraction ** 2
-        ) * volatility * total_wealth
-        agent.previous_utility = current_utility
+        ) - 0.5 * agent.risk_aversion_term * asset_fraction * volatility * total_wealth
+        #agent.previous_utility = current_utility
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
         scaled_utility_diff: float = utility_diff / normalization_factor
-        #print(f"{previous_utility=:.2f}, {current_utility=:.2f} {scaled_utility_diff=:.2f}")
-        #print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume=:.1f} {market_price=:.1f} {total_wealth=:.1f} {log_return=:.4f} {volatility=:.6f} alpha={agent.risk_aversion_term:.2f}")
+        #if scaled_utility_diff > 5:
+        #    print(f"{previous_utility=:.2f}, {current_utility=:.2f} {scaled_utility_diff=:.2f}")
+        #    print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume=:.1f} {market_price=:.1f} {total_wealth=:.1f} {log_return=:.4f} {volatility=:.6f} alpha={agent.risk_aversion_term:.2f}")
         reward = scaled_utility_diff
         self.reward_dic["scaled_utility_diff"].append(scaled_utility_diff)
         if asset_volume < 0:
@@ -598,12 +599,13 @@ class AECEnv4HeteroRL(PamsAECEnv):
         fundamental_penalty: float = self.fundamental_penalty * fundamental_return
         reward -= fundamental_penalty
         self.reward_dic["fundamental_penalty"].append(-fundamental_penalty)
+        #print(f"{reward=:.2f}")
         #print(
-        #    f"utility diff: {utility_diff / normalization_factor:.2f} " + \
-        #    f"short selling penalty: {self.reward_dic['short_selling_penalty'][-1]:.2f} " + \
-        #    f"cash shortage penalty: {self.reward_dic['cash_shortage_penalty'][-1]:.2f} " + \
-        #    f"fundamental penalty: {self.reward_dic['fundamental_penalty'][-1]:.2f} " + \
-        #    f"execution vonus: {self.reward_dic['execution_vonus'][-1]:.2f}"
+        #    f"utility diff: {scaled_utility_diff:.3f} " + \
+        #    f"short selling penalty: {self.reward_dic['short_selling_penalty'][-1]:.3f} " + \
+        #    f"cash shortage penalty: {self.reward_dic['cash_shortage_penalty'][-1]:.3f} " + \
+        #    f"fundamental penalty: {self.reward_dic['fundamental_penalty'][-1]:.3f} " + \
+        #    f"execution vonus: {self.reward_dic['execution_vonus'][-1]:.3f}"
         #)
         self.reward_dic["total_reward"].append(reward)
         return reward
@@ -657,7 +659,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         description: str = "[bold green]AECEnv4HeteroRL[/bold green]\n"
         description += f"max order volume: {self.max_order_volume} " + \
             f"limit order range: {self.limit_order_range} short selling penalty: {self.short_selling_penalty} " + \
-            f"execution vonus: {self.execution_vonus} initial fundamental penalty: {self.fundamental_penalty}\n"
+            f"cash shortage penalty: {self.cash_shortage_penalty} " + \
+            f"execution vonus: {self.execution_vonus} fundamental penalty: {self.fundamental_penalty} ({self.fundamental_penalty_decay})\n"
         description += f"obs: {self.obs_names}\n"
         description += f"action: {self.action_names}"
         return description
