@@ -568,7 +568,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         current_utility: float = (
             total_wealth * (1 + asset_fraction * log_return)
         ) - 0.5 * agent.risk_aversion_term * asset_fraction * volatility * total_wealth
-        #agent.previous_utility = current_utility
+        agent.previous_utility = current_utility
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
         scaled_utility_diff: float = utility_diff / normalization_factor
