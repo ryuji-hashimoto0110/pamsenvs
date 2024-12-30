@@ -12,6 +12,7 @@ from pams.logs import Logger
 from pams.market import Market
 from pams.order import Cancel
 from pams.order import LIMIT_ORDER
+from pams.order import MARKET_ORDER
 from pams.order import Order
 from pams.runners import Runner
 from pams.runners import SequentialRunner
@@ -627,9 +628,23 @@ class AECEnv4HeteroRL(PamsAECEnv):
         if 0 < order_volume_scale:
             order_price: float = mid_price - self.limit_order_range * mid_price * order_price_scale
             is_buy = True
+            best_sell_price: float = market.get_best_sell_price()
+            best_sell_price = best_sell_price if best_sell_price is not None else mid_price
+            if best_sell_price < order_price:
+                order_price = None
+                order_kind = MARKET_ORDER
+            else:
+                order_kind = LIMIT_ORDER
         else:
             order_price: float = mid_price + self.limit_order_range * mid_price * order_price_scale
             is_buy = False
+            best_buy_price: float = market.get_best_buy_price()
+            best_buy_price = best_buy_price if best_buy_price is not None else mid_price
+            if order_price < best_buy_price:
+                order_price = None
+                order_kind = MARKET_ORDER
+            else:
+                order_kind = LIMIT_ORDER
         self.action_dic["is_buy"].append(int(is_buy))
         order_volume: int = np.abs(
             np.ceil(self.max_order_volume * order_volume_scale)
@@ -648,7 +663,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             price=order_price,
             volume=order_volume,
             is_buy=is_buy,
-            kind=LIMIT_ORDER,
+            kind=order_kind,
             ttl=len(self.simulator.agents)
         )
         self.action_dic["order_price"].append(order_price)
