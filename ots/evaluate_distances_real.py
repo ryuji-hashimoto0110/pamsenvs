@@ -45,7 +45,11 @@ def create_path(folder_name: Optional[str]) -> Optional[Path]:
         parent_path.mkdir(parents=True)
     return folder_path
 
-def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
+def create_ddevaluaters(
+    all_args,
+    show_args: bool = True,
+    multiple_ts_only: bool = False
+) -> list[DDEvaluater]:
     """
     all_args must contain:
         - seed: int
@@ -113,13 +117,14 @@ def create_ddevaluaters(all_args, show_args: bool = True) -> list[DDEvaluater]:
                 is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
             )
             evaluaters.append(evaluater)
-        for lag in lags:
-            evaluater: DDEvaluater = ReturnTSDDEvaluater(
-                lags=[int(lag)],
-                seed=seed, resample_rule=resample_rule,
-                is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
-            )
-            evaluaters.append(evaluater)
+        if not multiple_ts_only:
+            for lag in lags:
+                evaluater: DDEvaluater = ReturnTSDDEvaluater(
+                    lags=[int(lag)],
+                    seed=seed, resample_rule=resample_rule,
+                    is_bybit=is_bybit, ticker_path_dic=ticker_path_dic
+                )
+                evaluaters.append(evaluater)
     return evaluaters
 
 def main(args):
