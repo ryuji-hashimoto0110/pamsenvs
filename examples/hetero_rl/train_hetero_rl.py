@@ -144,6 +144,7 @@ def create_env(all_args, config_dic: dict[str, Any]) -> tuple[AECEnv4HeteroRL, i
         cash_shortage_penalty=all_args.cash_shortage_penalty,
         execution_vonus=all_args.execution_vonus,
         initial_fundamental_penalty=all_args.initial_fundamental_penalty,
+        fundamental_penalty_decay=all_args.fundamental_penalty_decay,
         agent_trait_memory=all_args.agent_trait_memory,
     )
     return env, num_agents
