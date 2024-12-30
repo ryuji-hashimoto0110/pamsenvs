@@ -23,14 +23,16 @@ action_names="order_price_scale order_volume_scale"
 depth_range=0.03
 limit_order_range=0.05
 max_order_volume=50
-short_selling_penalty=0.5
+short_selling_penalty=1.0
+cash_shortage_penalty=1.0
 execution_vonus=0.01
-initial_fundamental_penalty=1.0
+initial_fundamental_penalty=10.0
+fundamental_penalty_decay=0.9
 agent_trait_memory=0.0
 sigmas="0.01"
-alphas="0.10"
+alphas="0.90"
 gammas="0.80"
-device="cuda:0"
+device="cpu"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
 --num_updates_per_rollout $num_updates_per_rollout \
@@ -50,8 +52,10 @@ python train_hetero_rl.py \
 --limit_order_range $limit_order_range \
 --max_order_volume $max_order_volume \
 --short_selling_penalty $short_selling_penalty \
+--cash_shortage_penalty $cash_shortage_penalty \
 --execution_vonus $execution_vonus \
 --initial_fundamental_penalty $initial_fundamental_penalty \
+--fundamental_penalty_decay $fundamental_penalty_decay \
 --agent_trait_memory $agent_trait_memory \
 --config_path $config_path \
 --variable_ranges_path $variable_ranges_path \
