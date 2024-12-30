@@ -334,7 +334,7 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
             return ["tail (acorr)", "first negative lag"]
         
     def __str__(self) -> str:
-        return f"ReturnTSDDEvaluater"
+        return f"ReturnTSDDEvaluater{self.lags}"
 
     def calc_statistics(self, point_cloud: ndarray) -> list[float]:
         statistics: list[float] = []
