@@ -57,7 +57,7 @@ class IPPOActor(Module):
         ).to(device)
         initialize_module_orthogonal(self.actlayer)
         self.log_stds: Tensor = nn.Parameter(
-            -3*torch.ones(1, action_shape[0])
+            torch.zeros(1, action_shape[0])
         ).to(device)
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
@@ -78,7 +78,7 @@ class IPPOActor(Module):
         obses = self._resize_obses(obses)
         means: Tensor = self.actlayer(obses)
         actions, log_prob = reparametrize(
-            means, self.log_stds.clamp(-20,0.0)
+            means, self.log_stds.clamp(-20, 1)
         )
         actions = actions.clamp(-0.999, 0.999)
         return actions, log_prob
@@ -93,7 +93,10 @@ class IPPOActor(Module):
         means: Tensor = self.actlayer(obses)
         if actions.shape != means.shape:
             raise ValueError(f"Invalid action shape: {actions.shape}.")
-        noises: Tensor = (actions - means) / (self.log_stds.exp() + 1e-06)
+        noises: Tensor = (
+            0.5 * (torch.log(1 + actions + 1e-06) - torch.log(1 - actions + 1e-06)) 
+            - means
+        ) / (self.log_stds.exp() + 1e-08)
         log_probs: Tensor = calc_log_prob(self.log_stds, noises, actions)
         return log_probs
 
