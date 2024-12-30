@@ -450,3 +450,7 @@ class PamsAECEnv(AECEnv, ABC):
     @abstractmethod
     def convert_action2orders(self, action: ActionType) -> list[Order | Cancel]:
         pass
+
+    @abstractmethod
+    def is_ready_to_store_experience(self) -> bool:
+        pass

@@ -47,7 +47,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         execution_vonus: float = 0.1,
         initial_fundamental_penalty: float = 1.0,
         fundamental_penalty_decay: float = 0.9,
-        agent_trait_memory: float = 0.9
+        agent_trait_memory: float = 0.9,
+        store_experience_time: int = 300
     ) -> None:
         """initialization.
 
@@ -84,6 +85,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.fundamental_penalty_decay: float = fundamental_penalty_decay
         self.agent_trait_memory: float = agent_trait_memory
         self.previous_agent_trait_dic: dict[AgentID, dict[str, float]] = {}
+        self.store_experience_time: int = store_experience_time
 
     def set_action_space(self) -> Space:
         return spaces.Box(low=-1, high=1, shape=(self.action_dim,))
@@ -164,6 +166,12 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def reset(self) -> None:
         super().reset()
         self.fundamental_penalty *= self.fundamental_penalty_decay
+
+    def is_ready_to_store_experience(self) -> bool:
+        if self.get_time() < self.store_experience_time:
+            return False
+        else:
+            return True
 
     def add_attributes(self) -> None:
         self.num_execution_dic: dict[AgentID, int] = {}
