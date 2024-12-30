@@ -1,8 +1,8 @@
 rollout_length=128
 num_updates_per_rollout=1
 batch_size=16
-lr_actor=5e-05
-lr_critic=8e-05
+lr_actor=3e-04
+lr_critic=5e-04
 clip_eps=0.1
 lmd=0.96
 max_grad_norm=0.5
@@ -11,12 +11,12 @@ actor_save_path="../../datas/checkpoints"
 actor_best_save_name="best"
 actor_last_save_name="last"
 num_train_steps=10000000
-eval_interval=21100
+eval_interval=42200
 num_eval_episodes=3
 agent_name="Agent"
 config_path="config.json"
 variable_ranges_path="variable_ranges.json"
-obs_names="asset_ratio liquidable_asset_ratio inverted_buying_power remaining_time_ratio "\
+obs_names="asset_ratio liquidable_asset_ratio inverted_buying_power "\
 "log_return volatility asset_volume_buy_orders_ratio asset_volume_sell_orders_ratio "\
 "blurred_fundamental_return skill_boundedness risk_aversion_term discount_factor"
 action_names="order_price_scale order_volume_scale"
@@ -24,13 +24,13 @@ depth_range=0.03
 limit_order_range=0.05
 max_order_volume=50
 short_selling_penalty=0.5
-execution_vonus=0.2
-initial_fundamental_penalty=20
+execution_vonus=0.01
+initial_fundamental_penalty=1.0
 agent_trait_memory=0.0
 sigmas="0.01"
-alphas="0.90"
+alphas="0.10"
 gammas="0.80"
-device="cpu"
+device="cuda:0"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
 --num_updates_per_rollout $num_updates_per_rollout \
