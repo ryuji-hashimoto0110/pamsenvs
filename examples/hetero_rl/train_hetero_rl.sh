@@ -1,8 +1,8 @@
 rollout_length=128
 num_updates_per_rollout=1
 batch_size=64
-lr_actor=3e-04
-lr_critic=5e-04
+lr_actor=1e-04
+lr_critic=1e-04
 clip_eps=0.1
 lmd=0.96
 max_grad_norm=0.5
@@ -11,7 +11,7 @@ actor_save_path="../../datas/checkpoints"
 actor_best_save_name="best"
 actor_last_save_name="last"
 num_train_steps=10000000
-eval_interval=42200
+eval_interval=21100
 num_eval_episodes=3
 agent_name="Agent"
 config_path="config.json"
@@ -31,7 +31,7 @@ fundamental_penalty_decay=0.99
 agent_trait_memory=0.9
 sigmas="0.01"
 alphas="0.90"
-gammas="0.80"
+gammas="0.90"
 device="cpu"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \

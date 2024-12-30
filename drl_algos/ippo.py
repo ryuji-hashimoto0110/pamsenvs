@@ -49,11 +49,11 @@ class IPPOActor(Module):
         super(IPPOActor, self).__init__()
         self.obs_shape: ndarray = obs_shape
         self.actlayer: Module = nn.Sequential(
-            nn.Linear(np.prod(obs_shape), 256),
+            nn.Linear(np.prod(obs_shape), 128),
             nn.Tanh(),
-            nn.Linear(256, 256),
+            nn.Linear(128, 128),
             nn.Tanh(),
-            nn.Linear(256, np.prod(action_shape)),
+            nn.Linear(128, np.prod(action_shape)),
         ).to(device)
         initialize_module_orthogonal(self.actlayer)
         self.log_stds: Tensor = nn.Parameter(
@@ -120,11 +120,11 @@ class IPPOCritic(Module):
         super(IPPOCritic, self).__init__()
         self.obs_shape: ndarray = obs_shape
         self.valuelayer: Module = nn.Sequential(
-            nn.Linear(np.prod(obs_shape), 256),
+            nn.Linear(np.prod(obs_shape), 128),
             nn.Tanh(),
-            nn.Linear(256, 256),
+            nn.Linear(128, 128),
             nn.Tanh(),
-            nn.Linear(256, 1),
+            nn.Linear(128, 1),
         ).to(device)
         initialize_module_orthogonal(self.valuelayer)
 
