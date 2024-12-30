@@ -129,14 +129,18 @@ class Algorithm(ABC):
         if done:
             env.reset()
             #self._initialize_buffer()
-        self._store_experience(
-            agent_id=agent_id,
-            obs_tensor=self._convert_obs2tensor(obs),
-            action_tensor=self._convert_action2tensor(action),
-            reward=reward,
-            done=done,
-            log_prob=log_prob,
-        )
+        store_experience: bool = True
+        if hasattr(env, "is_ready_to_store_experience"):
+            store_experience = env.is_ready_to_store_experience()
+        if store_experience:
+            self._store_experience(
+                agent_id=agent_id,
+                obs_tensor=self._convert_obs2tensor(obs),
+                action_tensor=self._convert_action2tensor(action),
+                reward=reward,
+                done=done,
+                log_prob=log_prob,
+            )
         if hasattr(env, "get_time"):
             current_episode_steps = env.get_time()
         else:
