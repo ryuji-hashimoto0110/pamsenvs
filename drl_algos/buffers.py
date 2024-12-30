@@ -99,24 +99,20 @@ class RolloutBuffer4IPPO:
         next_idx: int = self.next_idx_dic[agent_idx]
         is_storing: bool = self.is_storing_dic[agent_idx]
         if not is_storing:
-            if next_idx == 0:
-                self.obses[agent_idx, -1].copy_(
-                    obs_tensor.view(self.obs_shape)
-                )
-            self.next_idx_dic[agent_idx] = 1
             return
         else:
             self.next_obses[agent_idx, next_idx-1].copy_(
                 obs_tensor.view(self.obs_shape)
             )
+            if next_idx == self.buffer_size:
+                self.is_storing_dic[agent_idx] = False
+                return
         self.obses[agent_idx, next_idx].copy_(obs_tensor.view(self.obs_shape))
         self.actions[agent_idx, next_idx].copy_(action_tensor.view(self.action_shape))
         self.rewards[agent_idx, next_idx] = float(reward)
         self.dones[agent_idx, next_idx] = float(done)
         self.log_probs[agent_idx, next_idx] = float(log_prob)
-        self.next_idx_dic[agent_idx] = (next_idx + 1) % self.buffer_size
-        if next_idx + 1 == self.buffer_size:
-            self.is_storing_dic[agent_idx] = False
+        self.next_idx_dic[agent_idx] = next_idx + 1
 
     def is_filled(self) -> bool:
         """Check if the buffer is filled.
@@ -136,7 +132,7 @@ class RolloutBuffer4IPPO:
             np.array(list(self.is_storing_dic.values())) == False
         )[0]
         normed_rewards: Tensor = self.rewards[filled_indices] / (self.rewards[filled_indices].std() + 1e-06)
-        #print(f"{normed_rewards.quantile(0.01):.4f}, {lower_bound:.4f} {upper_bound:.4f}, {normed_rewards.quantile(0.99):.4f}")
+        #print(f"{normed_rewards.quantile(0.01):.4f}, {normed_rewards.quantile(0.05):.4f} {normed_rewards.quantile(0.95):.4f}, {normed_rewards.quantile(0.99):.4f}")
         normed_rewards = normed_rewards.clamp(-5, 5)
         experiences: tuple[Tensor] = (
             self.obses[filled_indices],
