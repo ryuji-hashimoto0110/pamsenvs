@@ -66,7 +66,7 @@ def get_config() -> ArgumentParser:
 def main(args) -> None:
     parser = get_config()
     all_args = parser.parse_known_args(args)[0]
-    dd_evaluaters = create_ddevaluaters(all_args)
+    dd_evaluaters = create_ddevaluaters(all_args, multiple_ts_only=True)
     config_path: Path = convert_str2path(all_args.config_path, mkdir=False)
     config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
     env, num_agents = create_env(all_args)
