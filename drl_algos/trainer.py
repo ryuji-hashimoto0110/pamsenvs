@@ -56,6 +56,7 @@ class Trainer:
         self.seed: int = seed
         self.train_env.seed(self.seed)
         self.test_env: AECEnv = test_env
+        self.start_exploit_time: int = self._get_start_exploit_time(self.test_env.config_dic)
         self.algo: Algorithm = algo
         self.actor_best_save_path: Optional[Path] = actor_best_save_path
         self.actor_last_save_path: Optional[Path] = actor_last_save_path
@@ -71,6 +72,8 @@ class Trainer:
             print(f"train steps: {num_train_steps} eval interval: {eval_interval}")
             print(f"num eval episodes: {num_eval_episodes}")
 
+    def _get_start_exploit_time(self, config: dict[str, Any]) -> int:
+        return config["simulation"]["sessions"][0]["iterationSteps"]
 
     def _set_results_dic(
         self, other_indicators: list[str]
@@ -145,7 +148,11 @@ class Trainer:
             episode_length: int = 0
             for agent_id in self.test_env.agent_iter():
                 obs: ObsType = self.test_env.last()
-                action: ActionType = self.algo.exploit(obs)
+                t: int = self.test_env.get_time()
+                if t <= self.start_exploit_time:
+                    action: ActionType = self.algo.explore(obs)
+                else:
+                    action: ActionType = self.algo.exploit(obs)
                 reward, done, info = self.test_env.step(action)
                 episode_reward_dic[agent_id] += reward
                 if "execution_volume" in info:

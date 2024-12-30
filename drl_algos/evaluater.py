@@ -161,7 +161,8 @@ class Evaluater:
             self.env.logger.txt_save_folder_path = self.txts_save_path
             self.env.logger.txt_file_name_dic[self.market_name] = f"{save_name}.txt"
         else:
-            session1_end_time, session2_start_time = self._get_session_boundary(self.env.config_dic)
+            session1_start_time, session1_end_time, session2_start_time = \
+                self._get_session_boundary(self.env.config_dic)
             saver: FlexSaver = FlexSaver(
                 session1_end_time=session1_end_time,
                 session2_start_time=session2_start_time,
@@ -173,7 +174,11 @@ class Evaluater:
         done: bool = False
         for agent_id in self.env.agent_iter():
             obs: ObsType = self.env.last()
-            action: ActionType = self.algo.exploit(obs)
+            t: int = self.env.get_time()
+            if t <= session1_start_time:
+                action: ActionType = self.algo.explore(obs)
+            else:
+                action: ActionType = self.algo.exploit(obs)
             reward, done, info = self.env.step(action)
             if done:
                 break
@@ -197,6 +202,7 @@ class Evaluater:
             session_name: str = str(session_config["sessionName"])
             session_iteration_steps: int = int(session_config["iterationSteps"])
             if session_name == "1":
+                session1_start_time = total_times
                 session1_end_time = total_times + session_iteration_steps - 1
             elif session_name == "2":
                 session2_start_time = total_times - 1
