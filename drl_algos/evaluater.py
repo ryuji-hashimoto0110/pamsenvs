@@ -176,7 +176,7 @@ class Evaluater:
             obs: ObsType = self.env.last()
             t: int = self.env.get_time()
             if t <= session1_start_time:
-                action: ActionType = self.algo.explore(obs)
+                action, _ = self.algo.explore(obs)
             else:
                 action: ActionType = self.algo.exploit(obs)
             reward, done, info = self.env.step(action)

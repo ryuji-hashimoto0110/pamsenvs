@@ -150,7 +150,7 @@ class Trainer:
                 obs: ObsType = self.test_env.last()
                 t: int = self.test_env.get_time()
                 if t <= self.start_exploit_time:
-                    action: ActionType = self.algo.explore(obs)
+                    action, _ = self.algo.explore(obs)
                 else:
                     action: ActionType = self.algo.exploit(obs)
                 reward, done, info = self.test_env.step(action)
