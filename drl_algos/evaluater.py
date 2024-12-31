@@ -208,12 +208,12 @@ class Evaluater:
         Args:
             save_name (str): Save name.
         """
+        session1_start_time, session1_end_time, session2_start_time = \
+            self._get_session_boundary(self.env.config_dic)
         if isinstance(self.env.logger, FlexSaver):
             self.env.logger.txt_save_folder_path = self.txts_save_path
             self.env.logger.txt_file_name_dic[self.market_name] = f"{save_name}.txt"
         else:
-            session1_start_time, session1_end_time, session2_start_time = \
-                self._get_session_boundary(self.env.config_dic)
             saver: FlexSaver = FlexSaver(
                 session1_end_time=session1_end_time,
                 session2_start_time=session2_start_time,
@@ -262,7 +262,7 @@ class Evaluater:
             raise ValueError("failed to find session 1.")
         if session2_start_time is None:
             raise ValueError("failed to found session 2.")
-        return session1_end_time, session2_start_time
+        return session1_start_time, session1_end_time, session2_start_time
 
     def create_decision_histories(self, save_name) -> None:
         """Create decision histories df. This method is called after 1 episode."""
