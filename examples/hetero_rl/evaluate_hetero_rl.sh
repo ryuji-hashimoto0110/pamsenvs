@@ -31,7 +31,8 @@ session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
 figs_save_path="../../imgs/hetero_rl/temp"
 market_name="Market"
 decision_histories_save_path="../../datas/artificial_datas/hetero_rl_decision_histories/temp"
-indicators_save_path="../../stylized_facts/results/hetero_rl"
+stylized_facts_save_path="../../stylized_facts/results/hetero_rl/0010-090-090-42.csv"
+ot_distances_save_path="ots.csv"
 python evaluate_hetero_rl.py \
 --ohlcv_folder_path ${ohlcv_folder_path} \
 --ticker_folder_names ${ticker_folder_names} \

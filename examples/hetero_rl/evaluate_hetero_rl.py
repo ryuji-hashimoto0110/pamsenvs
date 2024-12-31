@@ -63,7 +63,8 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--market_name", type=str, default=None)
     parser.add_argument("--decision_histories_save_path", type=str, default=None)
     parser.add_argument("--figs_save_path", type=str, default=None)
-    parser.add_argument("--indicators_save_path", type=str, default=None)
+    parser.add_argument("--stylized_facts_save_path", type=str, default=None)
+    parser.add_argument("--ot_distances_save_path", type=str, default=None)
     return parser
 
 def main(args) -> None:
@@ -92,7 +93,8 @@ def main(args) -> None:
         market_name=all_args.market_name,
         decision_histories_save_path=convert_str2path(all_args.decision_histories_save_path, True),
         figs_save_path=convert_str2path(all_args.figs_save_path, True),
-        indicators_save_path=convert_str2path(all_args.indicators_save_path, True)
+        stylized_facts_save_path=convert_str2path(all_args.stylized_facts_save_path, False),
+        ot_distances_save_path=convert_str2path(all_args.ot_distances_save_path, True),
     )
     evaluater.save_multiple_episodes()
 
