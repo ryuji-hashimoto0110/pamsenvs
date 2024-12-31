@@ -45,7 +45,8 @@ class Evaluater:
         market_name: str,
         decision_histories_save_path: Path,
         figs_save_path: Path,
-        indicators_save_path: Path,
+        stylized_facts_save_path: Path,
+        ot_distances_save_path: Path,
     ) -> None:
         """initialization.
         
@@ -84,7 +85,8 @@ class Evaluater:
         self.market_name: str = market_name
         self.decision_histories_save_path: Path = decision_histories_save_path
         self.figs_save_path: Path = figs_save_path
-        self.indicators_save_path: Path = indicators_save_path
+        self.stylized_facts_save_path: Path = stylized_facts_save_path
+        self.ot_distances_save_path: Path = ot_distances_save_path
         self.column_names: list[str] = self._get_column_names()
 
     def _get_actor_configs(self, actor_load_path: Path) -> list[float]:
@@ -160,11 +162,11 @@ class Evaluater:
             session1_transactions_file_name=self.session1_transactions_file_name,
             session2_transactions_file_name=self.session2_transactions_file_name
         )
-        save_path: Path = self.indicators_save_path / "stylized_facts.csv"
-        checker.check_stylized_facts(save_path=save_path)
-        dd_save_path: Path = self.indicators_save_path / "dd_results.csv"
-        if dd_save_path.exists():
-            dd_df: DataFrame = pd.read_csv(dd_save_path, index_col=0)
+        checker.check_stylized_facts(save_path=self.stylized_facts_save_path)
+        if self.ot_distances_save_path.exists():
+            dd_df: DataFrame = pd.read_csv(
+                self.ot_distances_save_path, index_col=0
+            )
             if len(dd_df.columns) != len(self.column_names):
                 raise ValueError(
                     f"columns are different.\n" + \
@@ -197,7 +199,7 @@ class Evaluater:
             dd_df.loc[self.save_name] = columns
         except Exception as e:
             print(e)
-        dd_df.to_csv(dd_save_path)
+        dd_df.to_csv(self.ot_distances_save_path)
 
     def save_1episode(
         self,
