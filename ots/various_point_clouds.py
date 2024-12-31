@@ -35,6 +35,9 @@ class ReturnDDEvaluater(DDEvaluater):
         self.freq_ohlcv_size_dic: dict[str, int] = \
             bybit_freq_ohlcv_size_dic if is_bybit else flex_freq_ohlcv_size_dic
         self.resample_rule: str = resample_rule
+
+    def get_statistics(self) -> list[str]:
+        return ["Kurtosis"]
     
     def calc_statistics(
         self,
@@ -329,9 +332,9 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
     
     def get_statistics(self) -> list[str]:
         if len(self.lags) == 1:
-            return [f"acorr({self.lags[0]})"]
+            return [f"Acorr({self.lags[0]})"]
         else:
-            return ["tail (acorr)", "first negative lag"]
+            return ["Tail (acorr)", "First negative lag"]
         
     def __str__(self) -> str:
         return f"ReturnTSDDEvaluater{self.lags}"
