@@ -44,6 +44,9 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--limit_order_range", type=float, default=0.05)
     parser.add_argument("--max_order_volume", type=int, default=50)
     parser.add_argument("--short_selling_penalty", type=float, default=0.5)
+    parser.add_argument("--cash_shortage_penalty", type=float, default=0.5)
+    parser.add_argument("--initial_fundamental_penalty", type=float, default=10)
+    parser.add_argument("--fundamental_penalty_decay", type=float, default=0.9)
     parser.add_argument("--execution_vonus", type=float, default=0.1)
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     parser.add_argument(
@@ -69,10 +72,12 @@ def main(args) -> None:
     dd_evaluaters = create_ddevaluaters(all_args, multiple_ts_only=True)
     config_path: Path = convert_str2path(all_args.config_path, mkdir=False)
     config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
-    env, num_agents = create_env(all_args)
+    env, num_agents = create_env(all_args, config_dic)
+    env.fundamental_penalty = 0
     ippo: IPPO = IPPO(
         device=all_args.device,
-        obs_shape=(12,), action_shape=(2,), num_agents=num_agents,
+        obs_shape=(len(all_args.obs_names),), action_shape=(len(all_args.action_names),),
+        num_agents=num_agents,
         seed=all_args.seed,
     )
     evaluater: Evaluater = Evaluater(
