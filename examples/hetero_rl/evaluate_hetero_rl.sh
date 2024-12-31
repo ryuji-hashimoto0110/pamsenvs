@@ -33,6 +33,7 @@ market_name="Market"
 decision_histories_save_path="../../datas/artificial_datas/hetero_rl_decision_histories/0010-090-090-42"
 stylized_facts_save_path="../../stylized_facts/results/hetero_rl/0010-090-090-42.csv"
 ot_distances_save_path="ots.csv"
+device="cpu"
 python evaluate_hetero_rl.py \
 --ohlcv_folder_path ${ohlcv_folder_path} \
 --ticker_folder_names ${ticker_folder_names} \
@@ -66,5 +67,6 @@ python evaluate_hetero_rl.py \
 --market_name ${market_name} \
 --decision_histories_save_path ${decision_histories_save_path} \
 --stylized_facts_save_path ${stylized_facts_save_path} \
---ot_distances_save_path ${ot_distances_save_path}
+--ot_distances_save_path ${ot_distances_save_path} \
+--device ${device}
 

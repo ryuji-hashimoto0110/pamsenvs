@@ -94,7 +94,7 @@ def main(args) -> None:
         decision_histories_save_path=convert_str2path(all_args.decision_histories_save_path, True),
         figs_save_path=convert_str2path(all_args.figs_save_path, True),
         stylized_facts_save_path=convert_str2path(all_args.stylized_facts_save_path, False),
-        ot_distances_save_path=convert_str2path(all_args.ot_distances_save_path, True),
+        ot_distances_save_path=convert_str2path(all_args.ot_distances_save_path, False),
     )
     evaluater.save_multiple_episodes()
 
