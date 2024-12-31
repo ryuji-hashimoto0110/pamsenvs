@@ -30,7 +30,7 @@ session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
 figs_save_path="../../imgs/hetero_rl/temp"
 market_name="Market"
-decision_histories_save_path="../../datas/artificial_datas/hetero_rl_decision_histories/temp"
+decision_histories_save_path="../../datas/artificial_datas/hetero_rl_decision_histories/0010-090-090-42"
 stylized_facts_save_path="../../stylized_facts/results/hetero_rl/0010-090-090-42.csv"
 ot_distances_save_path="ots.csv"
 python evaluate_hetero_rl.py \
@@ -65,5 +65,6 @@ python evaluate_hetero_rl.py \
 --figs_save_path ${figs_save_path} \
 --market_name ${market_name} \
 --decision_histories_save_path ${decision_histories_save_path} \
---indicators_save_path ${indicators_save_path}
+--stylized_facts_save_path ${stylized_facts_save_path} \
+--ot_distances_save_path ${ot_distances_save_path}
 
