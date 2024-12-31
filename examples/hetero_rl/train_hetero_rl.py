@@ -88,8 +88,6 @@ def convert_str2path(
     if not path.exists():
         if mkdir:
             path.mkdir(parents=True)
-        else:
-            raise FileNotFoundError(f"path does not exist. path={path}")
     return path
 
 def get_target_agent_names(config_dic: dict[str, Any], agent_name: str) -> list[str]:
