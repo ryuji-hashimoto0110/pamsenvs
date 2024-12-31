@@ -63,15 +63,16 @@ class Evaluater:
         if len(dd_evaluaters) == 0:
             raise ValueError("specify at least 1 DDEvaluater.")
         self.num_points: int = num_points
-        self.real_tickers: list[int] = list(dd_evaluaters[0].ticker_path_dic.keys())
         self.env: AECEnv4HeteroRL = env
         self.algo: Algorithm = algo
         if actor_load_path.exists():
+            self.save_name: str = actor_load_path.stem
             self.algo.actor.load_state_dict(
                 torch.load(
                     str(actor_load_path), map_location="cpu"
                 )["actor_state_dict"]
             )
+            self.actor_configs: list[float] = self._get_actor_configs(actor_load_path)
         else:
             raise FileNotFoundError(f"{actor_load_path} does not exist.")
         self.txts_save_path: Path = txts_save_path
@@ -84,6 +85,47 @@ class Evaluater:
         self.decision_histories_save_path: Path = decision_histories_save_path
         self.figs_save_path: Path = figs_save_path
         self.indicators_save_path: Path = indicators_save_path
+        self.column_names: list[str] = self._get_column_names()
+
+    def _get_actor_configs(self, actor_load_path: Path) -> list[float]:
+        """get actor's configurations.
+
+        actor's checkpoint file shoud have a name structured:
+            be(la)st-{sigma_str}-{alpha_str}-{gamma_str}-{all_args.seed}.pt
+        
+        Args:
+            actor_load_path (Path): Path to load actor's weights.
+        
+        Returns:
+            actor_configs (list): Actor's configurations.
+        """
+        actor_name: str = actor_load_path.stem
+        actor_name = actor_name.split("-")
+        actor_configs: list[float] = []
+        for config in actor_name:
+            if config == "best" or config == "last":
+                continue
+            actor_configs.append(self._str2float(config))
+        return actor_configs
+    
+    def _str2float(self, s: str):
+        num = int(s)
+        length = len(s)
+        return num / (10 ** (length - 1))
+    
+    def _get_column_names(self) -> list[str]:
+        column_names: list[str] = [
+            "sigma", "alpha", "gamma"
+        ]
+        for dd_evaluater in self.dd_evaluaters:
+            dd_name: str = str(dd_evaluater)
+            statistics_names: list[str] = dd_evaluater.get_statistics()
+            ot_distance_names: list[str] = [
+                f"{dd_name}({ticker})" for ticker in dd_evaluater.ticker_path_dic.keys()
+            ]
+            column_names.extend(statistics_names)
+            column_names.extend(ot_distance_names)
+        return column_names
 
     def save_multiple_episodes(
         self,
@@ -120,20 +162,29 @@ class Evaluater:
         )
         save_path: Path = self.indicators_save_path / "stylized_facts.csv"
         checker.check_stylized_facts(save_path=save_path)
+        dd_save_path: Path = self.indicators_save_path / "dd_results.csv"
+        if dd_save_path.exists():
+            dd_df: DataFrame = pd.read_csv(dd_save_path, index_col=0)
+            if len(dd_df.columns) != len(self.column_names):
+                raise ValueError(
+                    f"columns are different.\n" + \
+                    f"dd_df.columns: {dd_df.columns}\n" + \
+                    f"self.column_names: {self.column_names}"
+                )
         for dd_evaluater in self.dd_evaluaters:
             dd_evaluater.add_ticker_path(
                 ticker="temp", path=self.ohlcv_dfs_path
             )
+        columns: list[float] = self.actor_configs
         try:
-            statistics: list[float] = []
-            ot_distances: list[float] = []
             for dd_evaluater in self.dd_evaluaters:
-                art_point_cloud, statistics_ = dd_evaluater.get_point_cloud_from_ticker(
+                real_tickers: list[int] = list(dd_evaluater.ticker_path_dic.keys())
+                art_point_cloud, statistics = dd_evaluater.get_point_cloud_from_ticker(
                     ticker="temp", num_points=self.num_points,
                     save2dic=False, return_statistics=True
                 )
-                statistics.extend(statistics_)
-                for ticker in self.real_tickers:
+                ot_distances: list[float] = []
+                for ticker in real_tickers:
                     real_point_cloud: ndarray = dd_evaluater.get_point_cloud_from_ticker(
                         ticker=ticker, num_points=self.num_points, save2dic=True
                     )
@@ -141,12 +192,12 @@ class Evaluater:
                         art_point_cloud, real_point_cloud, is_per_bit=True
                     )
                     ot_distances.append(ot_distance)
-                print(dd_evaluater)
-                print(f"statistics: {statistics_}")
-                print(f"ot_distances: {ot_distances}")
-            dd_results: list[int | float] = statistics + ot_distances
+                columns.extend(statistics)
+                columns.extend(ot_distances)
+            dd_df.loc[self.save_name] = columns
         except Exception as e:
             print(e)
+        dd_df.to_csv(dd_save_path)
 
     def save_1episode(
         self,
