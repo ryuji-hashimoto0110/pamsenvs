@@ -29,10 +29,10 @@ execution_vonus=0.15
 initial_fundamental_penalty=3.0
 fundamental_penalty_decay=0.99
 agent_trait_memory=0.9
-sigmas="0.000"
+sigmas="0.010"
 alphas="0.00 0.30 0.60 0.90 2.00"
 gammas="0.80 0.85 0.90 0.95 0.999"
-device="cuda:0"
+device="cuda:1"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
 --num_updates_per_rollout $num_updates_per_rollout \
