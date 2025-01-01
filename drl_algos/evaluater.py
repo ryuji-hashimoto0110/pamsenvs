@@ -132,13 +132,15 @@ class Evaluater:
     def save_multiple_episodes(
         self,
         start_num: int = 0,
-        episode_num: int = 100
+        episode_num: int = 100,
+        unlink_all: bool = False
     ) -> None:
         """Conduct multiple episodes and save results.
         
         Args:
             start_num (int, optional): Start number. Default to 0.
             episode_num (int, optional): Number of episodes. Default to 100.
+            unlink_all (bool, optional): Whether to unlink all files. Default to False.
         """
         for episode in tqdm(range(start_num, start_num + episode_num)):
             self.save_1episode(save_name=str(episode))
@@ -173,6 +175,8 @@ class Evaluater:
                     f"dd_df.columns: {dd_df.columns}\n" + \
                     f"self.column_names: {self.column_names}"
                 )
+        else:
+            dd_df: DataFrame = DataFrame(columns=self.column_names)
         for dd_evaluater in self.dd_evaluaters:
             dd_evaluater.add_ticker_path(
                 ticker="temp", path=self.ohlcv_dfs_path
@@ -200,7 +204,20 @@ class Evaluater:
         except Exception as e:
             print(e)
         dd_df.to_csv(self.ot_distances_save_path)
+        if unlink_all:
+            self._unlink_all()
 
+    def _unlink_all(self) -> None:
+        """Unlink all files."""
+        for path in [
+            self.txts_save_path, self.tick_dfs_save_path,
+            self.ohlcv_dfs_path, self.decision_histories_save_path
+        ]:
+            if path.exists():
+                for file in path.iterdir():
+                    file.unlink()
+
+    @torch.no_grad()
     def save_1episode(
         self,
         save_name: str,
