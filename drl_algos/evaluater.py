@@ -10,6 +10,10 @@ from algorithm import Algorithm
 from envs.environments import AECEnv4HeteroRL
 from flex_processors import FlexProcessor
 from logs import FlexSaver
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import Axes
+from matplotlib.pyplot import Figure
+import numpy as np
 from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
@@ -18,6 +22,7 @@ from stylized_facts import StylizedFactsChecker
 import torch
 from tqdm import tqdm
 from typing import Any
+from typing import Literal
 from typing import Optional
 from typing import TypeVar
 import warnings
@@ -134,7 +139,7 @@ class Evaluater:
         start_num: int = 0,
         episode_num: int = 100,
         unlink_all: bool = False
-    ) -> None:
+    ) -> list[DataFrame]:
         """Conduct multiple episodes and save results.
         
         Args:
@@ -142,8 +147,11 @@ class Evaluater:
             episode_num (int, optional): Number of episodes. Default to 100.
             unlink_all (bool, optional): Whether to unlink all files. Default to False.
         """
+        decision_histories_dfs: list[DataFrame] = []
         for episode in tqdm(range(start_num, start_num + episode_num)):
-            self.save_1episode(save_name=str(episode))
+            decision_histories_dfs.append(
+                self.save_1episode(save_name=str(episode))
+            )
         processor: FlexProcessor = FlexProcessor(
             txt_datas_path=self.txts_save_path,
             csv_datas_path=self.tick_dfs_save_path,
@@ -206,6 +214,7 @@ class Evaluater:
         dd_df.to_csv(self.ot_distances_save_path)
         if unlink_all:
             self._unlink_all()
+        return decision_histories_dfs
 
     def _unlink_all(self) -> None:
         """Unlink all files."""
@@ -252,7 +261,7 @@ class Evaluater:
             reward, done, info = self.env.step(action)
             if done:
                 break
-        self.create_decision_histories(save_name)
+        decision_histories_df: DataFrame = self.create_decision_histories(save_name)
 
     def _get_session_boundary(self, config: dict[str, Any]) -> tuple[int, int]:
         """get session boundary.
@@ -283,7 +292,7 @@ class Evaluater:
             raise ValueError("failed to found session 2.")
         return session1_start_time, session1_end_time, session2_start_time
 
-    def create_decision_histories(self, save_name) -> None:
+    def create_decision_histories(self, save_name) -> DataFrame:
         """Create decision histories df. This method is called after 1 episode."""
         obs_dic: dict[str, list[float | int]] = self.env.obs_dic
         obs_df: DataFrame = pd.DataFrame(obs_dic)
@@ -297,7 +306,90 @@ class Evaluater:
         decision_histories_df = pd.merge(
             decision_histories_df, reward_df, on=["step", "agent_id"]
         )
+        decision_histories_df.sort_values(by="step", inplace=True)
         decision_histories_df.set_index("step", inplace=True)
         save_path: Path = self.decision_histories_save_path / f"{save_name}.csv"
         decision_histories_df.to_csv(save_path)
+        return decision_histories_df
+    
+    def scatter_pl_given_agent_trait(
+        self,
+        decision_histories_dfs: list[DataFrame],
+        trait_column_names: list[
+            Literal[
+                "skill_boundedness", "risk_aversion_term", "discount_factor"
+            ]
+        ],
+        save_names: list[str],
+    ) -> None:
+        """Scatter profit or loss given agent's trait.
+        
+        decision_histries_df contains:
+            - step
+            - agent_id
+            - asset_volume
+            - cash_amount
+            - market_price
 
+        The wealth of agent j at step t is given by:
+            wealth_{j, t} = asset_volume_{j, t} * market_price_{t} + cash_amount_{j, t}
+
+        The profit or loss of agent j is then given by:
+            pl_j = log(wealth_{j, T}) - log(wealth_{j, 0})
+        T denotes the maximum value of 'step' column of agent j.
+        """
+        assert len(trait_column_names) == len(save_names)
+        figs: list[Figure] = [
+            plt.figure(figsize=(12, 8)) for _ in range(len(trait_column_names))
+        ]
+        axes: list[Axes] = [fig.add_subplot(111) for fig in figs]
+        for ax, trait_column_name in zip(axes, trait_column_names):
+            if trait_column_name == "skill_boundedness":
+                ax.set_xlabel(
+                    r"skill boundedness $\sigma^j$"
+                )
+            elif trait_column_name == "risk_aversion_term":
+                ax.set_xlabel(
+                    r"risk aversion term $\alpha^j$"
+                )
+            elif trait_column_name == "discount_factor":
+                ax.set_xlabel(
+                    r"discount factor $\gamma^j$"
+                )
+            else:
+                raise ValueError(f"trait_column_name={trait_column_name} is invalid.")
+            ax.set_ylabel("profit or loss")
+        for decision_histories_df in decision_histories_dfs:
+            trait_dic, pls = self._get_trait_pl(decision_histories_df)
+            for ax, trait_column_name in zip(axes, trait_column_names):
+                trait_values: list[float] = trait_dic[trait_column_name]
+                assert len(trait_values) == len(pls)
+                ax.scatter(trait_values, pls, s=1)
+        for fig, save_name in zip(figs, save_names):
+            save_path: Path = self.figs_save_path / save_name
+            fig.savefig(save_path, bbox_inches="tight")
+
+    def _get_trait_pl(
+        self,
+        decision_histories_df: DataFrame
+    ) -> tuple[dict[str, list[float]], list[float]]:
+        """Get trait values and profit or loss."""
+        trait_dic: dict[str, list[float]] = {
+            "skill_boundedness": [], "risk_aversion_term": [], "discount_factor": []
+        }
+        pls: list[float] = []
+        agent_ids: list[int] = list(decision_histories_df["agent_id"].unique())
+        for agent_id in agent_ids:
+            agent_df: DataFrame = decision_histories_df[
+                decision_histories_df["agent_id"] == agent_id
+            ]
+            asset_volume_arr: ndarray = agent_df["asset_volume"].values
+            cash_amount_arr: ndarray = agent_df["cash_amount"].values
+            market_prices: ndarray = agent_df["market_price"].ndarray
+            wealth_arr: ndarray = asset_volume_arr * market_prices + cash_amount_arr
+            pl: float = np.log(wealth_arr[-1]) - np.log(wealth_arr[0])
+            trait_dic["skill_boundedness"].append(agent_df["skill_boundedness"].values[0])
+            trait_dic["risk_aversion_term"].append(agent_df["risk_aversion_term"].values[0])
+            trait_dic["discount_factor"].append(agent_df["discount_factor"].values[0])
+            pls.append(pl)
+        return trait_dic, pls
