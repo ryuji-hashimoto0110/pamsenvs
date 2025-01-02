@@ -362,8 +362,8 @@ class ReturnTSDDEvaluater(ReturnDDEvaluater):
                 else:
                     log_lags.append(np.log(lag))
                     log_acorrs.append(np.log(acorr_mean))
-            if first_negative_lag == 0:
-                statistics.extend([-1, -1])
+            if first_negative_lag == 1:
+                statistics.extend([0, 0])
             else:
                 log_lag_arr: ndarray = np.array(log_lags)
                 log_acorr_arr: ndarray = np.array(log_acorrs)
