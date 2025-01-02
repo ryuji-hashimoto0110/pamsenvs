@@ -130,6 +130,11 @@ def main(args) -> None:
                 decision_histories_dfs: list[DataFrame] = evaluater.save_multiple_episodes(
                     start_num=0, episode_num=300, unlink_all=True
                 )
+                evaluater.hist_obs_actions(
+                    decision_histories_dfs=decision_histories_dfs,
+                    obs_save_name="hist_obs.pdf",
+                    action_save_name="hist_actions.pdf"
+                )
                 evaluater.scatter_pl_given_agent_trait(
                     decision_histories_dfs=decision_histories_dfs,
                     trait_column_names=["skill_boundedness", "risk_aversion_term", "discount_factor"],
