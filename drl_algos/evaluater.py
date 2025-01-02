@@ -13,6 +13,7 @@ from logs import FlexSaver
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes
 from matplotlib.pyplot import Figure
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 from numpy import ndarray
 import pandas as pd
@@ -393,3 +394,43 @@ class Evaluater:
             trait_dic["discount_factor"].append(agent_df["discount_factor"].values[0])
             pls.append(pl)
         return trait_dic, pls
+    
+    def draw_actions_given_obs(
+        self,
+        target_obs_names: list[str],
+        target_obs_indices: list[int],
+        target_action_name: Literal["order_price_scale", "order_volume_scale"],
+        target_action_idx: int,
+        x_obs_values: list[float],
+        y_obs_values: list[float],
+        initial_obs_values: list[float],
+        save_name: str,
+    ) -> None:
+        assert len(target_obs_names) == 2
+        assert len(target_obs_indices) == 2
+        x_obs_name, y_obs_name = target_obs_names
+        x_obs_idx, y_obs_idx = target_obs_indices
+        obses_arr: ndarray = np.tile(
+            np.array(initial_obs_values),
+            (len(y_obs_values), len(x_obs_values), 1)
+        )
+        obses_arr[:,:,y_obs_idx] = np.tile(y_obs_values, (len(x_obs_values),1)).T
+        obses_arr[:,:,x_obs_idx] = np.tile(x_obs_values, (len(y_obs_values),1))
+        actions_arr: ndarray = self.algo.exploit(obses_arr)
+        target_action_arr: ndarray = actions_arr[:,:,target_action_idx]
+        fig: Figure = plt.figure(figsize=(len(y_obs_values),len(x_obs_values)))
+        ax: plt.Axes = fig.add_subplot(1,1,1)
+        heatmap = ax.pcolor(target_action_arr)
+        ax.set_xticks(np.arange(len(x_obs_values))+0.5)
+        ax.set_yticks(np.arange(len(y_obs_values))+0.5)
+        ax.set_xticklabels(x_obs_values)
+        ax.set_yticklabels(y_obs_values)
+        ax.set_xlabel(x_obs_name)
+        ax.set_ylabel(y_obs_name)
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.1)
+        fig.colorbar(heatmap, ax=ax, cax=cax)
+        ax.set_aspect("equal", adjustable="box")
+        save_path: Path = self.figs_save_path / save_name
+        fig.savefig(save_path, bbox_inches="tight")
+
