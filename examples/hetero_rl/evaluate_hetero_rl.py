@@ -152,8 +152,8 @@ def main(args) -> None:
                     target_obs_names=[r"risk aversion term $\alpha^j$", r"volatility $V_{[t_{i-1}^j,t_i^j]}$"],
                     target_obs_indices=[9, 4],
                     target_action_idx=1,
-                    x_obs_values=[-0.95+0.05*x for x in range(39)],
-                    y_obs_values=[-0.95+0.05*x for x in range(39)],
+                    x_obs_values=[-0.95+0.1*x for x in range(20)],
+                    y_obs_values=[-0.95+0.1*x for x in range(20)],
                     initial_obs_values=[
                         -0.25, -0.75, -0.90, 0.00, -0.75,
                         -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
@@ -164,8 +164,8 @@ def main(args) -> None:
                     target_obs_names=[r"skill boundedness $\sigma^j$", r"blurred fundamental return $\tilde{r}_t^f$"],
                     target_obs_indices=[10, 7],
                     target_action_idx=1,
-                    x_obs_values=[-0.95+0.05*x for x in range(39)],
-                    y_obs_values=[-0.95+0.05*x for x in range(39)],
+                    x_obs_values=[-0.95+0.1*x for x in range(20)],
+                    y_obs_values=[-0.5+0.1*x for x in range(20)],
                     initial_obs_values=[
                         -0.25, -0.75, -0.90, 0.00, -0.75,
                         -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
@@ -176,8 +176,8 @@ def main(args) -> None:
                     target_obs_names=[r"skill boundedness $\sigma^j$", r"log return $r_{[t_{i-1}^j,t_i^j]}$"],
                     target_obs_indices=[10, 3],
                     target_action_idx=1,
-                    x_obs_values=[-0.95+0.05*x for x in range(39)],
-                    y_obs_values=[-0.95+0.05*x for x in range(39)],
+                    x_obs_values=[-0.95+0.1*x for x in range(20)],
+                    y_obs_values=[-0.95+0.1*x for x in range(20)],
                     initial_obs_values=[
                         -0.25, -0.75, -0.90, 0.00, -0.75,
                         -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
