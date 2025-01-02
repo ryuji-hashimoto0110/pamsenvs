@@ -406,7 +406,7 @@ class Evaluater:
             for ax, trait_column_name in zip(axes, trait_column_names):
                 trait_values: list[float] = trait_dic[trait_column_name]
                 assert len(trait_values) == len(pls)
-                ax.scatter(trait_values, pls, s=1)
+                ax.scatter(trait_values, pls, s=1, c="black")
         for fig, save_name in zip(figs, save_names):
             save_path: Path = self.figs_save_path / save_name
             fig.savefig(save_path, bbox_inches="tight")
@@ -447,7 +447,7 @@ class Evaluater:
                 trait_value_arr: ndarray = decision_histories_df[trait_column_name].values
                 order_price_scale_arr: ndarray = decision_histories_df["order_price_scale"].values
                 abs_order_price_scale_arr = np.abs(order_price_scale_arr)
-                ax.scatter(trait_value_arr, abs_order_price_scale_arr, s=1)
+                ax.scatter(trait_value_arr, abs_order_price_scale_arr, s=1, c="black")
         for fig, save_name in zip(figs, save_names):
             save_path: Path = self.figs_save_path / save_name
             fig.savefig(save_path, bbox_inches="tight")
