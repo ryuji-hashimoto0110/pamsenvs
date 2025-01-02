@@ -21,17 +21,20 @@ execution_vonus=0.15
 initial_fundamental_penalty=0.0
 fundamental_penalty_decay=0.0
 agent_trait_memory=0.0
-actor_load_path="../../datas/checkpoints/best-0010-090-090-42.pth"
+actor_folder_path="../../datas/checkpoints"
+sigmas="0.000 0.005 0.010 0.015 0.030"
+alphas="0.00 0.30 0.60 0.90 2.00"
+gammas="0.80 0.85 0.90 0.95 0.999"
 txts_save_path="../../datas/artificial_datas/flex_txt/hetero_rl/temp"
 tick_dfs_save_path="../../datas/artificial_datas/flex_csv/hetero_rl/temp"
 ohlcv_dfs_save_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/hetero_rl/temp"
 transactions_path="../../datas/real_datas/intraday/flex_transactions/1min/7203"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
-figs_save_path="../../imgs/hetero_rl/temp"
+figs_folder_path="../../imgs/hetero_rl"
 market_name="Market"
-decision_histories_save_path="../../datas/artificial_datas/hetero_rl_decision_histories/0010-090-090-42"
-stylized_facts_save_path="../../stylized_facts/results/hetero_rl/0010-090-090-42.csv"
+decision_histories_save_path="../../datas/artificial_datas/hetero_rl_decision_histories/temp"
+stylized_facts_folder_path="../../stylized_facts/results/hetero_rl"
 ot_distances_save_path="ots.csv"
 device="cpu"
 python evaluate_hetero_rl.py \
@@ -56,17 +59,17 @@ python evaluate_hetero_rl.py \
 --fundamental_penalty_decay ${fundamental_penalty_decay} \
 --execution_vonus ${execution_vonus} \
 --agent_trait_memory ${agent_trait_memory} \
---actor_load_path ${actor_load_path} \
+--actor_folder_path ${actor_folder_path} \
 --txts_save_path ${txts_save_path} \
 --tick_dfs_save_path ${tick_dfs_save_path} \
 --ohlcv_dfs_save_path ${ohlcv_dfs_save_path} \
 --transactions_path ${transactions_path} \
 --session1_transactions_file_name ${session1_transactions_file_name} \
 --session2_transactions_file_name ${session2_transactions_file_name} \
---figs_save_path ${figs_save_path} \
+--figs_folder_path ${figs_folder_path} \
 --market_name ${market_name} \
 --decision_histories_save_path ${decision_histories_save_path} \
---stylized_facts_save_path ${stylized_facts_save_path} \
+--stylized_facts_folder_path ${stylized_facts_folder_path} \
 --ot_distances_save_path ${ot_distances_save_path} \
 --device ${device}
 

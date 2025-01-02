@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import json
 from train_hetero_rl import convert_str2path
 from train_hetero_rl import create_env
+from pandas import DataFrame
 import pathlib
 from pathlib import Path
 curr_path: Path = pathlib.Path(__file__).resolve().parents[0]
@@ -53,7 +54,17 @@ def get_config() -> ArgumentParser:
         "--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu"
     )
     # for Evaluater
-    parser.add_argument("--actor_load_path", type=str, default=None)
+    parser.add_argument("--actor_folder_path", type=str, default=None)
+    parser.add_argument(
+        "--sigmas", type=float, nargs="+", default=[0.00, 0.005, 0.01, 0.015, 0.030]
+    )
+    parser.add_argument(
+        "--alphas", type=float, nargs="+", default=[0.00, 0.30, 0.60, 0.90, 2.00]
+    )
+    parser.add_argument(
+        "--gammas", type=float, nargs="+", default=[0.80, 0.85, 0.90, 0.95, 0.999]
+    )
+    parser.add_argument("--actor_seed", type=int, default=42)
     parser.add_argument("--txts_save_path", type=str, default=None)
     parser.add_argument("--tick_dfs_save_path", type=str, default=None)
     parser.add_argument("--ohlcv_dfs_save_path", type=str, default=None)
@@ -62,8 +73,8 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--session2_transactions_file_name", type=str, default=None)
     parser.add_argument("--market_name", type=str, default=None)
     parser.add_argument("--decision_histories_save_path", type=str, default=None)
-    parser.add_argument("--figs_save_path", type=str, default=None)
-    parser.add_argument("--stylized_facts_save_path", type=str, default=None)
+    parser.add_argument("--figs_folder_path", type=str, default=None)
+    parser.add_argument("--stylized_facts_folder_path", type=str, default=None)
     parser.add_argument("--ot_distances_save_path", type=str, default=None)
     return parser
 
@@ -81,22 +92,92 @@ def main(args) -> None:
         num_agents=num_agents,
         seed=all_args.seed,
     )
-    evaluater: Evaluater = Evaluater(
-        dd_evaluaters=dd_evaluaters, num_points=1500,
-        env=env, algo=ippo, actor_load_path=convert_str2path(all_args.actor_load_path, False),
-        txts_save_path=convert_str2path(all_args.txts_save_path, True),
-        tick_dfs_save_path=convert_str2path(all_args.tick_dfs_save_path, True),
-        ohlcv_dfs_save_path=convert_str2path(all_args.ohlcv_dfs_save_path, True),
-        transactions_path=convert_str2path(all_args.transactions_path, False),
-        session1_transactions_file_name=all_args.session1_transactions_file_name,
-        session2_transactions_file_name=all_args.session2_transactions_file_name,
-        market_name=all_args.market_name,
-        decision_histories_save_path=convert_str2path(all_args.decision_histories_save_path, True),
-        figs_save_path=convert_str2path(all_args.figs_save_path, True),
-        stylized_facts_save_path=convert_str2path(all_args.stylized_facts_save_path, False),
-        ot_distances_save_path=convert_str2path(all_args.ot_distances_save_path, False),
-    )
-    evaluater.save_multiple_episodes()
+    stylized_facts_folder_path: Path = convert_str2path(all_args.stylized_facts_folder_path, True)
+    figs_folder_path: Path = convert_str2path(all_args.figs_folder_path, True)
+    actor_folder_path: Path = convert_str2path(all_args.actor_folder_path, False)
+    sigmas: list[float] = all_args.sigmas
+    alphas: list[float] = all_args.alphas
+    gammas: list[float] = all_args.gammas
+    for sigma in sigmas:
+        sigma_str: str = f"{sigma:.3f}".replace(".", "")
+        config_dic["Agent"]["skillBoundedness"] = {"expon": [sigma]}
+        for alpha in alphas:
+            alpha_str: str = f"{alpha:.2f}".replace(".", "")
+            config_dic["Agent"]["riskAversionTerm"] = {"expon": [alpha]}
+            for gamma in gammas:
+                gamma_str: str = f"{gamma:.2f}".replace(".", "")
+                config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}
+                print(f"agent config: {config_dic['Agent']}")
+                actor_name = f"best-{sigma_str}-{alpha_str}-{gamma_str}-{all_args.actor_seed}"
+                actor_load_path: Path = actor_folder_path / f"{actor_name}.pth"
+                stylized_facts_save_path: Path = stylized_facts_folder_path / f"{actor_name}.csv"
+                figs_save_path: Path = figs_folder_path / actor_name
+                evaluater: Evaluater = Evaluater(
+                    dd_evaluaters=dd_evaluaters, num_points=1500,
+                    env=env, algo=ippo, actor_load_path=actor_load_path,
+                    txts_save_path=convert_str2path(all_args.txts_save_path, True),
+                    tick_dfs_save_path=convert_str2path(all_args.tick_dfs_save_path, True),
+                    ohlcv_dfs_save_path=convert_str2path(all_args.ohlcv_dfs_save_path, True),
+                    transactions_path=convert_str2path(all_args.transactions_path, False),
+                    session1_transactions_file_name=all_args.session1_transactions_file_name,
+                    session2_transactions_file_name=all_args.session2_transactions_file_name,
+                    market_name=all_args.market_name,
+                    decision_histories_save_path=convert_str2path(all_args.decision_histories_save_path, True),
+                    figs_save_path=figs_save_path,
+                    stylized_facts_save_path=stylized_facts_save_path,
+                    ot_distances_save_path=convert_str2path(all_args.ot_distances_save_path, False),
+                )
+                decision_histories_dfs: list[DataFrame] = evaluater.save_multiple_episodes(
+                    start_num=0, episode_num=100, unlink_all=True
+                )
+                evaluater.scatter_pl_given_agent_trait(
+                    decision_histories_dfs=decision_histories_dfs,
+                    trait_column_names=["skill_boundedness", "risk_aversion_term", "discount_factor"],
+                    save_names=[
+                        "scatter_skill_boundedness_pl.pdf",
+                        "scatter_risk_aversion_term_pl.pdf",
+                        "scatter_discount_factor_pl.pdf"
+                    ]
+                )
+                evaluater.draw_actions_given_obs(
+                    target_obs_names=[r"risk aversion term $\alpha^j$", r"volatility $V_{[t_{i-1}^j,t_i^j]}$"],
+                    target_obs_indices=[9, 4],
+                    target_action_idx=1,
+                    x_obs_values=[-0.95+0.05*x for x in range(39)],
+                    y_obs_values=[-0.95+0.05*x for x in range(39)],
+                    initial_obs_values=[
+                        -0.25, -0.75, -0.90, 0.00, -0.75,
+                        -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
+                    ],
+                    save_name="heatmap_order_volume_given_alpha_volatility.pdf",
+                )
+                evaluater.draw_actions_given_obs(
+                    target_obs_names=[r"skill boundedness $\sigma^j$", r"blurred fundamental return $\tilde{r}_t^f$"],
+                    target_obs_indices=[10, 7],
+                    target_action_idx=1,
+                    x_obs_values=[-0.95+0.05*x for x in range(39)],
+                    y_obs_values=[-0.95+0.05*x for x in range(39)],
+                    initial_obs_values=[
+                        -0.25, -0.75, -0.90, 0.00, -0.75,
+                        -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
+                    ],
+                    save_name="heatmap_order_volume_given_sigma_rf.pdf",
+                )
+                evaluater.draw_actions_given_obs(
+                    target_obs_names=[r"skill boundedness $\sigma^j$", r"log return $r_{[t_{i-1}^j,t_i^j]}$"],
+                    target_obs_indices=[10, 3],
+                    target_action_idx=1,
+                    x_obs_values=[-0.95+0.05*x for x in range(39)],
+                    y_obs_values=[-0.95+0.05*x for x in range(39)],
+                    initial_obs_values=[
+                        -0.25, -0.75, -0.90, 0.00, -0.75,
+                        -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
+                    ],
+                    save_name="heatmap_order_volume_given_sigma_r.pdf",
+                )
+
+
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
