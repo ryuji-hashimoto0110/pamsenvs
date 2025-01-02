@@ -231,7 +231,7 @@ class Evaluater:
     def save_1episode(
         self,
         save_name: str,
-    ) -> None:
+    ) -> DataFrame:
         """Conduct 1 episode and save results.
         
         Args:
@@ -263,6 +263,7 @@ class Evaluater:
             if done:
                 break
         decision_histories_df: DataFrame = self.create_decision_histories(save_name)
+        return decision_histories_df
 
     def _get_session_boundary(self, config: dict[str, Any]) -> tuple[int, int]:
         """get session boundary.
@@ -427,7 +428,7 @@ class Evaluater:
             ]
             asset_volume_arr: ndarray = agent_df["asset_volume"].values
             cash_amount_arr: ndarray = agent_df["cash_amount"].values
-            market_prices: ndarray = agent_df["market_price"].ndarray
+            market_prices: ndarray = agent_df["market_price"].values
             wealth_arr: ndarray = asset_volume_arr * market_prices + cash_amount_arr
             pl: float = np.log(wealth_arr[-1]) - np.log(wealth_arr[0])
             trait_dic["skill_boundedness"].append(agent_df["skill_boundedness"].values[0])
