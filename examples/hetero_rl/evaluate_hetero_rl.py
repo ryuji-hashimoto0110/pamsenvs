@@ -128,7 +128,7 @@ def main(args) -> None:
                     ot_distances_save_path=convert_str2path(all_args.ot_distances_save_path, False),
                 )
                 decision_histories_dfs: list[DataFrame] = evaluater.save_multiple_episodes(
-                    start_num=0, episode_num=100, unlink_all=True
+                    start_num=0, episode_num=300, unlink_all=True
                 )
                 evaluater.scatter_pl_given_agent_trait(
                     decision_histories_dfs=decision_histories_dfs,
