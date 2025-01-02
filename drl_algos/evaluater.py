@@ -370,6 +370,47 @@ class Evaluater:
             save_path: Path = self.figs_save_path / save_name
             fig.savefig(save_path, bbox_inches="tight")
 
+    def scatter_price_range_given_agent_trait(
+        self,
+        decision_histories_dfs: list[DataFrame],
+        trait_column_names: list[
+            Literal[
+                "skill_boundedness", "risk_aversion_term", "discount_factor"
+            ]
+        ],
+        save_names: list[str],
+    ) -> None:
+        assert len(trait_column_names) == len(save_names)
+        figs: list[Figure] = [
+            plt.figure(figsize=(12, 8)) for _ in range(len(trait_column_names))
+        ]
+        axes: list[Axes] = [fig.add_subplot(111) for fig in figs]
+        for ax, trait_column_name in zip(axes, trait_column_names):
+            if trait_column_name == "skill_boundedness":
+                ax.set_xlabel(
+                    r"skill boundedness $\sigma^j$"
+                )
+            elif trait_column_name == "risk_aversion_term":
+                ax.set_xlabel(
+                    r"risk aversion term $\alpha^j$"
+                )
+            elif trait_column_name == "discount_factor":
+                ax.set_xlabel(
+                    r"discount factor $\gamma^j$"
+                )
+            else:
+                raise ValueError(f"trait_column_name={trait_column_name} is invalid.")
+            ax.set_ylabel(r"absolute order price scale $|\hat{r}_{t_i^j}^j|$")
+        for decision_histories_df in decision_histories_dfs:
+            for ax, trait_column_name in zip(axes, trait_column_names):
+                trait_value_arr: ndarray = decision_histories_df[trait_column_name].values
+                order_price_scale_arr: ndarray = decision_histories_df["order_price_scale"].values
+                abs_order_price_scale_arr = np.abs(order_price_scale_arr)
+                ax.scatter(trait_value_arr, abs_order_price_scale_arr, s=1)
+        for fig, save_name in zip(figs, save_names):
+            save_path: Path = self.figs_save_path / save_name
+            fig.savefig(save_path, bbox_inches="tight")
+
     def _get_trait_pl(
         self,
         decision_histories_df: DataFrame
