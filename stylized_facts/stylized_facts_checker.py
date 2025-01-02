@@ -916,7 +916,7 @@ class StylizedFactsChecker:
             else:
                 log_lags.append(np.log(lag))
                 log_acorrs.append(np.log(acorr_mean))
-        if first_negative_lag == 0:
+        if first_negative_lag == 1:
             return [
                 np.zeros(1)[:,np.newaxis],
                 np.zeros(1)[:,np.newaxis]
