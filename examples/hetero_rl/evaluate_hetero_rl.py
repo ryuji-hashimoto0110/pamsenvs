@@ -134,9 +134,18 @@ def main(args) -> None:
                     decision_histories_dfs=decision_histories_dfs,
                     trait_column_names=["skill_boundedness", "risk_aversion_term", "discount_factor"],
                     save_names=[
-                        "scatter_skill_boundedness_pl.pdf",
-                        "scatter_risk_aversion_term_pl.pdf",
-                        "scatter_discount_factor_pl.pdf"
+                        "scatter_sigma_pl.pdf",
+                        "scatter_alpha_pl.pdf",
+                        "scatter_gamma_pl.pdf"
+                    ]
+                )
+                evaluater.scatter_price_range_given_agent_trait(
+                    decision_histories_dfs=decision_histories_dfs,
+                    trait_column_names=["skill_boundedness", "risk_aversion_term", "discount_factor"],
+                    save_names=[
+                        "scatter_sigma_order_price_scale.pdf",
+                        "scatter_alpha_order_price_scale.pdf",
+                        "scatter_gamma_order_price_scale.pdf"
                     ]
                 )
                 evaluater.draw_actions_given_obs(
