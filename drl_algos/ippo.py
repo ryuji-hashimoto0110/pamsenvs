@@ -64,8 +64,6 @@ class IPPOActor(Module):
         """Resize observation tensor."""
         if obses.shape == self.obs_shape:
             obses = obses.unsqueeze_(0)
-        elif obses[0].shape != self.obs_shape:
-            raise ValueError(f"Invalid observation shape: {obses.shape}")
         return obses
 
     def forward(self, obses: Tensor) -> Tensor:
