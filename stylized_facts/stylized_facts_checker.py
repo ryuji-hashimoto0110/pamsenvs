@@ -153,8 +153,13 @@ class StylizedFactsChecker:
                     continue
             df: DataFrame = pd.read_csv(csv_path, index_col=0)
             if need_resample:
-                df = self._resample(df, resample_mid)
-            if choose_full_size_df:
+                try:
+                    df = self._resample(df, resample_mid)
+                except Exception as e:
+                    print(f"resample failed. csv_name: {csv_name}")
+                    print(e)
+                    store_df = False
+            if store_df and choose_full_size_df:
                 if len(df) < self.freq_ohlcv_size_dic[self.resample_rule]:
                     store_df = False
                 elif "num_events" in df.columns:
