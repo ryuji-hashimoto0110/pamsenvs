@@ -27,6 +27,7 @@ from typing import Literal
 from typing import Optional
 from typing import TypeVar
 import warnings
+plt.rcParams["font.size"] = 20
 warnings.filterwarnings("ignore")
 
 ActionType = TypeVar("ActionType")
@@ -114,7 +115,7 @@ class Evaluater:
             if config == "best" or config == "last":
                 continue
             actor_configs.append(self._str2float(config))
-        return actor_configs
+        return actor_configs[:-1]
     
     def _str2float(self, s: str):
         num = int(s)
@@ -200,6 +201,8 @@ class Evaluater:
                 )
                 ot_distances: list[float] = []
                 for ticker in real_tickers:
+                    if ticker == "temp":
+                        continue
                     real_point_cloud: ndarray = dd_evaluater.get_point_cloud_from_ticker(
                         ticker=ticker, num_points=self.num_points, save2dic=True
                     )
@@ -313,6 +316,14 @@ class Evaluater:
         save_path: Path = self.decision_histories_save_path / f"{save_name}.csv"
         decision_histories_df.to_csv(save_path)
         return decision_histories_df
+    
+    def hist_obs_actions(
+        self,
+        decision_histories_df: DataFrame,
+        obs_save_name: str,
+        action_save_name: str,
+    ) -> None:
+        
     
     def scatter_pl_given_agent_trait(
         self,
