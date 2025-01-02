@@ -399,7 +399,6 @@ class Evaluater:
         self,
         target_obs_names: list[str],
         target_obs_indices: list[int],
-        target_action_name: Literal["order_price_scale", "order_volume_scale"],
         target_action_idx: int,
         x_obs_values: list[float],
         y_obs_values: list[float],
@@ -423,8 +422,11 @@ class Evaluater:
         heatmap = ax.pcolor(target_action_arr)
         ax.set_xticks(np.arange(len(x_obs_values))+0.5)
         ax.set_yticks(np.arange(len(y_obs_values))+0.5)
-        ax.set_xticklabels(x_obs_values)
-        ax.set_yticklabels(y_obs_values)
+        ax.set_xticklabels(
+            [f"{v:.2f}" for v in x_obs_values],
+            rotation=45
+        )
+        ax.set_yticklabels([f"{v:.2f}" for v in y_obs_values])
         ax.set_xlabel(x_obs_name)
         ax.set_ylabel(y_obs_name)
         divider = make_axes_locatable(ax)
