@@ -139,7 +139,7 @@ class Evaluater:
     def save_multiple_episodes(
         self,
         start_num: int = 0,
-        episode_num: int = 100,
+        episode_num: int = 300,
         unlink_all: bool = False
     ) -> list[DataFrame]:
         """Conduct multiple episodes and save results.
@@ -319,11 +319,40 @@ class Evaluater:
     
     def hist_obs_actions(
         self,
-        decision_histories_df: DataFrame,
+        decision_histories_dfs: list[DataFrame],
         obs_save_name: str,
         action_save_name: str,
     ) -> None:
-        
+        obs_action_dic: dict[str, list[float]] = self._get_obs_action(decision_histories_dfs)
+        fig: Figure = plt.figure(figsize=(40, 20))
+        for i, obs_name in enumerate(self.env.obs_names):
+            ax: Axes = fig.add_subplot(3, 4, i+1)
+            ax.hist(obs_action_dic[obs_name], bins=100)
+            ax.set_xlabel(obs_name)
+            ax.set_xlim(-1, 1)
+        save_path: Path = self.figs_save_path / obs_save_name
+        fig.savefig(save_path, bbox_inches="tight")
+        fig: Figure = plt.figure(figsize=(15, 12))
+        for i, action_name in enumerate(self.env.action_names):
+            ax: Axes = fig.add_subplot(2, 1, i+1)
+            ax.hist(obs_action_dic[action_name], bins=100)
+            ax.set_xlabel(action_name)
+            ax.set_xlim(-1, 1)
+        save_path: Path = self.figs_save_path / action_save_name
+        fig.savefig(save_path, bbox_inches="tight")
+
+    def _get_obs_action(self, decision_histories_dfs: list[DataFrame]) -> dict[str, list[float]]:
+        obs_action_dic: dict[str, list[float]] = {}
+        for obs_name in self.env.obs_names:
+            obs_action_dic[obs_name] = []
+        for action_name in self.env.action_names:
+            obs_action_dic[action_name] = []
+        for decision_histories_df in decision_histories_dfs:
+            for column_name in obs_action_dic.keys():
+                obs_action_dic[column_name].extend(
+                    decision_histories_df[column_name].values.tolist()
+                )
+        return obs_action_dic
     
     def scatter_pl_given_agent_trait(
         self,
