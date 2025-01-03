@@ -36,7 +36,7 @@ market_name="Market"
 decision_histories_save_path="../../datas/artificial_datas/hetero_rl_decision_histories/temp"
 stylized_facts_folder_path="../../stylized_facts/results/hetero_rl"
 ot_distances_save_path="ots.csv"
-device="cpu"
+device="cuda:1"
 python evaluate_hetero_rl.py \
 --ohlcv_folder_path ${ohlcv_folder_path} \
 --ticker_folder_names ${ticker_folder_names} \
@@ -60,6 +60,9 @@ python evaluate_hetero_rl.py \
 --execution_vonus ${execution_vonus} \
 --agent_trait_memory ${agent_trait_memory} \
 --actor_folder_path ${actor_folder_path} \
+--sigmas ${sigmas} \
+--alphas ${alphas} \
+--gammas ${gammas} \
 --txts_save_path ${txts_save_path} \
 --tick_dfs_save_path ${tick_dfs_save_path} \
 --ohlcv_dfs_save_path ${ohlcv_dfs_save_path} \
