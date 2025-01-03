@@ -77,7 +77,7 @@ class Evaluater:
             self.save_name: str = actor_load_path.stem
             self.algo.actor.load_state_dict(
                 torch.load(
-                    str(actor_load_path), map_location="cpu"
+                    str(actor_load_path), map_location="cuda:1"
                 )["actor_state_dict"]
             )
             self.actor_configs: list[float] = self._get_actor_configs(actor_load_path)
