@@ -160,8 +160,8 @@ def main(args) -> None:
                     x_obs_values=[-0.95+0.05*x for x in range(20)],
                     y_obs_values=[-0.95+0.05*x for x in range(20)],
                     initial_obs_values=[
-                        -0.25, -0.75, -0.90, 0.00, -0.75,
-                        -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
+                        -0.30, -0.80, -0.80, 0.00, -0.80,
+                        -0.80, -0.80, 0.00, -0.80, -0.80, 0.00
                     ],
                     save_name="heatmap_order_volume_given_alpha_volatility.pdf",
                 )
@@ -170,10 +170,10 @@ def main(args) -> None:
                     target_obs_indices=[10, 7],
                     target_action_idx=1,
                     x_obs_values=[-0.95+0.05*x for x in range(20)],
-                    y_obs_values=[-0.1+0.005*x for x in range(20)],
+                    y_obs_values=[-0.05+0.005*x for x in range(20)],
                     initial_obs_values=[
-                        -0.25, -0.75, -0.90, 0.00, -0.75,
-                        -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
+                        -0.30, -0.80, -0.80, 0.00, -0.80,
+                        -0.80, -0.80, 0.00, -0.80, -0.80, 0.00
                     ],
                     save_name="heatmap_order_volume_given_sigma_rf.pdf",
                 )
@@ -182,10 +182,10 @@ def main(args) -> None:
                     target_obs_indices=[10, 3],
                     target_action_idx=1,
                     x_obs_values=[-0.95+0.05*x for x in range(20)],
-                    y_obs_values=[-0.1+0.005*x for x in range(20)],
+                    y_obs_values=[-0.05+0.005*x for x in range(20)],
                     initial_obs_values=[
-                        -0.25, -0.75, -0.90, 0.00, -0.75,
-                        -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
+                        -0.30, -0.80, -0.80, 0.00, -0.80,
+                        -0.80, -0.80, 0.00, -0.80, -0.80, 0.00
                     ],
                     save_name="heatmap_order_volume_given_sigma_r.pdf",
                 )
