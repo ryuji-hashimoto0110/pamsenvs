@@ -135,24 +135,24 @@ def main(args) -> None:
                     obs_save_name="hist_obs.pdf",
                     action_save_name="hist_actions.pdf"
                 )
-                evaluater.scatter_pl_given_agent_trait(
-                    decision_histories_dfs=decision_histories_dfs,
-                    trait_column_names=["skill_boundedness", "risk_aversion_term", "discount_factor"],
-                    save_names=[
-                        "scatter_sigma_pl.pdf",
-                        "scatter_alpha_pl.pdf",
-                        "scatter_gamma_pl.pdf"
-                    ]
-                )
-                evaluater.scatter_price_range_given_agent_trait(
-                    decision_histories_dfs=decision_histories_dfs,
-                    trait_column_names=["skill_boundedness", "risk_aversion_term", "discount_factor"],
-                    save_names=[
-                        "scatter_sigma_order_price_scale.pdf",
-                        "scatter_alpha_order_price_scale.pdf",
-                        "scatter_gamma_order_price_scale.pdf"
-                    ]
-                )
+                # evaluater.scatter_pl_given_agent_trait(
+                #     decision_histories_dfs=decision_histories_dfs,
+                #     trait_column_names=["skill_boundedness", "risk_aversion_term", "discount_factor"],
+                #     save_names=[
+                #         "scatter_sigma_pl.pdf",
+                #         "scatter_alpha_pl.pdf",
+                #         "scatter_gamma_pl.pdf"
+                #     ]
+                # )
+                # evaluater.scatter_price_range_given_agent_trait(
+                #     decision_histories_dfs=decision_histories_dfs,
+                #     trait_column_names=["skill_boundedness", "risk_aversion_term", "discount_factor"],
+                #     save_names=[
+                #         "scatter_sigma_order_price_scale.pdf",
+                #         "scatter_alpha_order_price_scale.pdf",
+                #         "scatter_gamma_order_price_scale.pdf"
+                #     ]
+                # )
                 evaluater.draw_actions_given_obs(
                     target_obs_names=[r"risk aversion term $\alpha^j$", r"volatility $V_{[t_{i-1}^j,t_i^j]}$"],
                     target_obs_indices=[9, 4],
@@ -170,7 +170,7 @@ def main(args) -> None:
                     target_obs_indices=[10, 7],
                     target_action_idx=1,
                     x_obs_values=[-0.95+0.05*x for x in range(20)],
-                    y_obs_values=[-0.5+0.05*x for x in range(20)],
+                    y_obs_values=[-0.1+0.005*x for x in range(20)],
                     initial_obs_values=[
                         -0.25, -0.75, -0.90, 0.00, -0.75,
                         -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
@@ -182,7 +182,7 @@ def main(args) -> None:
                     target_obs_indices=[10, 3],
                     target_action_idx=1,
                     x_obs_values=[-0.95+0.05*x for x in range(20)],
-                    y_obs_values=[-0.5+0.05*x for x in range(20)],
+                    y_obs_values=[-0.1+0.005*x for x in range(20)],
                     initial_obs_values=[
                         -0.25, -0.75, -0.90, 0.00, -0.75,
                         -0.75, -0.75, 0.00, -0.75, -0.75, 0.00
