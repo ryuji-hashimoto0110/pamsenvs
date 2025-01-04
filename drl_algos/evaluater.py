@@ -505,7 +505,7 @@ class Evaluater:
         ax.set_xticks(np.arange(len(x_obs_values))+0.5)
         ax.set_yticks(np.arange(len(y_obs_values))+0.5)
         ax.set_xticklabels(
-            [f"{v:.2f}" for v in x_obs_values],
+            [f"{v:.3f}" for v in x_obs_values],
             rotation=45
         )
         ax.set_yticklabels([f"{v:.2f}" for v in y_obs_values])
