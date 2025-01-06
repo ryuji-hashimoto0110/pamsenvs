@@ -30,7 +30,7 @@ initial_fundamental_penalty=3.0
 fundamental_penalty_decay=0.99
 agent_trait_memory=0.9
 sigmas="0.006 0.008"
-alphas="0.00 0.10 0.20 0.30 0.40"
+alphas="0.00 0.02 0.04 0.06 0.08"
 gammas="0.80 0.85 0.90 0.95 0.999"
 device="cuda:1"
 python train_hetero_rl.py \
