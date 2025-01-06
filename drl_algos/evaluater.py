@@ -544,7 +544,7 @@ class Evaluater:
         obses_arr[:,target_obs_idx] = np.array(obs_values)
         actions_arr: ndarray = self.algo.exploit(obses_arr)
         target_action_arr: ndarray = actions_arr[:,target_action_idx]
-        fig: Figure = plt.figure(figsize=(len(obs_values), 1))
+        fig: Figure = plt.figure(figsize=(15, 8))
         # ax: Axes = fig.add_subplot(1,1,1)
         # ax.plot(obs_values, target_action_arr, c="black")
         # ax.set_xlabel(target_obs_name)
