@@ -518,7 +518,7 @@ class Evaluater:
         # ax.set_aspect("equal", adjustable="box")
         ax: Axes = sns.heatmap(
             target_action_arr, cmap="OrRd", cbar=True,
-            annot=True, fmt=".2f", annot_kws={"fontsize": 8}
+            annot=True, fmt=".4f", annot_kws={"fontsize": 8}
         )
         ax.invert_yaxis()   
         ax.set_xticklabels(
