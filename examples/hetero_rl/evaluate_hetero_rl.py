@@ -153,7 +153,7 @@ def main(args) -> None:
                 #         "scatter_gamma_order_price_scale.pdf"
                 #     ]
                 # )
-                evaluater.draw_actions_given_obs(
+                evaluater.draw_actions_given_obs2d(
                     target_obs_names=[r"risk aversion term $\alpha^j$", r"volatility $V_{[t_{i-1}^j,t_i^j]}$"],
                     target_obs_indices=[9, 4],
                     target_action_idx=1,
@@ -165,7 +165,7 @@ def main(args) -> None:
                     ],
                     save_name="heatmap_order_volume_given_alpha_volatility.pdf",
                 )
-                evaluater.draw_actions_given_obs(
+                evaluater.draw_actions_given_obs2d(
                     target_obs_names=[r"skill boundedness $\sigma^j$", r"blurred fundamental return $\tilde{r}_t^f$"],
                     target_obs_indices=[10, 7],
                     target_action_idx=1,
@@ -177,7 +177,7 @@ def main(args) -> None:
                     ],
                     save_name="heatmap_order_volume_given_sigma_rf.pdf",
                 )
-                evaluater.draw_actions_given_obs(
+                evaluater.draw_actions_given_obs2d(
                     target_obs_names=[r"skill boundedness $\sigma^j$", r"log return $r_{[t_{i-1}^j,t_i^j]}$"],
                     target_obs_indices=[10, 3],
                     target_action_idx=1,
@@ -189,8 +189,19 @@ def main(args) -> None:
                     ],
                     save_name="heatmap_order_volume_given_sigma_r.pdf",
                 )
-
-
+                evaluater.draw_actions_given_obs1d(
+                    target_obs_name=r"discount factor $\gamma^j$",
+                    target_obs_idx=10,
+                    target_action_name=r"order price scale $\tilde{r}_t^j",
+                    target_action_idx=0,
+                    obs_values=[-0.99+0.01*x for x in range(199)],
+                    initial_obs_values=[
+                        -0.30, -0.80, -0.80, 0.00, -0.80,
+                        -0.80, -0.80, 0.00, -0.80, -0.80, 0.00
+                    ],
+                    save_name="plot_order_price_given_gamma.pdf",
+                )
+                
 
 
 if __name__ == "__main__":
