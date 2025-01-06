@@ -192,7 +192,7 @@ def main(args) -> None:
                 evaluater.draw_actions_given_obs1d(
                     target_obs_name=r"discount factor $\gamma^j$",
                     target_obs_idx=10,
-                    target_action_name=r"order price scale $\tilde{r}_t^j",
+                    target_action_name=r"order price scale $\tilde{r}_t^j$",
                     target_action_idx=0,
                     obs_values=[-0.99+0.01*x for x in range(199)],
                     initial_obs_values=[
