@@ -19,6 +19,7 @@ from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
 from ots import DDEvaluater
+import seaborn as sns
 from stylized_facts import StylizedFactsChecker
 import torch
 from tqdm import tqdm
@@ -477,7 +478,7 @@ class Evaluater:
             pls.append(pl)
         return trait_dic, pls
     
-    def draw_actions_given_obs(
+    def draw_actions_given_obs2d(
         self,
         target_obs_names: list[str],
         target_obs_indices: list[int],
@@ -500,21 +501,58 @@ class Evaluater:
         actions_arr: ndarray = self.algo.exploit(obses_arr)
         target_action_arr: ndarray = actions_arr[:,:,target_action_idx]
         fig: Figure = plt.figure(figsize=(len(y_obs_values),len(x_obs_values)))
-        ax: plt.Axes = fig.add_subplot(1,1,1)
-        heatmap = ax.pcolor(target_action_arr)
-        ax.set_xticks(np.arange(len(x_obs_values))+0.5)
-        ax.set_yticks(np.arange(len(y_obs_values))+0.5)
-        ax.set_xticklabels(
-            [f"{v:.3f}" for v in x_obs_values],
-            rotation=45
+        # ax: Axes = fig.add_subplot(1,1,1)
+        # heatmap = ax.pcolor(target_action_arr)
+        # ax.set_xticks(np.arange(len(x_obs_values))+0.5)
+        # ax.set_yticks(np.arange(len(y_obs_values))+0.5)
+        # ax.set_xticklabels(
+        #     [f"{v:.2f}" for v in x_obs_values],
+        #     rotation=45
+        # )
+        # ax.set_yticklabels([f"{v:.3f}" for v in y_obs_values])
+        # ax.set_xlabel(x_obs_name)
+        # ax.set_ylabel(y_obs_name)
+        # divider = make_axes_locatable(ax)
+        # cax = divider.append_axes("right", size="5%", pad=0.1)
+        # fig.colorbar(heatmap, ax=ax, cax=cax)
+        # ax.set_aspect("equal", adjustable="box")
+        sns.heatmap(
+            target_action_arr, cmap="coolwarm", cbar=True,
+            annot=True, fmt="d",
+            xticklabels=[f"{v:.2f}" for v in x_obs_values],
+            yticklabels=[f"{v:.3f}" for v in y_obs_values]
         )
-        ax.set_yticklabels([f"{v:.2f}" for v in y_obs_values])
-        ax.set_xlabel(x_obs_name)
-        ax.set_ylabel(y_obs_name)
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.1)
-        fig.colorbar(heatmap, ax=ax, cax=cax)
-        ax.set_aspect("equal", adjustable="box")
+        plt.xlabel(x_obs_name)
+        plt.ylabel(y_obs_name)
         save_path: Path = self.figs_save_path / save_name
         fig.savefig(save_path, bbox_inches="tight")
 
+    def draw_actions_given_obs1d(
+        self,
+        target_obs_name: str,
+        target_obs_idx: int,
+        target_action_name: str,
+        target_action_idx: int,
+        obs_values: list[float],
+        initial_obs_values: list[float],
+        save_name: str,
+    ) -> None:
+        obses_arr: ndarray = np.tile(
+            np.array(initial_obs_values),
+            (len(obs_values), 1)
+        )
+        obses_arr[:,target_obs_idx] = np.array(obs_values)
+        actions_arr: ndarray = self.algo.exploit(obses_arr)
+        target_action_arr: ndarray = actions_arr[:,target_action_idx]
+        fig: Figure = plt.figure(figsize=(len(obs_values), 1))
+        # ax: Axes = fig.add_subplot(1,1,1)
+        # ax.plot(obs_values, target_action_arr, c="black")
+        # ax.set_xlabel(target_obs_name)
+        # ax.set_ylabel(target_action_name)
+        sns.lineplot(
+            x=obs_values, y=target_action_arr
+        )
+        plt.xlabel(target_obs_name)
+        plt.ylabel(target_action_name)
+        save_path: Path = self.figs_save_path / save_name
+        fig.savefig(save_path, bbox_inches="tight")
