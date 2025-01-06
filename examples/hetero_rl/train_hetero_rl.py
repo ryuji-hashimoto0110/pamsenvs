@@ -172,10 +172,10 @@ def main(args) -> None:
     config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
     for sigma in sigmas:
         sigma_str: str = f"{sigma:.3f}".replace(".", "")
-        config_dic["Agent"]["skillBoundedness"] = {"expon": [sigma]}
+        config_dic["Agent"]["skillBoundedness"] = {"normal": [0.02, sigma]} if sigma != 0.0 else 0.02
         for alpha in alphas:
             alpha_str: str = f"{alpha:.2f}".replace(".", "")
-            config_dic["Agent"]["riskAversionTerm"] = {"expon": [alpha]}
+            config_dic["Agent"]["riskAversionTerm"] = {"normal": [1.0, alpha]} if alpha != 0.0 else 1.0
             for gamma in gammas:
                 gamma_str: str = f"{gamma:.2f}".replace(".", "")
                 config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}

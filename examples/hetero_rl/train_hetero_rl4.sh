@@ -29,8 +29,8 @@ execution_vonus=0.15
 initial_fundamental_penalty=3.0
 fundamental_penalty_decay=0.99
 agent_trait_memory=0.9
-sigmas="0.03 0.04"
-alphas="0.00 0.30 0.60 0.90 2.00"
+sigmas="0.003 0.004"
+alphas="0.00 0.10 0.20 0.30 0.40"
 gammas="0.80 0.85 0.90 0.95 0.999"
 device="cuda:1"
 python train_hetero_rl.py \
