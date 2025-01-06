@@ -516,14 +516,16 @@ class Evaluater:
         # cax = divider.append_axes("right", size="5%", pad=0.1)
         # fig.colorbar(heatmap, ax=ax, cax=cax)
         # ax.set_aspect("equal", adjustable="box")
-        sns.heatmap(
-            target_action_arr, cmap="coolwarm", cbar=True,
-            annot=False,
-            xticklabels=[f"{v:.2f}" for v in x_obs_values],
-            yticklabels=[f"{v:.3f}" for v in y_obs_values]
+        ax: Axes = sns.heatmap(
+            target_action_arr, cmap="coolwarm", cbar=True, annot=False,
         )
-        plt.xlabel(x_obs_name)
-        plt.ylabel(y_obs_name)
+        ax.set_xticklabels(
+            [f"{v:.2f}" for v in x_obs_values],
+            rotation=45
+        )
+        ax.set_yticklabels([f"{v:.3f}" for v in y_obs_values])
+        ax.set_xlabel(x_obs_name)
+        ax.set_ylabel(y_obs_name)
         save_path: Path = self.figs_save_path / save_name
         fig.savefig(save_path, bbox_inches="tight")
 
@@ -549,10 +551,10 @@ class Evaluater:
         # ax.plot(obs_values, target_action_arr, c="black")
         # ax.set_xlabel(target_obs_name)
         # ax.set_ylabel(target_action_name)
-        sns.lineplot(
+        ax: Axes = sns.lineplot(
             x=obs_values, y=target_action_arr
         )
-        plt.xlabel(target_obs_name)
-        plt.ylabel(target_action_name)
+        ax.set_xlabel(target_obs_name)
+        ax.set_ylabel(target_action_name)
         save_path: Path = self.figs_save_path / save_name
         fig.savefig(save_path, bbox_inches="tight")
