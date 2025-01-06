@@ -520,6 +520,7 @@ class Evaluater:
             target_action_arr, cmap="OrRd", cbar=True,
             annot=True, fmt=".2f", annot_kws={"fontsize": 8}
         )
+        ax.invert_yaxis()   
         ax.set_xticklabels(
             [f"{v:.2f}" for v in x_obs_values],
             rotation=45
