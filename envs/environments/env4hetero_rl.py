@@ -16,6 +16,7 @@ from pams.order import Order
 from pams.runners import Runner
 from pams.runners import SequentialRunner
 from pams.simulator import Simulator
+import scipy.stats as stats
 from typing import Literal
 from typing import Optional
 from typing import TypeVar
@@ -387,13 +388,11 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "skill_boundedness":
             obs_comp = self._minmax_rescaling(
                 obs_comp,
-                min_val=0,
                 setting=self.config_dic["Agent"]["skillBoundedness"]
             )
         elif obs_name == "risk_aversion_term":
             obs_comp = self._minmax_rescaling(
                 obs_comp,
-                min_val=0,
                 setting=self.config_dic["Agent"]["riskAversionTerm"]
             )
         elif obs_name == "discount_factor":
@@ -458,6 +457,12 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 assert len(setting["uniform"]) == 2
                 umin, umax = setting["uniform"]
                 return umax - (umax - umin) * upper_prob
+            elif "normal" in setting:
+                assert len(setting["normal"]) == 2
+                mu, sigma = setting["normal"]
+                return stats.norm.ppf(
+                    1-upper_prob, loc=mu, scale=sigma
+                )
             else:
                 raise NotImplementedError
         else:
@@ -552,7 +557,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         blurred_fundamental_return: float = np.log(fundamental_price) - np.log(market_price)
         if not hasattr(agent, "skill_boundedness"):
             raise ValueError(f"agent {agent.agent_id} does not have skill_boundedness.")
-        skill_boundedness: float = agent.skill_boundedness
+        skill_boundedness: float = max(1e-10, agent.skill_boundedness)
         blurring_factor: float = self._prng.gauss(0, skill_boundedness)
         blurred_fundamental_return += blurring_factor
         return blurred_fundamental_return
@@ -573,9 +578,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         log_return: float = self.return_dic[agent_id]
         volatility: float = self.volatility_dic[agent_id]
         asset_fraction: float = asset_volume * market_price / total_wealth
+        risk_aversion_term: float = max(0, agent.risk_aversion_term)
         current_utility: float = (
             total_wealth * (1 + asset_fraction * log_return)
-        ) - 0.5 * agent.risk_aversion_term * asset_fraction * volatility * total_wealth
+        ) - 0.5 * risk_aversion_term * asset_fraction * volatility * total_wealth
         agent.previous_utility = current_utility
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
