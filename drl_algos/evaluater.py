@@ -518,7 +518,7 @@ class Evaluater:
         # ax.set_aspect("equal", adjustable="box")
         sns.heatmap(
             target_action_arr, cmap="coolwarm", cbar=True,
-            annot=True, fmt=".2f",
+            annot=False,
             xticklabels=[f"{v:.2f}" for v in x_obs_values],
             yticklabels=[f"{v:.3f}" for v in y_obs_values]
         )
