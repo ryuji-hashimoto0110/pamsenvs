@@ -500,7 +500,7 @@ class Evaluater:
         obses_arr[:,:,x_obs_idx] = np.tile(x_obs_values, (len(y_obs_values),1))
         actions_arr: ndarray = self.algo.exploit(obses_arr)
         target_action_arr: ndarray = actions_arr[:,:,target_action_idx]
-        fig: Figure = plt.figure(figsize=(len(y_obs_values),len(x_obs_values)))
+        fig: Figure = plt.figure(figsize=(len(y_obs_values),2*len(x_obs_values)))
         # ax: Axes = fig.add_subplot(1,1,1)
         # heatmap = ax.pcolor(target_action_arr)
         # ax.set_xticks(np.arange(len(x_obs_values))+0.5)
@@ -517,7 +517,8 @@ class Evaluater:
         # fig.colorbar(heatmap, ax=ax, cax=cax)
         # ax.set_aspect("equal", adjustable="box")
         ax: Axes = sns.heatmap(
-            target_action_arr, cmap="coolwarm", cbar=True, annot=False,
+            target_action_arr, cmap="OrRd", cbar=True,
+            annot=True, fmt=".2f", annot_kws={"fontsize": 8}
         )
         ax.set_xticklabels(
             [f"{v:.2f}" for v in x_obs_values],
