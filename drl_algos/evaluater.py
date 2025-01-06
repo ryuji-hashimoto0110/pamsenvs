@@ -518,7 +518,7 @@ class Evaluater:
         # ax.set_aspect("equal", adjustable="box")
         ax: Axes = sns.heatmap(
             target_action_arr, cmap="OrRd", cbar=True,
-            annot=True, fmt=".4f", annot_kws={"fontsize": 8}
+            annot=True, fmt=".4f", annot_kws={"fontsize": 16}
         )
         ax.invert_yaxis()   
         ax.set_xticklabels(
@@ -563,3 +563,11 @@ class Evaluater:
         ax.set_ylabel(target_action_name)
         save_path: Path = self.figs_save_path / save_name
         fig.savefig(save_path, bbox_inches="tight")
+
+    def plot_price_w_specific_agent_action(
+        self,
+        decision_histories_dfs: list[DataFrame],
+        plot_idx: int,
+        agent_id: int,
+    ) -> None:
+        pass
