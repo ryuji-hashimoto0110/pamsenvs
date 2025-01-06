@@ -525,7 +525,10 @@ class Evaluater:
             [f"{v:.2f}" for v in x_obs_values],
             rotation=45
         )
-        ax.set_yticklabels([f"{v:.3f}" for v in y_obs_values])
+        ax.set_yticklabels(
+            [f"{v:.3f}" for v in y_obs_values],
+            rotation=0
+        )
         ax.set_xlabel(x_obs_name)
         ax.set_ylabel(y_obs_name)
         save_path: Path = self.figs_save_path / save_name
