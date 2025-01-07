@@ -24,12 +24,20 @@ class HeteroRLAgent(Agent):
             self.skill_boundedness: float = json_random.random(
                 json_value=settings["skillBoundedness"]
             )
+            if "averageCashAmount" in settings:
+                average_cash_amount: float = settings["averageCashAmount"]
+                cash_amount: float = self.cash_amount
+                self.skill_boundedness *= average_cash_amount / cash_amount
         if "riskAversionTerm" not in settings:
             raise ValueError("riskAversionTerm is required for HeteroRLAgent.")
         else:
             self.risk_aversion_term: float = json_random.random(
                 json_value=settings["riskAversionTerm"]
             )
+            if "averageCashAmount" in settings:
+                average_cash_amount: float = settings["averageCashAmount"]
+                cash_amount: float = self.cash_amount
+                self.risk_aversion_term *= average_cash_amount / cash_amount
         if "discountFactor" not in settings:
             raise ValueError("discountFactor is required for HeteroRLAgent.")
         else:
