@@ -162,20 +162,26 @@ class Evaluater:
         processor.convert_all_txt2csv(
             is_bybit_format=False, is_display_path=False
         )
-        checker: StylizedFactsChecker = StylizedFactsChecker(
-            ohlcv_dfs_path=None,
-            resample_mid=True,
-            tick_dfs_path=self.tick_dfs_save_path,
-            ohlcv_dfs_save_path=self.ohlcv_dfs_path,
-            figs_save_path=self.figs_save_path,
-            specific_name=None,
-            resample_rule="1min",
-            is_real=False,
-            transactions_folder_path=self.transactions_path,
-            session1_transactions_file_name=self.session1_transactions_file_name,
-            session2_transactions_file_name=self.session2_transactions_file_name
-        )
-        checker.check_stylized_facts(save_path=self.stylized_facts_save_path)
+        try:
+            checker: StylizedFactsChecker = StylizedFactsChecker(
+                ohlcv_dfs_path=None,
+                resample_mid=True,
+                tick_dfs_path=self.tick_dfs_save_path,
+                ohlcv_dfs_save_path=self.ohlcv_dfs_path,
+                figs_save_path=self.figs_save_path,
+                specific_name=None,
+                resample_rule="1min",
+                is_real=False,
+                transactions_folder_path=self.transactions_path,
+                session1_transactions_file_name=self.session1_transactions_file_name,
+                session2_transactions_file_name=self.session2_transactions_file_name
+            )
+            checker.check_stylized_facts(save_path=self.stylized_facts_save_path)
+        except Exception as e:
+            print(e)
+            if unlink_all:
+                self._unlink_all()
+            return decision_histories_dfs
         if self.ot_distances_save_path.exists():
             dd_df: DataFrame = pd.read_csv(
                 self.ot_distances_save_path, index_col=0
@@ -230,6 +236,9 @@ class Evaluater:
             if path.exists():
                 for file in path.iterdir():
                     file.unlink()
+        for dd_evaluater in self.dd_evaluaters:
+            if "temp" in dd_evaluater.ticker_path_dic:
+                del dd_evaluater.ticker_path_dic["temp"]
 
     @torch.no_grad()
     def save_1episode(
