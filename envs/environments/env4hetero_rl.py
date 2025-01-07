@@ -46,6 +46,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         short_selling_penalty: float = 0.5,
         cash_shortage_penalty: float = 0.5,
         execution_vonus: float = 0.1,
+        execution_vonus_decay: float = 0.9,
         initial_fundamental_penalty: float = 1.0,
         fundamental_penalty_decay: float = 0.9,
         agent_trait_memory: float = 0.9,
@@ -82,6 +83,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.short_selling_penalty: float = short_selling_penalty
         self.cash_shortage_penalty: float = cash_shortage_penalty
         self.execution_vonus: float = execution_vonus
+        self.execution_vonus_decay: float = execution_vonus_decay
         self.fundamental_penalty: float = initial_fundamental_penalty
         self.fundamental_penalty_decay: float = fundamental_penalty_decay
         self.agent_trait_memory: float = agent_trait_memory
@@ -166,6 +168,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
 
     def reset(self) -> None:
         super().reset()
+        self.execution_vonus *= self.execution_vonus_decay
         self.fundamental_penalty *= self.fundamental_penalty_decay
 
     def is_ready_to_store_experience(self) -> bool:
@@ -205,26 +208,18 @@ class AECEnv4HeteroRL(PamsAECEnv):
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
         if agent_id in self.previous_agent_trait_dic.keys():
             previous_skill_boundedness: float = self.previous_agent_trait_dic[agent_id]["skill_boundedness"]
-            new_skill_boundedness: float = max(
-                0,
-                self.agent_trait_memory * previous_skill_boundedness + \
-                    (1 - self.agent_trait_memory) * agent.skill_boundedness
-            )
+            new_skill_boundedness: float = self.agent_trait_memory * previous_skill_boundedness + \
+                (1 - self.agent_trait_memory) * agent.skill_boundedness
             agent.skill_boundedness = new_skill_boundedness
             previous_risk_aversion_term: float = self.previous_agent_trait_dic[agent_id]["risk_aversion_term"]
-            new_risk_aversion_term: float = max(
-                0,
-                self.agent_trait_memory * previous_risk_aversion_term + \
-                    (1 - self.agent_trait_memory) * agent.risk_aversion_term
-            )
+            new_risk_aversion_term: float = self.agent_trait_memory * previous_risk_aversion_term + \
+                (1 - self.agent_trait_memory) * agent.risk_aversion_term
             agent.risk_aversion_term = new_risk_aversion_term
             previous_discount_factor: float = self.previous_agent_trait_dic[agent_id]["discount_factor"]
-            new_discount_factor: float = max(
-                min(
-                    1,
-                    self.agent_trait_memory * previous_discount_factor + \
-                        (1 - self.agent_trait_memory) * agent.discount_factor
-                ), 0
+            new_discount_factor: float = min(
+                1,
+                self.agent_trait_memory * previous_discount_factor + \
+                    (1 - self.agent_trait_memory) * agent.discount_factor
             )
             agent.discount_factor = new_discount_factor
         self.previous_agent_trait_dic[agent_id] = {
@@ -674,7 +669,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         description += f"max order volume: {self.max_order_volume} " + \
             f"limit order range: {self.limit_order_range} short selling penalty: {self.short_selling_penalty} " + \
             f"cash shortage penalty: {self.cash_shortage_penalty} " + \
-            f"execution vonus: {self.execution_vonus} fundamental penalty: {self.fundamental_penalty} ({self.fundamental_penalty_decay})\n"
+            f"execution vonus: {self.execution_vonus} ({self.execution_vonus_decay})" + \
+            f"fundamental penalty: {self.fundamental_penalty} ({self.fundamental_penalty_decay})\n"
         description += f"obs: {self.obs_names}\n"
         description += f"action: {self.action_names}"
         return description
