@@ -669,7 +669,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         description += f"max order volume: {self.max_order_volume} " + \
             f"limit order range: {self.limit_order_range} short selling penalty: {self.short_selling_penalty} " + \
             f"cash shortage penalty: {self.cash_shortage_penalty} " + \
-            f"execution vonus: {self.execution_vonus} ({self.execution_vonus_decay})" + \
+            f"execution vonus: {self.execution_vonus} ({self.execution_vonus_decay}) " + \
             f"fundamental penalty: {self.fundamental_penalty} ({self.fundamental_penalty_decay})\n"
         description += f"obs: {self.obs_names}\n"
         description += f"action: {self.action_names}"
