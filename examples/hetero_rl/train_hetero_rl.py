@@ -51,6 +51,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--initial_fundamental_penalty", type=float, default=10)
     parser.add_argument("--fundamental_penalty_decay", type=float, default=0.9)
     parser.add_argument("--execution_vonus", type=float, default=0.1)
+    parser.add_argument("--execution_vonus_decay", type=float, default=0.9)
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     parser.add_argument(
@@ -142,6 +143,7 @@ def create_env(all_args, config_dic: dict[str, Any]) -> tuple[AECEnv4HeteroRL, i
         short_selling_penalty=all_args.short_selling_penalty,
         cash_shortage_penalty=all_args.cash_shortage_penalty,
         execution_vonus=all_args.execution_vonus,
+        execution_vonus_decay=all_args.execution_vonus_decay,
         initial_fundamental_penalty=all_args.initial_fundamental_penalty,
         fundamental_penalty_decay=all_args.fundamental_penalty_decay,
         agent_trait_memory=all_args.agent_trait_memory,
@@ -172,10 +174,10 @@ def main(args) -> None:
     config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
     for sigma in sigmas:
         sigma_str: str = f"{sigma:.3f}".replace(".", "")
-        config_dic["Agent"]["skillBoundedness"] = {"normal": [0.02, sigma]} if sigma != 0.0 else 0.02
+        config_dic["Agent"]["skillBoundedness"] = {"normal": [0.04, sigma]} if sigma != 0.0 else 0.04
         for alpha in alphas:
             alpha_str: str = f"{alpha:.2f}".replace(".", "")
-            config_dic["Agent"]["riskAversionTerm"] = {"normal": [0.3, alpha]} if alpha != 0.0 else 0.3
+            config_dic["Agent"]["riskAversionTerm"] = {"normal": [1.5, alpha]} if alpha != 0.0 else 1.5
             for gamma in gammas:
                 gamma_str: str = f"{gamma:.2f}".replace(".", "")
                 config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}
