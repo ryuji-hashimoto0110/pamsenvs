@@ -27,7 +27,7 @@ class HeteroRLAgent(Agent):
             if "averageCashAmount" in settings:
                 average_cash_amount: float = settings["averageCashAmount"]
                 cash_amount: float = self.cash_amount
-                self.skill_boundedness *= average_cash_amount / cash_amount
+                #self.skill_boundedness *= average_cash_amount / cash_amount
         if "riskAversionTerm" not in settings:
             raise ValueError("riskAversionTerm is required for HeteroRLAgent.")
         else:
@@ -37,7 +37,7 @@ class HeteroRLAgent(Agent):
             if "averageCashAmount" in settings:
                 average_cash_amount: float = settings["averageCashAmount"]
                 cash_amount: float = self.cash_amount
-                self.risk_aversion_term *= average_cash_amount / cash_amount
+                #self.risk_aversion_term *= average_cash_amount / cash_amount
         if "discountFactor" not in settings:
             raise ValueError("discountFactor is required for HeteroRLAgent.")
         else:
