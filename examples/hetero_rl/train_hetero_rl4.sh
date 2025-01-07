@@ -25,14 +25,15 @@ limit_order_range=0.05
 max_order_volume=50
 short_selling_penalty=1.0
 cash_shortage_penalty=1.0
-execution_vonus=0.15
+execution_vonus=0.20
+execution_vonus_decay=0.99
 initial_fundamental_penalty=3.0
 fundamental_penalty_decay=0.99
 agent_trait_memory=0.9
-sigmas="0.006 0.008"
-alphas="0.00 0.02 0.04 0.06 0.08"
-gammas="0.80 0.85 0.90 0.95 0.999"
-device="cuda:1"
+sigmas="0.03"
+alphas="0.90"
+gammas="0.90"
+device="cpu"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
 --num_updates_per_rollout $num_updates_per_rollout \
@@ -54,6 +55,7 @@ python train_hetero_rl.py \
 --short_selling_penalty $short_selling_penalty \
 --cash_shortage_penalty $cash_shortage_penalty \
 --execution_vonus $execution_vonus \
+--execution_vonus_decay $execution_vonus_decay \
 --initial_fundamental_penalty $initial_fundamental_penalty \
 --fundamental_penalty_decay $fundamental_penalty_decay \
 --agent_trait_memory $agent_trait_memory \
