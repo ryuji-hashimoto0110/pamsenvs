@@ -189,6 +189,7 @@ def main(args) -> None:
                 actor_last_save_path: Path = actor_save_path / actor_last_save_name
                 train_env, num_agents = create_env(all_args, config_dic)
                 test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
+                test_env.execution_vonus = 0.0
                 test_env.fundamental_penalty = 0.0
                 test_env.agent_trait_memory = 0.0
                 ippo: IPPO = create_ippo(all_args, num_agents)
