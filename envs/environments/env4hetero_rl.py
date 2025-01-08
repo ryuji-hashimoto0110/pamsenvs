@@ -598,7 +598,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             cash_shortage_penalty: float = 0
         self.reward_dic["cash_shortage_penalty"].append(-cash_shortage_penalty)
-        execution_vonus: float = self.execution_vonus * agent.num_executed_orders
+        execution_vonus: float = self.execution_vonus * (0 < agent.num_executed_orders)
         reward += execution_vonus
         self.reward_dic["execution_vonus"].append(execution_vonus)
         fundamental_price: float = market.get_fundamental_price()
