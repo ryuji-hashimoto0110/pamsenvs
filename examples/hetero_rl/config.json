@@ -15,7 +15,7 @@
 			},
 			{	
 				"sessionName": "1",
-				"iterationSteps": 1000,
+				"iterationSteps": 8000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -34,7 +34,7 @@
 			},
             {	
 				"sessionName": "2",
-				"iterationSteps": 1000,
+				"iterationSteps": 8000,
 				"withOrderPlacement": true,
 				"withOrderExecution": true,
 				"withPrint": true,
@@ -45,7 +45,7 @@
 	},
 	"provide_dividend": {
 		"class": "DividendProviderwEverySteps",
-		"dividendRate": 0.00005,
+		"dividendRate": 0.00001,
 		"dividendInterval": 1
 	},
     "Market": {
