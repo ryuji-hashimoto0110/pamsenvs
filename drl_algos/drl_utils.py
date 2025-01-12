@@ -10,7 +10,7 @@ def initialize_module_orthogonal(module: Module) -> None:
         with torch.no_grad():
             if "weight" in name:
                 tmp = torch.empty_like(param, device="cpu")
-                nn.init.normal_(tmp, mean=0.03, std=0.20)
+                nn.init.orthogonal_(tmp)
                 param.copy_(tmp.to(device))
             elif "bias" in name:
                 nn.init.zeros_(param)
