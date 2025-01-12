@@ -582,6 +582,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
         scaled_utility_diff: float = utility_diff / normalization_factor
+        scaled_utility_diff = np.clip(scaled_utility_diff, -1, 1)
         #if scaled_utility_diff > 5:
         #    print(f"{previous_utility=:.2f}, {current_utility=:.2f} {scaled_utility_diff=:.2f}")
         #    print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume=:.1f} {market_price=:.1f} {total_wealth=:.1f} {log_return=:.4f} {volatility=:.6f} alpha={agent.risk_aversion_term:.2f}")
