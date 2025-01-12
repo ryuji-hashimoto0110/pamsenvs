@@ -59,7 +59,7 @@
         "class": "HeteroRLAgent",
 		"prefix": "agent",
 		"from": 0,
-		"to": 199,
+		"to": 99,
 		"markets": ["Market"],
 		"assetVolume": {"expon": [20]},
         "cashAmount": {"expon": [6000]},
