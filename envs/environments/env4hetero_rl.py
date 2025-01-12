@@ -572,11 +572,12 @@ class AECEnv4HeteroRL(PamsAECEnv):
         total_wealth: float = cash_amount + asset_volume * market_price
         log_return: float = self.return_dic[agent_id]
         volatility: float = self.volatility_dic[agent_id]
-        asset_fraction: float = asset_volume * market_price / total_wealth
         risk_aversion_term: float = max(0, agent.risk_aversion_term)
         current_utility: float = (
-            total_wealth * (1 + asset_fraction * log_return)
-        ) - 0.5 * risk_aversion_term * asset_fraction * volatility * total_wealth
+            total_wealth * market_price * asset_volume * log_return
+        ) - 0.5 * risk_aversion_term * (
+            (asset_volume * market_price) ** 2
+        ) * volatility
         agent.previous_utility = current_utility
         utility_diff = current_utility - previous_utility
         normalization_factor = max(abs(previous_utility), 1.0)
