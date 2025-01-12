@@ -5,6 +5,7 @@ from ..events import DividendProviderwEverySteps
 from gymnasium import spaces
 from gymnasium import Space
 from ..markets import TotalTimeAwareMarket
+import math
 import numpy as np
 from numpy import ndarray
 from pams.agents import Agent
@@ -556,6 +557,37 @@ class AECEnv4HeteroRL(PamsAECEnv):
         blurring_factor: float = self._prng.gauss(0, skill_boundedness)
         blurred_fundamental_return += blurring_factor
         return blurred_fundamental_return
+    
+    def _calc_raw_utiliy(
+        self,
+        cash_amount: float,
+        asset_volume: float,
+        market_price: float,
+        log_return: float,
+        volatility: float,
+        risk_aversion_term: float,
+    ) -> float:
+        total_wealth: float = cash_amount + asset_volume * market_price
+        asset_value: float = asset_volume * market_price
+        raw_utility = (
+            total_wealth * (1 + log_return * (asset_value / total_wealth))
+        ) - 0.5 * risk_aversion_term * volatility * (
+            asset_value / total_wealth
+        ) ** 2 * total_wealth
+        return raw_utility
+    
+    def _calc_scaled_atan(self, x: float, scaling_factor: float = 1e-04) -> float:
+        return 2 / math.pi * math.atan(scaling_factor * x)
+    
+    def _atan_utility_diff(
+        self,
+        previous_utility: float,
+        current_utility: float,
+    ) -> float:
+        previous_utility = self._calc_scaled_atan(previous_utility)
+        current_utility = self._calc_scaled_atan(current_utility)
+        utility_diff = current_utility - previous_utility
+        return utility_diff
 
     def generate_reward(self, agent_id: AgentID) -> float:
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
@@ -573,19 +605,12 @@ class AECEnv4HeteroRL(PamsAECEnv):
         log_return: float = self.return_dic[agent_id]
         volatility: float = self.volatility_dic[agent_id]
         risk_aversion_term: float = max(0, agent.risk_aversion_term)
-        current_utility: float = (
-            total_wealth * market_price * asset_volume * log_return
-        ) - 0.5 * risk_aversion_term * (
-            (asset_volume * market_price) ** 2
-        ) * volatility
+        current_utility: float = self._calc_raw_utiliy(
+            cash_amount, asset_volume, market_price,
+            log_return, volatility, risk_aversion_term
+        )
         agent.previous_utility = current_utility
-        utility_diff = current_utility - previous_utility
-        normalization_factor = max(abs(previous_utility), 1.0)
-        scaled_utility_diff: float = utility_diff / normalization_factor
-        scaled_utility_diff = np.clip(scaled_utility_diff, -1, 1)
-        #if scaled_utility_diff > 5:
-        #    print(f"{previous_utility=:.2f}, {current_utility=:.2f} {scaled_utility_diff=:.2f}")
-        #    print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume=:.1f} {market_price=:.1f} {total_wealth=:.1f} {log_return=:.4f} {volatility=:.6f} alpha={agent.risk_aversion_term:.2f}")
+        scaled_utility_diff = self._atan_utility_diff(previous_utility, current_utility)
         reward = scaled_utility_diff
         self.reward_dic["scaled_utility_diff"].append(scaled_utility_diff)
         if asset_volume < 0:
