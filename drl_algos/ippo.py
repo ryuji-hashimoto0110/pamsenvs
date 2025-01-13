@@ -53,8 +53,6 @@ class IPPOActor(Module):
             nn.Tanh(),
             nn.Linear(256, 256),
             nn.Tanh(),
-            nn.Linear(256, 256),
-            nn.Tanh(),
             nn.Linear(256, np.prod(action_shape)),
         ).to(device)
         initialize_module_orthogonal(self.actlayer)
@@ -121,8 +119,6 @@ class IPPOCritic(Module):
         self.obs_shape: ndarray = obs_shape
         self.valuelayer: Module = nn.Sequential(
             nn.Linear(np.prod(obs_shape), 256),
-            nn.Tanh(),
-            nn.Linear(256, 256),
             nn.Tanh(),
             nn.Linear(256, 256),
             nn.Tanh(),
