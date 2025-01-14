@@ -297,8 +297,8 @@ class IPPO(Algorithm):
                         log_probs_old[sub_indices],
                         advantages[sub_indices]
                     )
-            self.scheduler_actor.step()
-            self.scheduler_critic.step()
+                self.scheduler_actor.step()
+                self.scheduler_critic.step()
             #print(self.scheduler_actor.get_lr())
         #print(self.actor.log_stds)
 
