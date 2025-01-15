@@ -47,9 +47,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         short_selling_penalty: float = 0.5,
         cash_shortage_penalty: float = 0.5,
         execution_vonus: float = 0.1,
-        execution_vonus_decay: float = 0.9,
+        execution_vonus_decay: float = 1.0,
         initial_fundamental_penalty: float = 1.0,
-        fundamental_penalty_decay: float = 0.9,
+        fundamental_penalty_decay: float = 1.0,
         agent_trait_memory: float = 0.9,
         store_experience_time: int = 300
     ) -> None:
@@ -392,11 +392,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 setting=self.config_dic["Agent"]["riskAversionTerm"]
             )
         elif obs_name == "discount_factor":
-            obs_comp = self._minmax_rescaling(
-                obs_comp,
-                max_val=1,
-                setting=self.config_dic["Agent"]["discountFactor"]
-            )
+            obs_comp = obs_comp
         else:
             raise NotImplementedError(f"obs_name {obs_name} is not implemented.")
         obs_comp = np.clip(obs_comp, -1, 1)
@@ -570,10 +566,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         total_wealth: float = cash_amount + asset_volume * market_price
         asset_value: float = asset_volume * market_price
         raw_utility = (
-            total_wealth * (1 + log_return * (asset_value / total_wealth))
-        ) - 0.5 * risk_aversion_term * volatility * (
-            asset_value / total_wealth
-        ) ** 2 * total_wealth
+            total_wealth + log_return * asset_value
+        ) - 0.5 * risk_aversion_term * volatility * asset_value ** 2
         return raw_utility
     
     def _calc_scaled_atan(self, x: float, scaling_factor: float = 1e-04) -> float:
@@ -609,6 +603,15 @@ class AECEnv4HeteroRL(PamsAECEnv):
             cash_amount, asset_volume, market_price,
             log_return, volatility, risk_aversion_term
         )
+        # print(
+        #     f"utility={current_utility:.3f} " + \
+        #     f"cash={cash_amount:.1f} " + \
+        #     f"asset={asset_volume:.1f} " + \
+        #     f"market={market_price:.1f} " + \
+        #     f"log_return={log_return:.4f} " + \
+        #     f"volatility={volatility:.4f} " + \
+        #     f"risk_aversion={risk_aversion_term:.4f}"
+        # )
         agent.previous_utility = current_utility
         scaled_utility_diff = self._atan_utility_diff(previous_utility, current_utility)
         reward = scaled_utility_diff
