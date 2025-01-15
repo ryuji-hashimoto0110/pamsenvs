@@ -57,7 +57,7 @@ class IPPOActor(Module):
         ).to(device)
         initialize_module_orthogonal(self.actlayer)
         self.log_stds: Tensor = nn.Parameter(
-            -2*torch.ones(1, action_shape[0])
+            -torch.zeros(1, action_shape[0])
         ).to(device)
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
@@ -308,7 +308,7 @@ class IPPO(Algorithm):
         rewards: Tensor,
         dones: Tensor,
         next_values: Tensor,
-        gamma: float = 0.995,
+        gamma: float | Tensor = 0.995,
         lmd: float = 0.99
     ) -> tuple[Tensor]:
         """calculate target obs value R(lmd) and Generalized Advantage Estimation (GAE).
@@ -323,7 +323,10 @@ class IPPO(Algorithm):
         advantages: Tensor = torch.empty_like(rewards)
         advantages[-1] = td_err[-1]
         for t in reversed(range(len(rewards)-1)):
-            advantages[t] = td_err[t] + gamma[t] * lmd * (1-dones[t]) * advantages[t+1]
+            if isinstance(gamma, float):
+                advantages[t] = td_err[t] + gamma * lmd * (1-dones[t]) * advantages[t+1]
+            else:
+                advantages[t] = td_err[t] + gamma[t] * lmd * (1-dones[t]) * advantages[t+1]
         targets: Tensor = advantages + values
         advantages = advantages / (advantages.std() + 1e-08)
         return targets, advantages
