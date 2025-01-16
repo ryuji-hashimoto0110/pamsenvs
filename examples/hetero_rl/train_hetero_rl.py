@@ -177,7 +177,7 @@ def main(args) -> None:
         config_dic["Agent"]["skillBoundedness"] = {"normal": [0.02, sigma]} if sigma != 0.0 else 0.02
         for alpha in alphas:
             alpha_str: str = f"{alpha:.2f}".replace(".", "")
-            config_dic["Agent"]["riskAversionTerm"] = {"normal": [1.5, alpha]} if alpha != 0.0 else 1.5
+            config_dic["Agent"]["riskAversionTerm"] = {"normal": [2.0, alpha]} if alpha != 0.0 else 2.0
             for gamma in gammas:
                 gamma_str: str = f"{gamma:.2f}".replace(".", "")
                 config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}
@@ -189,6 +189,8 @@ def main(args) -> None:
                 actor_last_save_path: Path = actor_save_path / actor_last_save_name
                 train_env, num_agents = create_env(all_args, config_dic)
                 test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
+                test_env.execution_vonus = 0.0
+                test_env.fundamental_penalty = 0.0
                 test_env.agent_trait_memory = 0.0
                 ippo: IPPO = create_ippo(all_args, num_agents)
                 trainer: Trainer = Trainer(
