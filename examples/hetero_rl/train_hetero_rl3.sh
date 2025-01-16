@@ -17,7 +17,7 @@ agent_name="Agent"
 config_path="config.json"
 variable_ranges_path="variable_ranges.json"
 obs_names="asset_ratio liquidable_asset_ratio inverted_buying_power "\
-"log_return volatility remainig_time_ratio "\
+"log_return volatility "\
 "asset_volume_buy_orders_ratio asset_volume_sell_orders_ratio "\
 "blurred_fundamental_return skill_boundedness risk_aversion_term discount_factor"
 action_names="order_price_scale order_volume_scale"
