@@ -570,7 +570,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         asset_value: float = asset_volume * market_price
         raw_utility = (
             total_wealth + log_return * asset_value
-        ) - 0.5 * risk_aversion_term * volatility * asset_value ** 2
+        ) - 0.5 * risk_aversion_term * volatility * abs(asset_value)
         return raw_utility
     
     def _calc_scaled_atan(self, x: float, scaling_factor: float = 1e-04) -> float:
