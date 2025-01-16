@@ -57,8 +57,8 @@ class IPPOActor(Module):
         ).to(device)
         initialize_module_orthogonal(self.actlayer)
         self.log_stds: Tensor = nn.Parameter(
-            torch.zeros(1, action_shape[0])
-        ).to(device)
+            torch.zeros(1, action_shape[0], device=device)
+        )
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
         """Resize observation tensor."""
@@ -297,6 +297,7 @@ class IPPO(Algorithm):
                         log_probs_old[sub_indices],
                         advantages[sub_indices]
                     )
+                    print(self.actor.log_stds)
                 self.scheduler_actor.step()
                 self.scheduler_critic.step()
             #print(self.scheduler_actor.get_lr())
