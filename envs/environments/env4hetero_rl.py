@@ -349,6 +349,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             discount_factor = self._preprocess_obs(discount_factor, "discount_factor")
             obs_list.append(discount_factor)
             self.obs_dic["discount_factor"].append(discount_factor)
+ 
         obs: ObsType = np.array(obs_list)
         return obs
     
@@ -372,9 +373,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "remaining_time_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
         elif obs_name == "log_return":
-            obs_comp = self._minmax_rescaling(obs_comp, -0.001, 0.001)
+            obs_comp = self._minmax_rescaling(obs_comp, -0.01, 0.01)
         elif obs_name == "volatility":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.0001)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.001)
         elif obs_name == "asset_volume_buy_orders_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
         elif obs_name == "asset_volume_sell_orders_ratio":
@@ -517,7 +518,6 @@ class AECEnv4HeteroRL(PamsAECEnv):
         log_return_arr: ndarray = np.log(market_prices[1:]) - np.log(market_prices[:len(market_prices)-1])
         avg_log_return: float = np.mean(log_return_arr)
         volatility: float = np.mean((log_return_arr - avg_log_return)**2)
-        print(volatility)
         return volatility
     
     def _get_asset_volume_existing_orders_ratio(
