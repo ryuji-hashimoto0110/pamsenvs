@@ -1,6 +1,6 @@
-rollout_length=1024
-num_updates_per_rollout=10
-batch_size=256
+rollout_length=128
+num_updates_per_rollout=1
+batch_size=64
 lr_actor=1e-04
 lr_critic=1e-04
 clip_eps=0.3
@@ -10,30 +10,31 @@ seed=42
 actor_save_path="../../datas/checkpoints"
 actor_best_save_name="_best"
 actor_last_save_name="_last"
-num_train_steps=5275000
-eval_interval=105500
-num_eval_episodes=3
+num_train_steps=21100000
+eval_interval=21100
+num_eval_episodes=5
 agent_name="Agent"
 config_path="config.json"
 variable_ranges_path="variable_ranges.json"
 obs_names="asset_ratio liquidable_asset_ratio inverted_buying_power "\
-"log_return volatility "\
+"log_return volatility remainig_time_ratio "\
+"asset_volume_buy_orders_ratio asset_volume_sell_orders_ratio "\
 "blurred_fundamental_return skill_boundedness risk_aversion_term discount_factor"
 action_names="order_price_scale order_volume_scale"
-depth_range=0.03
+depth_range=0.05
 limit_order_range=0.05
 max_order_volume=50
-short_selling_penalty=0.05
-cash_shortage_penalty=0.05
-execution_vonus=0.001
-execution_vonus_decay=1.0
-initial_fundamental_penalty=0.1
-fundamental_penalty_decay=1.0
+short_selling_penalty=0.0
+cash_shortage_penalty=0.0
+execution_vonus=0.15
+execution_vonus_decay=0.99
+initial_fundamental_penalty=10.0
+fundamental_penalty_decay=0.99
 agent_trait_memory=0.99
 sigmas="0.010"
-alphas="0.00 0.30 0.60 0.90"
-gammas="0.70 0.80 0.90 0.999"
-device="cuda:0"
+alphas="0.60"
+gammas="0.90"
+device="cpu"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
 --num_updates_per_rollout $num_updates_per_rollout \
