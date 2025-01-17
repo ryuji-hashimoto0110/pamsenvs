@@ -10,7 +10,7 @@ seed=42
 actor_save_path="../../datas/checkpoints"
 actor_best_save_name="_best"
 actor_last_save_name="_last"
-num_train_steps=21100000
+num_train_steps=4220000
 eval_interval=21100
 num_eval_episodes=5
 agent_name="Agent"
@@ -32,7 +32,7 @@ initial_fundamental_penalty=10.0
 fundamental_penalty_decay=0.99
 agent_trait_memory=0.99
 sigmas="0.010"
-alphas="0.60"
+alphas="0.10"
 gammas="0.90"
 device="cpu"
 python train_hetero_rl.py \
