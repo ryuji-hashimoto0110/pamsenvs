@@ -26,13 +26,13 @@ limit_order_range=0.05
 max_order_volume=50
 short_selling_penalty=0.0
 cash_shortage_penalty=0.0
-execution_vonus=0.05
+execution_vonus=0.15
 execution_vonus_decay=0.99
 initial_fundamental_penalty=3.0
-fundamental_penalty_decay=0.99
+fundamental_penalty_decay=0.995
 agent_trait_memory=0.99
 sigmas="0.010"
-alphas="0.10"
+alphas="0.60"
 gammas="0.90"
 device="cpu"
 python train_hetero_rl.py \
