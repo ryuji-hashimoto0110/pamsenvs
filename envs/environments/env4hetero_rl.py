@@ -506,9 +506,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         if len(market_prices) < 2:
             return 0.0
         #market_price_arr: ndarray = np.array(market_prices)
-        log_return: float = np.mean(
-            np.log(market_prices[1:]) - np.log(market_prices[:-1])
-        )
+        log_return: float = np.log(market_prices[-1]) - np.log(market_prices[0])
         return log_return
 
     def _calc_volatility(self, market_prices: list[float]) -> float:
@@ -517,7 +515,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             return 0.0
         log_return_arr: ndarray = np.log(market_prices[1:]) - np.log(market_prices[:len(market_prices)-1])
         avg_log_return: float = np.mean(log_return_arr)
-        volatility: float = np.mean((log_return_arr - avg_log_return)**2)
+        volatility: float = np.sum((log_return_arr - avg_log_return)**2)
         return volatility
     
     def _get_asset_volume_existing_orders_ratio(
