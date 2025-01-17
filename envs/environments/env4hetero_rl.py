@@ -41,6 +41,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         seed: Optional[int] = None,
         obs_names: list[str] = [],
         action_names: list[str] = [],
+        session1_starting_time: int = 100,
         depth_range: float = 0.01,
         limit_order_range: float = 0.1,
         max_order_volume: int = 10,
@@ -78,6 +79,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         assert len(action_names) == action_dim, f"length of the action_names {len(action_names)} is not equal to action_dim {action_dim}."
         self.action_names = action_names
         self.variables_dic: dict[str, dict[str, float]] = {}
+        self.session1_starting_time: int = session1_starting_time
         self.depth_range: float = depth_range
         self.limit_order_range: float = limit_order_range
         self.max_order_volume: int = max_order_volume
@@ -287,9 +289,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
             remaining_time_ratio = self._preprocess_obs(remaining_time_ratio, "remaining_time_ratio")
             obs_list.append(remaining_time_ratio)
             self.obs_dic["remaining_time_ratio"].append(remaining_time_ratio)
-        last_order_time: int = agent.last_order_time
+        last_order_time: int = max(self.session1_starting_time, agent.last_order_time)
         if current_time < last_order_time:
-            raise ValueError(f"current_time {current_time} is less than last_order_time {last_order_time}.")
+            last_order_time = current_time
         market_prices: list[float] = market.get_market_prices(
             times=[t for t in range(last_order_time, current_time)]
         )
@@ -373,15 +375,15 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "remaining_time_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
         elif obs_name == "log_return":
-            obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
+            obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
         elif obs_name == "volatility":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.06)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.1)
         elif obs_name == "asset_volume_buy_orders_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
         elif obs_name == "asset_volume_sell_orders_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
         elif obs_name == "blurred_fundamental_return":
-            obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
+            obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
         elif obs_name == "skill_boundedness":
             obs_comp = self._minmax_rescaling(
                 obs_comp,
@@ -506,16 +508,17 @@ class AECEnv4HeteroRL(PamsAECEnv):
         if len(market_prices) < 2:
             return 0.0
         #market_price_arr: ndarray = np.array(market_prices)
-        log_return: float = np.log(market_prices[-1]) - np.log(market_prices[0])
+        log_return: float = np.mean(
+            np.log(market_prices[1:]) - np.log(market_prices[:-1])
+        ) * self.num_agents
         return log_return
 
     def _calc_volatility(self, market_prices: list[float]) -> float:
         """Calculate volatility between t-tau and t."""
         if len(market_prices) < 2:
             return 0.0
-        log_return_arr: ndarray = np.log(market_prices[1:]) - np.log(market_prices[:len(market_prices)-1])
-        avg_log_return: float = np.mean(log_return_arr)
-        volatility: float = np.sum((log_return_arr - avg_log_return)**2)
+        log_return_arr: ndarray = np.log(market_prices[1:]) - np.log(market_prices[:-1])
+        volatility: float = np.var(log_return_arr) * self.num_agents
         return volatility
     
     def _get_asset_volume_existing_orders_ratio(
@@ -568,7 +571,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         asset_value: float = asset_volume * market_price
         raw_utility = (
             total_wealth + log_return * asset_value
-        ) - 0.5 * risk_aversion_term * volatility * asset_value ** 2
+        ) - 0.5 * risk_aversion_term * volatility * abs(asset_value)
         return raw_utility
     
     def _calc_scaled_atan(self, x: float, scaling_factor: float = 1e-04) -> float:
@@ -689,7 +692,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             volume=order_volume,
             is_buy=is_buy,
             kind=LIMIT_ORDER,
-            ttl=len(self.simulator.agents)
+            ttl=len(self.simulator.agents)//2
         )
         self.action_dic["order_price"].append(order_price)
         self.action_dic["order_volume"].append(order_volume)
