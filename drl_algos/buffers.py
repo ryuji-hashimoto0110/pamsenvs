@@ -101,6 +101,7 @@ class RolloutBuffer4IPPO:
         if not is_storing:
             return
         else:
+            self.rewards[agent_idx, next_idx-1] = float(reward)
             self.next_obses[agent_idx, next_idx-1].copy_(
                 obs_tensor.view(self.obs_shape)
             )
@@ -109,7 +110,7 @@ class RolloutBuffer4IPPO:
                 return
         self.obses[agent_idx, next_idx].copy_(obs_tensor.view(self.obs_shape))
         self.actions[agent_idx, next_idx].copy_(action_tensor.view(self.action_shape))
-        self.rewards[agent_idx, next_idx] = float(reward)
+        #self.rewards[agent_idx, next_idx] = float(reward)
         self.dones[agent_idx, next_idx] = float(done)
         self.log_probs[agent_idx, next_idx] = float(log_prob)
         self.next_idx_dic[agent_idx] = next_idx + 1
