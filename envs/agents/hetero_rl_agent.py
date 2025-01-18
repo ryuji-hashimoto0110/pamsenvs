@@ -56,7 +56,7 @@ class HeteroRLAgent(Agent):
     
     def submitted_order(self, log: OrderLog) -> None:
         self.last_order_time = log.time
-        self.num_executed_orders = 0
 
     def executed_order(self, log):
+        """num_executed_orders is canceled by the environment."""
         self.num_executed_orders += log.volume
