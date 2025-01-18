@@ -47,8 +47,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         max_order_volume: int = 10,
         short_selling_penalty: float = 0.5,
         cash_shortage_penalty: float = 0.5,
-        execution_vonus: float = 0.1,
-        execution_vonus_decay: float = 1.0,
+        unexecution_penalty: float = 0.1,
+        unexecution_penalty_decay: float = 1.0,
         initial_fundamental_penalty: float = 1.0,
         fundamental_penalty_decay: float = 1.0,
         agent_trait_memory: float = 0.9,
@@ -85,8 +85,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.max_order_volume: int = max_order_volume
         self.short_selling_penalty: float = short_selling_penalty
         self.cash_shortage_penalty: float = cash_shortage_penalty
-        self.execution_vonus: float = execution_vonus
-        self.execution_vonus_decay: float = execution_vonus_decay
+        self.unexecution_penalty: float = unexecution_penalty
+        self.unexecution_penalty_decay: float = unexecution_penalty_decay
         self.fundamental_penalty: float = initial_fundamental_penalty
         self.fundamental_penalty_decay: float = fundamental_penalty_decay
         self.agent_trait_memory: float = agent_trait_memory
@@ -171,7 +171,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
 
     def reset(self) -> None:
         super().reset()
-        self.execution_vonus *= self.execution_vonus_decay
+        self.unexecution_penalty *= self.unexecution_penalty_decay
         self.fundamental_penalty *= self.fundamental_penalty_decay
 
     def is_ready_to_store_experience(self) -> bool:
@@ -204,7 +204,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             "step": [], "agent_id": [], "scaled_utility_diff": [],
             "short_selling_penalty": [], "cash_shortage_penalty": [],
             "fundamental_penalty": [],
-            "execution_vonus": [], "total_reward": []
+            "unexecution_penalty": [], "total_reward": []
         }
 
     def _smooth_agent_trait(self, agent_id: AgentID) -> None:
@@ -639,9 +639,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             cash_shortage_penalty: float = 0
         self.reward_dic["cash_shortage_penalty"].append(-cash_shortage_penalty)
-        execution_vonus: float = self.execution_vonus * agent.num_executed_orders
-        reward += execution_vonus
-        self.reward_dic["execution_vonus"].append(execution_vonus)
+        unexecution_penalty: float = self.unexecution_penalty * (agent.num_executed_orders == 0)
+        agent.num_executed_orders = 0
+        reward -= unexecution_penalty
+        self.reward_dic["unexecution_penalty"].append(-unexecution_penalty)
         fundamental_price: float = market.get_fundamental_price()
         fundamental_return: float = np.abs(
             np.log(fundamental_price) - np.log(market_price)
@@ -655,7 +656,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         #     f"short selling penalty: {self.reward_dic['short_selling_penalty'][-1]:.3f} " + \
         #     f"cash shortage penalty: {self.reward_dic['cash_shortage_penalty'][-1]:.3f} " + \
         #     f"fundamental penalty: {self.reward_dic['fundamental_penalty'][-1]:.3f} " + \
-        #     f"execution vonus: {self.reward_dic['execution_vonus'][-1]:.3f}"
+        #     f"unexecution penalty: {self.reward_dic['unexecution_penalty'][-1]:.3f}"
         # )
         self.reward_dic["total_reward"].append(reward)
         return reward
@@ -710,7 +711,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         description += f"max order volume: {self.max_order_volume} " + \
             f"limit order range: {self.limit_order_range} short selling penalty: {self.short_selling_penalty} " + \
             f"cash shortage penalty: {self.cash_shortage_penalty} " + \
-            f"execution vonus: {self.execution_vonus} ({self.execution_vonus_decay}) " + \
+            f"unexecution penalty: {self.unexecution_penalty} ({self.unexecution_penalty_decay}) " + \
             f"fundamental penalty: {self.fundamental_penalty} ({self.fundamental_penalty_decay})\n"
         description += f"obs: {self.obs_names}\n"
         description += f"action: {self.action_names}"
