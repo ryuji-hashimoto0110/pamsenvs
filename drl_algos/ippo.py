@@ -154,6 +154,8 @@ class IPPO(Algorithm):
         batch_size: int = 512,
         gamma: float = 0.99,
         gamma_idx: Optional[int] = None,
+        gamma_min: float = 0.90,
+        gamma_max: float = 0.999,
         lr_actor: float = 3e-04,
         lr_critic: float = 3e-04,
         clip_eps: float = 0.2,
@@ -215,6 +217,8 @@ class IPPO(Algorithm):
         self.batch_size: int = batch_size
         self.gamma: float = gamma
         self.gamma_idx: Optional[int] = gamma_idx
+        self.gamma_min: float = gamma_min
+        self.gamma_max: float = gamma_max
         self.clip_eps: float = clip_eps
         self.lmd: float = lmd
         self.max_grad_norm: float = max_grad_norm
@@ -256,6 +260,17 @@ class IPPO(Algorithm):
             done=done, log_prob=log_prob
         )
 
+    def _re_preprocess_gamma(self, gamma_tensor: Tensor) -> Tensor:
+        """
+        gamma is preprocessed as:
+            gamma = 2 * (gamma - gamma_min) / (gamma_max - gamma_min) - 1
+        This method reverse this process.
+        """
+        gamma_tensor = (gamma_tensor + 1) * (
+            self.gamma_max - self.gamma_min
+        ) / 2 + self.gamma_min
+        return gamma_tensor
+
     def update(self):
         """update actor and critic.
 
@@ -278,6 +293,7 @@ class IPPO(Algorithm):
                 next_values: Tensor = self.critic(next_obses)
             if self.gamma_idx is not None:
                 gamma: Tensor = obses[:, self.gamma_idx].unsqueeze_(1)
+                gamma = self._re_preprocess_gamma(gamma)
                 targets, advantages = self.calc_gae(
                     values, rewards, dones, next_values, gamma, self.lmd
                 )
