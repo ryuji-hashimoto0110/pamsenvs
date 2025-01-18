@@ -292,9 +292,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         last_order_time: int = max(self.session1_starting_time, agent.last_order_time)
         if current_time < last_order_time:
             last_order_time = current_time
-        market_prices: list[float] = market.get_market_prices(
+        market_prices: list[Optional[float]] = market.get_mid_prices(
             times=[t for t in range(last_order_time, current_time)]
         )
+        market_prices = [price for price in market_prices if price is not None]
         log_return: float = self._calc_return(market_prices)
         self.return_dic[agent_id] = log_return
         if "log_return" in self.obs_names:
@@ -395,7 +396,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 setting=self.config_dic["Agent"]["riskAversionTerm"]
             )
         elif obs_name == "discount_factor":
-            obs_comp = obs_comp
+            obs_comp = self._minmax_rescaling(
+                obs_comp,
+                setting=self.config_dic["Agent"]["discountFactor"]
+            )
         else:
             raise NotImplementedError(f"obs_name {obs_name} is not implemented.")
         obs_comp = np.clip(obs_comp, -1, 1)
@@ -507,10 +511,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         """Calculate return log p_t - log p_{t-tau} where tau is the time interval between the current and previous observations."""
         if len(market_prices) < 2:
             return 0.0
-        #market_price_arr: ndarray = np.array(market_prices)
         log_return: float = np.mean(
             np.log(market_prices[1:]) - np.log(market_prices[:-1])
         ) * self.num_agents
+        # print(f"{log_return=:.6f}")
         return log_return
 
     def _calc_volatility(self, market_prices: list[float]) -> float:
@@ -519,6 +523,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             return 0.0
         log_return_arr: ndarray = np.log(market_prices[1:]) - np.log(market_prices[:-1])
         volatility: float = np.var(log_return_arr) * self.num_agents
+        # print(f"{volatility=:.6f}")
         return volatility
     
     def _get_asset_volume_existing_orders_ratio(
