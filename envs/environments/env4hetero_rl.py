@@ -586,12 +586,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         previous_utility: float,
         current_utility: float,
     ) -> float:
-        # previous_utility = self._calc_scaled_atan(previous_utility)
-        # current_utility = self._calc_scaled_atan(current_utility)
-        normalization_factor = max(abs(previous_utility), 1.0)
-        utility_diff = (
-            current_utility - previous_utility
-        ) / normalization_factor
+        previous_utility = self._calc_scaled_atan(previous_utility)
+        current_utility = self._calc_scaled_atan(current_utility)
+        utility_diff = current_utility - previous_utility
         return utility_diff
 
     def generate_reward(self, agent_id: AgentID) -> float:
@@ -626,6 +623,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         previous_utility: float = agent.previous_utility
         agent.previous_utility = current_utility
         scaled_utility_diff = self._atan_utility_diff(previous_utility, current_utility)
+        #print(f"{previous_utility=:.2f}, {current_utility=:.2f} {scaled_utility_diff=:.2f}")
+        #print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume=:.1f} {market_price=:.1f} {total_wealth=:.1f} {log_return=:.4f} {volatility=:.6f} alpha={agent.risk_aversion_term:.2f}")
         reward = scaled_utility_diff
         self.reward_dic["scaled_utility_diff"].append(scaled_utility_diff)
         if asset_volume < 0:
