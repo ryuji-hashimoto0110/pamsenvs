@@ -50,8 +50,8 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--cash_shortage_penalty", type=float, default=0.5)
     parser.add_argument("--initial_fundamental_penalty", type=float, default=10)
     parser.add_argument("--fundamental_penalty_decay", type=float, default=0.9)
-    parser.add_argument("--execution_vonus", type=float, default=0.1)
-    parser.add_argument("--execution_vonus_decay", type=float, default=0.9)
+    parser.add_argument("--unexecution_penalty", type=float, default=0.1)
+    parser.add_argument("--unexecution_penalty_decay", type=float, default=0.9)
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     parser.add_argument(
@@ -142,8 +142,8 @@ def create_env(all_args, config_dic: dict[str, Any]) -> tuple[AECEnv4HeteroRL, i
         max_order_volume=all_args.max_order_volume,
         short_selling_penalty=all_args.short_selling_penalty,
         cash_shortage_penalty=all_args.cash_shortage_penalty,
-        execution_vonus=all_args.execution_vonus,
-        execution_vonus_decay=all_args.execution_vonus_decay,
+        unexecution_penalty=all_args.unexecution_penalty,
+        unexecution_penalty_decay=all_args.unexecution_penalty_decay,
         initial_fundamental_penalty=all_args.initial_fundamental_penalty,
         fundamental_penalty_decay=all_args.fundamental_penalty_decay,
         agent_trait_memory=all_args.agent_trait_memory,
@@ -189,8 +189,6 @@ def main(args) -> None:
                 actor_last_save_path: Path = actor_save_path / actor_last_save_name
                 train_env, num_agents = create_env(all_args, config_dic)
                 test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
-                test_env.execution_vonus = 0.0
-                test_env.fundamental_penalty = 0.0
                 test_env.agent_trait_memory = 0.0
                 ippo: IPPO = create_ippo(all_args, num_agents)
                 trainer: Trainer = Trainer(
