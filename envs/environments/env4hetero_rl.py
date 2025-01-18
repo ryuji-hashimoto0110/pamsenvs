@@ -640,7 +640,6 @@ class AECEnv4HeteroRL(PamsAECEnv):
             cash_shortage_penalty: float = 0
         self.reward_dic["cash_shortage_penalty"].append(-cash_shortage_penalty)
         unexecution_penalty: float = self.unexecution_penalty * (agent.num_executed_orders == 0)
-        agent.num_executed_orders = 0
         reward -= unexecution_penalty
         self.reward_dic["unexecution_penalty"].append(-unexecution_penalty)
         fundamental_price: float = market.get_fundamental_price()
@@ -664,6 +663,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def generate_info(self, agent_id: AgentID) -> InfoType:
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
         self.num_execution_dic[agent_id] += agent.num_executed_orders
+        agent.num_executed_orders = 0
         return {"execution_volume": self.num_execution_dic[agent_id]}
         
     def convert_action2orders(self, action: ActionType) -> list[Order | Cancel]:
