@@ -47,8 +47,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         max_order_volume: int = 10,
         short_selling_penalty: float = 0.5,
         cash_shortage_penalty: float = 0.5,
-        unexecution_penalty: float = 0.1,
-        unexecution_penalty_decay: float = 1.0,
+        liquidity_penalty: float = 0.1,
+        liquidity_penalty_decay: float = 1.0,
         initial_fundamental_penalty: float = 1.0,
         fundamental_penalty_decay: float = 1.0,
         agent_trait_memory: float = 0.9,
@@ -85,8 +85,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self.max_order_volume: int = max_order_volume
         self.short_selling_penalty: float = short_selling_penalty
         self.cash_shortage_penalty: float = cash_shortage_penalty
-        self.unexecution_penalty: float = unexecution_penalty
-        self.unexecution_penalty_decay: float = unexecution_penalty_decay
+        self.liquidity_penalty: float = liquidity_penalty
+        self.liquidity_penalty_decay: float = liquidity_penalty_decay
         self.fundamental_penalty: float = initial_fundamental_penalty
         self.fundamental_penalty_decay: float = fundamental_penalty_decay
         self.agent_trait_memory: float = agent_trait_memory
@@ -171,7 +171,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
 
     def reset(self) -> None:
         super().reset()
-        self.unexecution_penalty *= self.unexecution_penalty_decay
+        self.liquidity_penalty *= self.liquidity_penalty_decay
         self.fundamental_penalty *= self.fundamental_penalty_decay
 
     def is_ready_to_store_experience(self) -> bool:
@@ -204,7 +204,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             "step": [], "agent_id": [], "scaled_utility_diff": [],
             "short_selling_penalty": [], "cash_shortage_penalty": [],
             "fundamental_penalty": [],
-            "unexecution_penalty": [], "total_reward": []
+            "liquidity_penalty": [], "total_reward": []
         }
 
     def _smooth_agent_trait(self, agent_id: AgentID) -> None:
@@ -548,7 +548,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 weight: float = 1 / (1 + np.abs(price - mid_price) / mid_price)
                 existing_orders_volume += volume * weight
         asset_volume: int = np.abs(agent.asset_volumes[market.market_id])
-        asset_volume_existing_orders_ratio: float = asset_volume / (existing_orders_volume + 1e-06)
+        asset_volume_existing_orders_ratio: float = min(
+            asset_volume / (existing_orders_volume + 1e-06), 2
+        )
         return asset_volume_existing_orders_ratio
     
     def _blur_fundamental_return(self, agent: Agent, market: Market) -> float:
@@ -627,7 +629,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         # )
         previous_utility: float = agent.previous_utility
         agent.previous_utility = current_utility
-        scaled_utility_diff = self._atan_utility_diff(previous_utility, current_utility)
+        scaled_utility_diff = self._atan_utility_diff(0, current_utility)
         #print(f"{previous_utility=:.2f}, {current_utility=:.2f} {scaled_utility_diff=:.2f}")
         #print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume=:.1f} {market_price=:.1f} {total_wealth=:.1f} {log_return=:.4f} {volatility=:.6f} alpha={agent.risk_aversion_term:.2f}")
         reward = scaled_utility_diff
@@ -644,9 +646,15 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             cash_shortage_penalty: float = 0
         self.reward_dic["cash_shortage_penalty"].append(-cash_shortage_penalty)
-        unexecution_penalty: float = self.unexecution_penalty * (agent.num_executed_orders == 0)
-        reward -= unexecution_penalty
-        self.reward_dic["unexecution_penalty"].append(-unexecution_penalty)
+        liquidity_penalty: float = self.liquidity_penalty * (
+            self._get_asset_volume_existing_orders_ratio(
+                agent, market, is_buy=False
+            ) + self._get_asset_volume_existing_orders_ratio(
+                agent, market, is_buy=True
+            )
+        )
+        reward -= liquidity_penalty
+        self.reward_dic["liquidity_penalty"].append(-liquidity_penalty)
         fundamental_price: float = market.get_fundamental_price()
         fundamental_return: float = np.abs(
             np.log(fundamental_price) - np.log(market_price)
@@ -660,7 +668,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         #     f"short selling penalty: {self.reward_dic['short_selling_penalty'][-1]:.3f} " + \
         #     f"cash shortage penalty: {self.reward_dic['cash_shortage_penalty'][-1]:.3f} " + \
         #     f"fundamental penalty: {self.reward_dic['fundamental_penalty'][-1]:.3f} " + \
-        #     f"unexecution penalty: {self.reward_dic['unexecution_penalty'][-1]:.3f}"
+        #     f"liquidity penalty: {self.reward_dic['liquidity_penalty'][-1]:.3f}"
         # )
         self.reward_dic["total_reward"].append(reward)
         return reward
@@ -716,7 +724,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         description += f"max order volume: {self.max_order_volume} " + \
             f"limit order range: {self.limit_order_range} short selling penalty: {self.short_selling_penalty} " + \
             f"cash shortage penalty: {self.cash_shortage_penalty} " + \
-            f"unexecution penalty: {self.unexecution_penalty} ({self.unexecution_penalty_decay}) " + \
+            f"liquidity penalty: {self.liquidity_penalty} ({self.liquidity_penalty_decay}) " + \
             f"fundamental penalty: {self.fundamental_penalty} ({self.fundamental_penalty_decay})\n"
         description += f"obs: {self.obs_names}\n"
         description += f"action: {self.action_names}"
