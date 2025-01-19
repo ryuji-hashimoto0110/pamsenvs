@@ -612,7 +612,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         fundamental_return: float = np.abs(
             np.log(fundamental_price) - np.log(market_price)
         )
-        for tau in range(1, t):
+        for tau in range(
+            1, min(t, self.num_agents)
+        ):
             fundamental_price_tau: float = market.get_fundamental_price(t-tau)
             market_price_tau: float = market.get_market_price(t-tau)
             sign_tau: int = np.sign(fundamental_price_tau - market_price_tau)
