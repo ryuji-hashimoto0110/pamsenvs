@@ -380,9 +380,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "volatility":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 0.001)
         elif obs_name == "asset_volume_buy_orders_ratio":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
         elif obs_name == "asset_volume_sell_orders_ratio":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
         elif obs_name == "blurred_fundamental_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
         elif obs_name == "skill_boundedness":
@@ -734,7 +734,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             volume=order_volume,
             is_buy=is_buy,
             kind=LIMIT_ORDER,
-            ttl=len(self.simulator.agents)//2
+            ttl=self.num_agents//2
         )
         self.action_dic["order_price"].append(order_price)
         self.action_dic["order_volume"].append(order_volume)
