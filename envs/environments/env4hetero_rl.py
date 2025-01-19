@@ -603,27 +603,19 @@ class AECEnv4HeteroRL(PamsAECEnv):
         
         Get the integrated difference between the fundamental price and the market price
         among the sign(fundamental_price - market_price) remains the same.
-        
         """
         t: int = market.get_time()
         fundamental_price: float = market.get_fundamental_price()
         market_price: float = market.get_market_price()
         sign_now: int = np.sign(fundamental_price - market_price)
-        fundamental_return: float = np.abs(
-            np.log(fundamental_price) - np.log(market_price)
-        )
+        fundamental_return: float = np.log(fundamental_price) - np.log(market_price)
         for tau in range(
             1, min(t, self.num_agents)
         ):
             fundamental_price_tau: float = market.get_fundamental_price(t-tau)
             market_price_tau: float = market.get_market_price(t-tau)
-            sign_tau: int = np.sign(fundamental_price_tau - market_price_tau)
-            if sign_tau != sign_now:
-                break
-            else:
-                fundamental_return += np.abs(
-                    np.log(fundamental_price_tau) - np.log(market_price_tau)
-                )
+            fundamental_return += np.log(fundamental_price_tau) - np.log(market_price_tau)
+        fundamental_return = np.abs(fundamental_return)
         return fundamental_return
 
     def generate_reward(self, agent_id: AgentID) -> float:
