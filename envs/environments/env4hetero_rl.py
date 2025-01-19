@@ -380,9 +380,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "volatility":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 0.001)
         elif obs_name == "asset_volume_buy_orders_ratio":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.5)
         elif obs_name == "asset_volume_sell_orders_ratio":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.5)
         elif obs_name == "blurred_fundamental_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
         elif obs_name == "skill_boundedness":
