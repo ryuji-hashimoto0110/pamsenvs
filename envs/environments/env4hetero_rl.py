@@ -537,8 +537,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         mid_price: float = market.get_mid_price()
         if mid_price is None:
             mid_price = market.get_market_price()
-        lower_bound: float = mid_price - self.depth_range * mid_price
-        upper_bound: float = mid_price + self.depth_range * mid_price
+        lower_bound: float = mid_price - self.depth_range * mid_price if not is_buy else mid_price
+        upper_bound: float = mid_price + self.depth_range * mid_price if is_buy else mid_price
         existing_orders_volume: int = 0
         for price in price_volume_dic.keys():
             volume: int = price_volume_dic[price]
