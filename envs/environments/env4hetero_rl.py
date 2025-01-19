@@ -378,7 +378,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "log_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
         elif obs_name == "volatility":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.03)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.001)
         elif obs_name == "asset_volume_buy_orders_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
         elif obs_name == "asset_volume_sell_orders_ratio":
@@ -597,6 +597,32 @@ class AECEnv4HeteroRL(PamsAECEnv):
         current_utility = self._calc_scaled_atan(current_utility)
         utility_diff = current_utility - previous_utility
         return utility_diff
+    
+    def _get_remaining_fundamental_diff(self, market: Market) -> float:
+        """get remaining fundamental difference.
+        
+        Get the integrated difference between the fundamental price and the market price
+        among the sign(fundamental_price - market_price) remains the same.
+        
+        """
+        t: int = market.get_time()
+        fundamental_price: float = market.get_fundamental_price()
+        market_price: float = market.get_market_price()
+        sign_now: int = np.sign(fundamental_price - market_price)
+        fundamental_return: float = np.abs(
+            np.log(fundamental_price) - np.log(market_price)
+        )
+        for tau in range(1, t):
+            fundamental_price_tau: float = market.get_fundamental_price(t-tau)
+            market_price_tau: float = market.get_market_price(t-tau)
+            sign_tau: int = np.sign(fundamental_price_tau - market_price_tau)
+            if sign_tau != sign_now:
+                break
+            else:
+                fundamental_return += np.abs(
+                    np.log(fundamental_price_tau) - np.log(market_price_tau)
+                )
+        return fundamental_return
 
     def generate_reward(self, agent_id: AgentID) -> float:
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
@@ -655,11 +681,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         )
         reward -= liquidity_penalty
         self.reward_dic["liquidity_penalty"].append(-liquidity_penalty)
-        fundamental_price: float = market.get_fundamental_price()
-        fundamental_return: float = np.abs(
-            np.log(fundamental_price) - np.log(market_price)
+        fundamental_penalty: float = self.fundamental_penalty * min(
+            2, self._get_remaining_fundamental_diff(market)
         )
-        fundamental_penalty: float = self.fundamental_penalty * fundamental_return
         reward -= fundamental_penalty
         self.reward_dic["fundamental_penalty"].append(-fundamental_penalty)
         # print(f"{reward=:.2f}")
