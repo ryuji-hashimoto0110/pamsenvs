@@ -26,15 +26,15 @@ limit_order_range=0.05
 max_order_volume=50
 short_selling_penalty=1.0
 cash_shortage_penalty=1.0
-liquidity_penalty=0.5
+liquidity_penalty=0.1
 liquidity_penalty_decay=1
-initial_fundamental_penalty=0.5
+initial_fundamental_penalty=3.0
 fundamental_penalty_decay=1
 agent_trait_memory=0.99
-sigmas="0.01"
-alphas="0.60"
-gammas="0.70"
-device="cpu"
+sigmas="0.004"
+alphas="0.00 0.30 0.60 0.90"
+gammas="0.70 0.80 0.90 0.999"
+device="cuda:0"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
 --num_updates_per_rollout $num_updates_per_rollout \
