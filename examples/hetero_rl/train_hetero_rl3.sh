@@ -8,9 +8,9 @@ lmd=0.96
 max_grad_norm=0.5
 seed=42
 actor_save_path="../../datas/checkpoints"
-actor_best_save_name="_best"
-actor_last_save_name="_last"
-num_train_steps=4220000
+actor_best_save_name="best"
+actor_last_save_name="last"
+num_train_steps=2110000
 eval_interval=21100
 num_eval_episodes=5
 agent_name="Agent"
@@ -26,14 +26,14 @@ limit_order_range=0.05
 max_order_volume=50
 short_selling_penalty=1.0
 cash_shortage_penalty=1.0
-unexecution_penalty=0.15
-unexecution_penalty_decay=1
+liquidity_penalty=0.5
+liquidity_penalty_decay=1
 initial_fundamental_penalty=3.0
 fundamental_penalty_decay=1
 agent_trait_memory=0.99
 sigmas="0.01"
-alphas="0.90"
-gammas="0.90"
+alphas="0.60"
+gammas="0.70"
 device="cpu"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
@@ -55,8 +55,8 @@ python train_hetero_rl.py \
 --max_order_volume $max_order_volume \
 --short_selling_penalty $short_selling_penalty \
 --cash_shortage_penalty $cash_shortage_penalty \
---unexecution_penalty $unexecution_penalty \
---unexecution_penalty_decay $unexecution_penalty_decay \
+--liquidity_penalty $liquidity_penalty \
+--liquidity_penalty_decay $liquidity_penalty_decay \
 --initial_fundamental_penalty $initial_fundamental_penalty \
 --fundamental_penalty_decay $fundamental_penalty_decay \
 --agent_trait_memory $agent_trait_memory \

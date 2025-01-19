@@ -50,8 +50,8 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--cash_shortage_penalty", type=float, default=0.5)
     parser.add_argument("--initial_fundamental_penalty", type=float, default=10)
     parser.add_argument("--fundamental_penalty_decay", type=float, default=0.9)
-    parser.add_argument("--unexecution_penalty", type=float, default=0.1)
-    parser.add_argument("--unexecution_penalty_decay", type=float, default=0.9)
+    parser.add_argument("--liquidity_penalty", type=float, default=0.1)
+    parser.add_argument("--liquidity_penalty_decay", type=float, default=0.9)
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     parser.add_argument(
@@ -142,15 +142,15 @@ def create_env(all_args, config_dic: dict[str, Any]) -> tuple[AECEnv4HeteroRL, i
         max_order_volume=all_args.max_order_volume,
         short_selling_penalty=all_args.short_selling_penalty,
         cash_shortage_penalty=all_args.cash_shortage_penalty,
-        unexecution_penalty=all_args.unexecution_penalty,
-        unexecution_penalty_decay=all_args.unexecution_penalty_decay,
+        liquidity_penalty=all_args.liquidity_penalty,
+        liquidity_penalty_decay=all_args.liquidity_penalty_decay,
         initial_fundamental_penalty=all_args.initial_fundamental_penalty,
         fundamental_penalty_decay=all_args.fundamental_penalty_decay,
         agent_trait_memory=all_args.agent_trait_memory,
     )
     return env, num_agents
 
-def create_ippo(all_args, num_agents) -> IPPO:
+def create_ippo(all_args, num_agents, gamma_min, gamma_max) -> IPPO:
     ippo: IPPO = IPPO(
         device=all_args.device,
         obs_shape=(len(all_args.obs_names),),
@@ -158,6 +158,7 @@ def create_ippo(all_args, num_agents) -> IPPO:
         seed=all_args.seed, rollout_length=all_args.rollout_length,
         num_updates_per_rollout=all_args.num_updates_per_rollout,
         batch_size=all_args.batch_size, gamma_idx=-1,
+        gamma_min=gamma_min, gamma_max=gamma_max,
         lr_actor=all_args.lr_actor, lr_critic=all_args.lr_critic,
         clip_eps=all_args.clip_eps, lmd=all_args.lmd,
         max_grad_norm=all_args.max_grad_norm
@@ -174,10 +175,10 @@ def main(args) -> None:
     config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
     for sigma in sigmas:
         sigma_str: str = f"{sigma:.3f}".replace(".", "")
-        config_dic["Agent"]["skillBoundedness"] = {"expon": [sigma]}
+        config_dic["Agent"]["skillBoundedness"] = {"normal": [0.02, sigma]} if sigma != 0.0 else 0.02
         for alpha in alphas:
             alpha_str: str = f"{alpha:.2f}".replace(".", "")
-            config_dic["Agent"]["riskAversionTerm"] = {"expon": [alpha]}
+            config_dic["Agent"]["riskAversionTerm"] = {"normal": [2.0, alpha]} if alpha != 0.0 else 2.0
             for gamma in gammas:
                 gamma_str: str = f"{gamma:.2f}".replace(".", "")
                 config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}
@@ -190,7 +191,7 @@ def main(args) -> None:
                 train_env, num_agents = create_env(all_args, config_dic)
                 test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
                 test_env.agent_trait_memory = 0.0
-                ippo: IPPO = create_ippo(all_args, num_agents)
+                ippo: IPPO = create_ippo(all_args, num_agents, gamma, 0.999)
                 trainer: Trainer = Trainer(
                     train_env=train_env, test_env=test_env, algo=ippo,
                     seed=all_args.seed,
