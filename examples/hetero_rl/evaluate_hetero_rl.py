@@ -48,7 +48,8 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--cash_shortage_penalty", type=float, default=0.5)
     parser.add_argument("--initial_fundamental_penalty", type=float, default=10)
     parser.add_argument("--fundamental_penalty_decay", type=float, default=0.9)
-    parser.add_argument("--execution_vonus", type=float, default=0.1)
+    parser.add_argument("--liquidity_penalty", type=float, default=0.1)
+    parser.add_argument("--liquidity_penalty_decay", type=float, default=0.9)
     parser.add_argument("--agent_trait_memory", type=float, default=0.9)
     parser.add_argument(
         "--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu"
