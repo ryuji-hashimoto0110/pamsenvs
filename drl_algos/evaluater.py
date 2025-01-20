@@ -423,7 +423,7 @@ class Evaluater:
         decision_histories_df: DataFrame,
         price_related_columnn_names: list[str],
     ) -> None:
-        steps: list[int] = decision_histories_df["step"].values.tolist()
+        steps: list[int] = decision_histories_df.index.values.tolist()
         if "market_price" in price_related_columnn_names:
             market_prices: list[float] = decision_histories_df["market_price"].values.tolist()
             ax.plot(steps, market_prices, label=r"market price $p_t$")
@@ -445,7 +445,7 @@ class Evaluater:
         decision_histories_df: DataFrame,
         column_name: str,
     ) -> None:
-        steps: list[int] = decision_histories_df["step"].values.tolist()
+        steps: list[int] = decision_histories_df.index.values.tolist()
         values: list[float] = decision_histories_df[column_name].values.tolist()
         ax.plot(steps, values)
         ax.set_xlabel("step")
@@ -463,13 +463,13 @@ class Evaluater:
             decision_histories_df["is_buy"] == 0
         ]
         ax.scatter(
-            buy_orders_df["step"].values.tolist(),
+            buy_orders_df.index.values.tolist(),
             buy_orders_df["order_price"].values.tolist(),
             s=buy_orders_df["order_volume"].values.tolist(),
             c="green", label="buy orders"
         )
         ax.scatter(
-            sell_orders_df["step"].values.tolist(),
+            sell_orders_df.index.values.tolist(),
             sell_orders_df["order_price"].values.tolist(),
             s=sell_orders_df["order_volume"].values.tolist(),
             c="red", label="sell orders"
