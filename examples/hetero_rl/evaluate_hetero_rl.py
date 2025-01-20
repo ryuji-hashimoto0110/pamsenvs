@@ -170,8 +170,8 @@ def main(args) -> None:
                     x_obs_values=[-0.95+0.1*x for x in range(20)],
                     y_obs_values=[-0.95+0.1*x for x in range(20)],
                     initial_obs_values=[
-                        -0.40, -0.80, -0.90, 0.00, -0.90,
-                        -0.80, -0.80, 0.00, -0.80, -0.80, 0.00
+                        0.00, -0.75, -0.75, 0.00, -0.20,
+                        -0.25, -0.25, 0.00, 0.00, 0.00, 0.00
                     ],
                     save_name="heatmap_order_volume_given_alpha_volatility.pdf",
                 )
@@ -182,8 +182,8 @@ def main(args) -> None:
                     x_obs_values=[-0.95+0.05*x for x in range(21)],
                     y_obs_values=[-0.05+0.005*x for x in range(21)],
                     initial_obs_values=[
-                        -0.40, -0.80, -0.90, 0.00, -0.90,
-                        -0.80, -0.80, 0.00, -0.80, -0.80, 0.00
+                        0.00, -0.75, -0.75, 0.00, -0.20,
+                        -0.25, -0.25, 0.00, 0.00, 0.00, 0.00
                     ],
                     save_name="heatmap_order_volume_given_sigma_rf.pdf",
                 )
@@ -194,8 +194,8 @@ def main(args) -> None:
                     x_obs_values=[-0.95+0.05*x for x in range(21)],
                     y_obs_values=[-0.05+0.005*x for x in range(21)],
                     initial_obs_values=[
-                        -0.40, -0.80, -0.90, 0.00, -0.90,
-                        -0.80, -0.80, 0.00, -0.80, -0.80, 0.00
+                        0.00, -0.75, -0.75, 0.00, -0.20,
+                        -0.25, -0.25, 0.00, 0.00, 0.00, 0.00
                     ],
                     save_name="heatmap_order_volume_given_sigma_r.pdf",
                 )
@@ -206,8 +206,8 @@ def main(args) -> None:
                     target_action_idx=0,
                     obs_values=[-0.99+0.01*x for x in range(199)],
                     initial_obs_values=[
-                        -0.40, -0.80, -0.90, 0.00, -0.90,
-                        -0.80, -0.80, 0.00, -0.80, -0.80, 0.00
+                        0.00, -0.75, -0.75, 0.00, -0.20,
+                        -0.25, -0.25, 0.00, 0.00, 0.00, 0.00
                     ],
                     save_name="plot_order_price_given_gamma.pdf",
                 )     
