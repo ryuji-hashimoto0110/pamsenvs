@@ -511,16 +511,20 @@ class Evaluater:
                 ax.set_xlabel(
                     r"skill boundedness $\sigma^j$"
                 )
+                ax.set_xlim(-0.25, 0.25)
             elif trait_column_name == "risk_aversion_term":
                 ax.set_xlabel(
                     r"risk aversion term $\alpha^j$"
                 )
+                ax.set_xlim(-0.25, 0.25)
             elif trait_column_name == "discount_factor":
                 ax.set_xlabel(
                     r"discount factor $\gamma^j$"
                 )
+                ax.set_xlim(-1, 1)
             else:
                 raise ValueError(f"trait_column_name={trait_column_name} is invalid.")
+            ax.set_ylim(-1, 1)
             ax.set_ylabel("profit or loss")
         for decision_histories_df in decision_histories_dfs:
             trait_dic, pls = self._get_trait_pl(decision_histories_df)
@@ -552,14 +556,17 @@ class Evaluater:
                 ax.set_xlabel(
                     r"skill boundedness $\sigma^j$"
                 )
+                ax.set_xlim(-0.25, 0.25)
             elif trait_column_name == "risk_aversion_term":
                 ax.set_xlabel(
                     r"risk aversion term $\alpha^j$"
                 )
+                ax.set_xlim(-0.25, 0.25)
             elif trait_column_name == "discount_factor":
                 ax.set_xlabel(
                     r"discount factor $\gamma^j$"
                 )
+                ax.set_xlim(-1, 1)
             else:
                 raise ValueError(f"trait_column_name={trait_column_name} is invalid.")
             ax.set_ylabel(r"absolute order price scale $|\hat{r}_{t_i^j}^j|$")
