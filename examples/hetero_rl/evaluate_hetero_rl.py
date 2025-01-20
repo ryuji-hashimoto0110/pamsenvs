@@ -139,10 +139,11 @@ def main(args) -> None:
                 evaluater.plot_time_series(
                     decision_histories_dfs=decision_histories_dfs,
                     save_name="price_series_w_orders",
+                    num_plots=10,
                     column_names=[
                         "market_price", "fundamental_price",
                         "order_price", "order_volume", "is_buy"
-                    ]
+                    ],
                 )
                 evaluater.scatter_pl_given_agent_trait(
                     decision_histories_dfs=decision_histories_dfs,
