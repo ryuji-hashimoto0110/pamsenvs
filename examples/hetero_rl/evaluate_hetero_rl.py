@@ -167,8 +167,8 @@ def main(args) -> None:
                     target_obs_names=[r"risk aversion term $\alpha^j$", r"volatility $V_{[t_{i-1}^j,t_i^j]}$"],
                     target_obs_indices=[9, 4],
                     target_action_idx=1,
-                    x_obs_values=[-0.5+0.1*x for x in range(11)],
-                    y_obs_values=[-0.95+0.1*x for x in range(11)],
+                    x_obs_values=[-0.9+0.2*x for x in range(11)],
+                    y_obs_values=[-0.95+0.2*x for x in range(11)],
                     initial_obs_values=[
                         0.00, -0.75, -0.75, 0.00, -0.20,
                         -0.25, -0.25, 0.00, 0.00, 0.00, 0.00
