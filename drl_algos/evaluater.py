@@ -28,7 +28,7 @@ from typing import Literal
 from typing import Optional
 from typing import TypeVar
 import warnings
-plt.rcParams["font.size"] = 20
+plt.rcParams["font.size"] = 12
 warnings.filterwarnings("ignore")
 
 ActionType = TypeVar("ActionType")
@@ -363,6 +363,117 @@ class Evaluater:
                     decision_histories_df[column_name].values.tolist()
                 )
         return obs_action_dic
+    
+    def plot_time_series(
+        self,
+        decision_histories_dfs: list[DataFrame],
+        column_names: list[str],
+        num_plots: int,
+        save_name: str,
+    ) -> None:
+        """plot time series.
+        
+        The arugment 'column_names' will contain:
+            - step
+            - asset_volume, cash_amount, asset_ratio, liquidable_asset_ratio,
+            - inverted_buying_power, asset_volume_buy(sell)_orders_ratio, blurred_fundamental_return,
+            - skill_boundedness, risk_aversion_term, discount_factor,
+            - market_price, fundamental_price
+            - order_price, order_volume, is_buy
+        """
+        fig: Figure = plt.figure(figsize=(40, 20))
+        count: int = 0
+        while count < num_plots:
+            self._plot_time_series(fig, decision_histories_dfs[count], column_names)
+            count += 1
+            save_path: Path = self.figs_save_path / f"{save_name}{count}.pdf"
+            fig.savefig(save_path, bbox_inches="tight")
+
+    def _plot_time_series(
+        self,
+        fig: Figure,
+        decision_histories_df: DataFrame,
+        column_names
+    ) -> None:
+        price_related_columnn_names: list[str] = []
+        existing_orders_related_columnn_names: list[str] = []
+        for column_name in column_names:
+            if column_name in [
+                "market_price", "fundamental_price",
+                "order_price", "order_volume", "is_buy"
+            ]:
+                price_related_columnn_names.append(column_name)
+        if len(price_related_columnn_names) == 0:
+            for i, column_name in enumerate(column_names):
+                ax: Axes = fig.add_subplot(len(column_names), 1, i+1)
+                self._plot_other_time_series(ax, decision_histories_df, column_name)
+        else:
+            len_columns: int = len(column_names) - len(price_related_columnn_names) + 1
+            ax: Axes = fig.add_subplot(len_columns, 1, 1)
+            self._plot_prices(ax, decision_histories_df, price_related_columnn_names)
+            for i, column_name in enumerate(column_names):
+                if column_name in price_related_columnn_names:
+                    continue
+                ax: Axes = fig.add_subplot(len_columns, 1, i+2)
+                self._plot_other_time_series(ax, decision_histories_df, column_name)
+
+    def _plot_prices(
+        self,
+        ax: Axes,
+        decision_histories_df: DataFrame,
+        price_related_columnn_names: list[str],
+    ) -> None:
+        steps: list[int] = decision_histories_df["step"].values.tolist()
+        if "market_price" in price_related_columnn_names:
+            market_prices: list[float] = decision_histories_df["market_price"].values.tolist()
+            ax.plot(steps, market_prices, label=r"market price $p_t$")
+        if "fundamental_price" in price_related_columnn_names:
+            fundamental_prices: list[float] = decision_histories_df["fundamental_price"].values.tolist()
+            ax.plot(steps, fundamental_prices, label=r"fundamental price $p_t^f$")
+        if (
+            "order_price" in price_related_columnn_names and
+            "order_volume" in price_related_columnn_names and
+            "is_buy" in price_related_columnn_names
+        ):
+            self._scatter_orders(ax, decision_histories_df)
+        ax.set_xlabel("step")
+        ax.legend()
+        
+    def _plot_other_time_series(
+        self,
+        ax: Axes,
+        decision_histories_df: DataFrame,
+        column_name: str,
+    ) -> None:
+        steps: list[int] = decision_histories_df["step"].values.tolist()
+        values: list[float] = decision_histories_df[column_name].values.tolist()
+        ax.plot(steps, values)
+        ax.set_xlabel("step")
+        ax.set_ylabel(column_name)
+
+    def _scatter_orders(
+        self,
+        ax: Axes,
+        decision_histories_df: DataFrame,
+    ) -> None:
+        buy_orders_df: DataFrame = decision_histories_df[
+            decision_histories_df["is_buy"] == 1
+        ]
+        sell_orders_df: DataFrame = decision_histories_df[
+            decision_histories_df["is_buy"] == 0
+        ]
+        ax.scatter(
+            buy_orders_df["step"].values.tolist(),
+            buy_orders_df["order_price"].values.tolist(),
+            s=buy_orders_df["order_volume"].values.tolist(),
+            c="green", label="buy orders"
+        )
+        ax.scatter(
+            sell_orders_df["step"].values.tolist(),
+            sell_orders_df["order_price"].values.tolist(),
+            s=sell_orders_df["order_volume"].values.tolist(),
+            c="red", label="sell orders"
+        )
     
     def scatter_pl_given_agent_trait(
         self,
