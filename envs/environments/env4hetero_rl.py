@@ -378,7 +378,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "log_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
         elif obs_name == "volatility":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.001)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.003)
         elif obs_name == "asset_volume_buy_orders_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
         elif obs_name == "asset_volume_sell_orders_ratio":
@@ -602,16 +602,21 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self,
         asset_volume: int,
         agent: Agent,
-        market: Market
+        market: Market,
+        scaling_factor: float = 0.1
     ) -> float:
-        inversed_num_sell_orders: float = self._get_asset_volume_existing_orders_ratio(
+        inverted_num_sell_orders: float = self._get_asset_volume_existing_orders_ratio(
             agent, market, is_buy=False
         ) / max(1, asset_volume)
-        inversed_num_buy_orders: float = self._get_asset_volume_existing_orders_ratio(
+        inverted_num_buy_orders: float = self._get_asset_volume_existing_orders_ratio(
             agent, market, is_buy=True
         ) / max(1, asset_volume)
-        liquidity_penalty: float = inversed_num_sell_orders + inversed_num_buy_orders + abs(
-            inversed_num_sell_orders - inversed_num_buy_orders
+        liquidity_penalty: float = inverted_num_sell_orders + inverted_num_buy_orders + scaling_factor * abs(
+            max(
+                inverted_num_sell_orders, inverted_num_buy_orders
+            ) / min(
+                inverted_num_sell_orders, inverted_num_buy_orders
+            ) - 1
         )
         return liquidity_penalty
 
