@@ -148,11 +148,7 @@ class Trainer:
             episode_length: int = 0
             for agent_id in self.test_env.agent_iter():
                 obs: ObsType = self.test_env.last()
-                t: int = self.test_env.get_time()
-                if t <= self.start_exploit_time:
-                    action, _ = self.algo.explore(obs)
-                else:
-                    action: ActionType = self.algo.exploit(obs)
+                action: ActionType = self.algo.exploit(obs)
                 reward, done, info = self.test_env.step(action)
                 episode_reward_dic[agent_id] += reward
                 if "execution_volume" in info:

@@ -40,6 +40,7 @@ class Algorithm(ABC):
             action (ActionType): Action 
             log_prob (float | Tensor): log probability of the action.
         """
+        self.actor.train()
         obs_tensor: Tensor = self._convert_obs2tensor(obs)
         if not hasattr(self.actor, "sample"):
             raise ValueError("actoor.sample method is not implemented.")
@@ -60,6 +61,7 @@ class Algorithm(ABC):
         Returns:
             action (ActionType): Action.
         """
+        self.actor.eval()
         obs_tensor: Tensor = self._convert_obs2tensor(obs)
         action_tensor = self.actor(obs_tensor)
         action: ActionType = self._convert_tensor2action(action_tensor)

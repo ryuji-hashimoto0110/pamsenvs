@@ -50,8 +50,10 @@ class IPPOActor(Module):
         self.obs_shape: ndarray = obs_shape
         self.actlayer: Module = nn.Sequential(
             nn.Linear(np.prod(obs_shape), 512),
+            nn.Dropout(0.5),
             nn.Tanh(),
             nn.Linear(512, 512),
+            nn.Dropout(0.5),
             nn.Tanh(),
             nn.Linear(512, np.prod(action_shape)),
         ).to(device)
@@ -119,8 +121,10 @@ class IPPOCritic(Module):
         self.obs_shape: ndarray = obs_shape
         self.valuelayer: Module = nn.Sequential(
             nn.Linear(np.prod(obs_shape), 512),
+            nn.Dropout(0.5),
             nn.Tanh(),
             nn.Linear(512, 512),
+            nn.Dropout(0.5),
             nn.Tanh(),
             nn.Linear(512, 1),
         ).to(device)
@@ -202,6 +206,7 @@ class IPPO(Algorithm):
         )
         self.actor: IPPOActor = IPPOActor(obs_shape, action_shape, self.device)
         self.critic: IPPOCritic = IPPOCritic(obs_shape, self.device)
+        self.critic.train()
         self.optim_actor: Optimizer = optim.Adam(self.actor.parameters(), lr=lr_actor)
         self.scheduler_actor = optim.lr_scheduler.LambdaLR(
             self.optim_actor,
@@ -315,8 +320,6 @@ class IPPO(Algorithm):
                     )
                 self.scheduler_actor.step()
                 self.scheduler_critic.step()
-            #print(self.scheduler_actor.get_lr())
-        #print(self.actor.log_stds)
 
     def calc_gae(
         self,
@@ -382,4 +385,3 @@ class IPPO(Algorithm):
         loss_actor.backward()
         nn.utils.clip_grad_norm_(self.actor.parameters(), self.max_grad_norm)
         self.optim_actor.step()
-
