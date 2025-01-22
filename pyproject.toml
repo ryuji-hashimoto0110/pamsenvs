@@ -20,6 +20,7 @@ pickleshare = "^0.7.5"
 tqdm = "^4.66.4"
 pettingzoo = "^1.24.3"
 seaborn = "^0.13.2"
+tslearn = "^0.6.3"
 
 
 [tool.poetry.group.dev.dependencies]
