@@ -15,10 +15,11 @@ from rich.table import Table
 from scipy.stats import linregress
 from scipy.stats import kurtosis
 from scipy.stats import kurtosistest
+from tslearn.metrics import cdist_dtw
 from tqdm import tqdm
 from typing import Optional
 import warnings
-plt.rcParams["font.size"] = 20
+plt.rcParams["font.size"] = 12
 
 bybit_freq_ohlcv_size_dic: dict[str, int] = {
     "1min": 1440
@@ -1031,6 +1032,38 @@ class StylizedFactsChecker:
             abs_retrurn_std * volume_std + 1e-10
         )
         return volume_volatility_correlation
+    
+    def check_dtw(self) -> ndarray:
+        if self._is_stacking_possible(self.ohlcv_dfs, "close"):
+            if self.return_arr is not None:
+                dtw_arr: ndarray = self._calc_dtw(self.return_arr)
+            else:
+                self.return_arr: ndarray = self._calc_return_arr_from_dfs(
+                    self.ohlcv_dfs, "close", norm=True
+                )
+                dtw_arr: ndarray = self._calc_dtw(self.return_arr)
+        else:
+            raise ValueError(
+                "all of the dataframes must have the same length to calculate DTW."
+            )
+        return dtw_arr
+    
+    def _calc_dtw(
+        self,
+        return_arr: ndarray
+    ) -> ndarray:
+        """calculate DTW of each pair of the return time serieses.
+
+        Args:
+            return_arr (ndarray): return array whose shape is
+                (number of data, length of time series).
+
+        Returns:
+            dtw_arr (ndarray): DTW. (number of data, 1)
+        """
+        dtw_matrix: ndarray = cdist_dtw(return_arr, n_jobs=-1)
+        dtw_arr: ndarray = np.mean(dtw_matrix, axis=1)[:,np.newaxis]
+        return dtw_arr
 
     def check_stylized_facts(
         self,
@@ -1060,6 +1093,7 @@ class StylizedFactsChecker:
             first_negative_lag_arr = np.repeat(
                 first_negative_lag_arr, repeats=kurtosis_arr.shape[0]
             )
+            dtw_arr: ndarray = self.check_dtw()
             data_dic: dict[str, ndarray]= {
                 "kurtosis": kurtosis_arr.flatten(),
                 "kurtosis_p": p_values.flatten(),
@@ -1072,7 +1106,8 @@ class StylizedFactsChecker:
                 "hill tail (volume)": volume_tail_arr.flatten(),
                 "vv_corr": volume_volatility_correlation.flatten(),
                 "tail (acorr)": acorr_tail_arr.flatten(),
-                "first negative lag": first_negative_lag_arr.flatten()
+                "first negative lag": first_negative_lag_arr.flatten(),
+                "dtw": dtw_arr.flatten()
             }
             for lag, acorr_arr in acorr_dic.items():
                 data_dic[f"acorr_{lag}"] = np.repeat(
