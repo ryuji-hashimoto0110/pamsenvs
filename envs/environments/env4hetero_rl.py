@@ -537,15 +537,15 @@ class AECEnv4HeteroRL(PamsAECEnv):
         mid_price: float = market.get_mid_price()
         if mid_price is None:
             mid_price = market.get_market_price()
-        lower_bound: float = mid_price - self.depth_range * mid_price
-        upper_bound: float = mid_price + self.depth_range * mid_price
+        lower_bound: float = mid_price - self.depth_range * mid_price if is_buy else mid_price
+        upper_bound: float = mid_price + self.depth_range * mid_price if not is_buy else mid_price
         existing_orders_volume: int = 0
         for price in price_volume_dic.keys():
             volume: int = price_volume_dic[price]
             if price is None:
                 existing_orders_volume += volume
             elif (lower_bound <= price) and (price <= upper_bound):
-                weight: float = 1 / (1 + np.abs(price - mid_price) / mid_price)
+                weight: float = np.exp(-100*np.abs(price - mid_price) / mid_price)
                 existing_orders_volume += volume * weight
         asset_volume: int = np.abs(agent.asset_volumes[market.market_id])
         asset_volume_existing_orders_ratio: float = min(
@@ -582,7 +582,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         asset_fraction: float = asset_volume * market_price / total_wealth
         raw_utility: float = (
             total_wealth * (1 + asset_fraction * log_return)
-        ) - 0.5 * risk_aversion_term * asset_fraction * volatility * total_wealth
+        ) - 0.5 * risk_aversion_term * abs(asset_fraction) * volatility * total_wealth
         return raw_utility
     
     def _calc_scaled_atan(self, x: float, scaling_factor: float = 1e-04) -> float:
@@ -598,28 +598,22 @@ class AECEnv4HeteroRL(PamsAECEnv):
         utility_diff = current_utility - previous_utility
         return utility_diff
     
-    def _get_remaining_fundamental_diff(self, market: Market) -> float:
-        """get remaining fundamental difference.
-        
-        Get the integrated difference between the fundamental price and the market price
-        among the sign(fundamental_price - market_price) remains the same.
-        """
-        t: int = market.get_time()
-        fundamental_price: float = market.get_fundamental_price()
-        market_price: float = market.get_market_price()
-        sign_now: int = np.sign(fundamental_price - market_price)
-        fundamental_return: float = np.abs(np.log(fundamental_price) - np.log(market_price))
-        for tau in range(1, min(t, self.num_agents)):
-            fundamental_price_tau: float = market.get_fundamental_price(t-tau)
-            market_price_tau: float = market.get_market_price(t-tau)
-            sign_tau: int = np.sign(fundamental_price_tau - market_price_tau)
-            if sign_tau != sign_now:
-                break
-            else:
-                fundamental_return += np.abs(
-                    np.log(fundamental_price_tau) - np.log(market_price_tau)
-                )
-        return fundamental_return
+    def _get_liquidity_penalty(
+        self,
+        asset_volume: int,
+        agent: Agent,
+        market: Market
+    ) -> float:
+        inversed_num_sell_orders: float = self._get_asset_volume_existing_orders_ratio(
+            agent, market, is_buy=False
+        ) / max(1, asset_volume)
+        inversed_num_buy_orders: float = self._get_asset_volume_existing_orders_ratio(
+            agent, market, is_buy=True
+        ) / max(1, asset_volume)
+        liquidity_penalty: float = inversed_num_sell_orders + inversed_num_buy_orders + abs(
+            inversed_num_sell_orders - inversed_num_buy_orders
+        )
+        return liquidity_penalty
 
     def generate_reward(self, agent_id: AgentID) -> float:
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
@@ -669,12 +663,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             cash_shortage_penalty: float = 0
         self.reward_dic["cash_shortage_penalty"].append(-cash_shortage_penalty)
-        liquidity_penalty: float = self.liquidity_penalty * (
-            self._get_asset_volume_existing_orders_ratio(
-                agent, market, is_buy=False
-            ) + self._get_asset_volume_existing_orders_ratio(
-                agent, market, is_buy=True
-            )
+        liquidity_penalty: float = self.liquidity_penalty * self._get_liquidity_penalty(
+            asset_volume, agent, market
         )
         reward -= liquidity_penalty
         self.reward_dic["liquidity_penalty"].append(-liquidity_penalty)
