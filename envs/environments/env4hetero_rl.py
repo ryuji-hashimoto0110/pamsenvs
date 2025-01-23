@@ -352,7 +352,6 @@ class AECEnv4HeteroRL(PamsAECEnv):
             discount_factor = self._preprocess_obs(discount_factor, "discount_factor")
             obs_list.append(discount_factor)
             self.obs_dic["discount_factor"].append(discount_factor)
- 
         obs: ObsType = np.array(obs_list)
         return obs
     
@@ -607,10 +606,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
     ) -> float:
         inverted_num_sell_orders: float = self._get_asset_volume_existing_orders_ratio(
             agent, market, is_buy=False
-        ) / max(1, asset_volume)
+        ) / max(1, asset_volume) + 1e-06
         inverted_num_buy_orders: float = self._get_asset_volume_existing_orders_ratio(
             agent, market, is_buy=True
-        ) / max(1, asset_volume)
+        ) / max(1, asset_volume) + 1e-06
         liquidity_penalty: float = inverted_num_sell_orders + inverted_num_buy_orders + scaling_factor * abs(
             max(
                 inverted_num_sell_orders, inverted_num_buy_orders
@@ -668,8 +667,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         else:
             cash_shortage_penalty: float = 0
         self.reward_dic["cash_shortage_penalty"].append(-cash_shortage_penalty)
-        liquidity_penalty: float = self.liquidity_penalty * self._get_liquidity_penalty(
-            asset_volume, agent, market
+        liquidity_penalty: float = min(
+            self.liquidity_penalty * self._get_liquidity_penalty(
+                asset_volume, agent, market
+            ), 1
         )
         reward -= liquidity_penalty
         self.reward_dic["liquidity_penalty"].append(-liquidity_penalty)
@@ -681,7 +682,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         #)
         reward -= fundamental_penalty
         self.reward_dic["fundamental_penalty"].append(-fundamental_penalty)
-        # print(f"{reward=:.2f}")
+        #print(f"{reward=:.2f}")
         # print(
         #     f"utility diff: {scaled_utility_diff:.3f} " + \
         #     f"short selling penalty: {self.reward_dic['short_selling_penalty'][-1]:.3f} " + \
