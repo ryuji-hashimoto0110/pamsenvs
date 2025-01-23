@@ -50,10 +50,8 @@ class IPPOActor(Module):
         self.obs_shape: ndarray = obs_shape
         self.actlayer: Module = nn.Sequential(
             nn.Linear(np.prod(obs_shape), 512),
-            nn.Dropout(0.5),
             nn.Tanh(),
             nn.Linear(512, 512),
-            nn.Dropout(0.5),
             nn.Tanh(),
             nn.Linear(512, np.prod(action_shape)),
         ).to(device)
@@ -121,10 +119,8 @@ class IPPOCritic(Module):
         self.obs_shape: ndarray = obs_shape
         self.valuelayer: Module = nn.Sequential(
             nn.Linear(np.prod(obs_shape), 512),
-            nn.Dropout(0.5),
             nn.Tanh(),
             nn.Linear(512, 512),
-            nn.Dropout(0.5),
             nn.Tanh(),
             nn.Linear(512, 1),
         ).to(device)
