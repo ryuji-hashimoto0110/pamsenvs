@@ -1,0 +1,80 @@
+{
+    "simulation": {
+		"markets": ["Market"],
+		"agents": ["Agent"],
+		"sessions": [
+			{	
+				"sessionName": "0",
+				"iterationSteps": 100,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0,
+                "events": ["provide_dividend"]
+			},
+			{	
+				"sessionName": "1",
+				"iterationSteps": 1000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0,
+                "events": ["provide_dividend"]
+			},
+            {	
+				"sessionName": "00",
+				"iterationSteps": 10,
+				"withOrderPlacement": true,
+				"withOrderExecution": false,
+				"withPrint": true,
+				"maxNormalOrders": 1,
+				"maxHighFrequencyOrders": 0,
+                "events": ["provide_dividend"]
+			},
+            {	
+				"sessionName": "2",
+				"iterationSteps": 1000,
+				"withOrderPlacement": true,
+				"withOrderExecution": true,
+				"withPrint": true,
+				"maxHighFrequencyOrders": 0,
+                "events": ["provide_dividend"]
+			}
+		]
+	},
+	"provide_dividend": {
+		"class": "DividendProviderwEverySteps",
+		"dividendRate": 0.00005,
+		"dividendInterval": 1
+	},
+    "Market": {
+        "class": "TotalTimeAwareMarket",
+		"tickSize": 0.0001,
+		"marketPrice": 300.0,
+		"fundamentalDrift": 0,
+        "fundamentalVolatility": 0
+    },
+    "Agent": {
+        "class": "CARAFCNAgent",
+		"isCARA": false,
+		"orderMargin": [0,0.01],
+        "yesterdayAware": true,
+        "numAgents": 2000,
+		"markets": ["Market"],
+		"assetVolume": {"uniform": [0,100]},
+		"cashAmount": {"uniform": [10000,30000]},
+		"averageCashAmount": 20000,
+		"fundamentalWeight": {"expon": [10.0]},
+		"chartWeight": {"expon": [1.25]},
+		"noiseWeight": {"expon": [1.0]},
+		"noiseScale": 0.0001,
+		"timeWindowSize": 100,
+		"heterogeneousTimeWindowSize": true,
+		"tauDiff": 20,
+		"heterogeneousRiskAversionTerm": false,
+		"isAdaptive": false,
+		"meanReversionTime": 200,
+		"chartFollowRate": 1
+    }
+}
