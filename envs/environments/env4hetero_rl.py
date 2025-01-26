@@ -618,6 +618,25 @@ class AECEnv4HeteroRL(PamsAECEnv):
             ) - 1
         )
         return liquidity_penalty
+    
+    def _get_integrated_fundamental_diff(self, market: Market) -> float:
+        t: int = market.get_time()
+        fundamental_price: float = market.get_fundamental_price()
+        market_price: float = market.get_market_price()
+        sign: int = np.sign(fundamental_price - market_price)
+        fundamental_diff: float = np.abs(
+            np.log(fundamental_price) - np.log(market_price)
+        )
+        for tau in range(1, t):
+            fundamental_price = market.get_fundamental_price(t-tau)
+            market_price = market.get_market_price(t-tau)
+            if sign != np.sign(fundamental_price - market_price):
+                break
+            else:
+                fundamental_diff += np.abs(
+                    np.log(fundamental_price) - np.log(market_price)
+                )
+        return fundamental_diff
 
     def generate_reward(self, agent_id: AgentID) -> float:
         agent: HeteroRLAgent = self.simulator.agents[agent_id]
@@ -675,8 +694,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
         reward -= liquidity_penalty
         self.reward_dic["liquidity_penalty"].append(-liquidity_penalty)
         fundamental_price: float = market.get_fundamental_price()
-        fundamental_return: float = np.abs(np.log(fundamental_price) - np.log(market_price))
-        fundamental_penalty: float = self.fundamental_penalty * fundamental_return
+        fundamental_diff: float = self._get_integrated_fundamental_diff(market)
+        fundamental_penalty: float = self.fundamental_penalty * fundamental_diff
         #min(
         #    2, self._get_remaining_fundamental_diff(market)
         #)
