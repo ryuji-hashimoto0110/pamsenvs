@@ -375,9 +375,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "remaining_time_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
         elif obs_name == "log_return":
-            obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
+            obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
         elif obs_name == "volatility":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.003)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.01)
         elif obs_name == "asset_volume_buy_orders_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
         elif obs_name == "asset_volume_sell_orders_ratio":
@@ -621,15 +621,15 @@ class AECEnv4HeteroRL(PamsAECEnv):
     
     def _get_integrated_fundamental_diff(self, market: Market) -> float:
         t: int = market.get_time()
-        fundamental_price: float = market.get_fundamental_price()
-        market_price: float = market.get_market_price()
-        sign: int = np.sign(fundamental_price - market_price)
+        fundamental_prices: list[float] = market.get_fundamental_prices()
+        market_prices: list[float] = market.get_market_prices()
+        sign: int = np.sign(fundamental_prices[-1] - market_prices[-1])
         fundamental_diff: float = np.abs(
-            np.log(fundamental_price) - np.log(market_price)
+            np.log(fundamental_prices[-1]) - np.log(market_prices[-1])
         )
         for tau in range(1, t):
-            fundamental_price = market.get_fundamental_price(t-tau)
-            market_price = market.get_market_price(t-tau)
+            fundamental_price = fundamental_prices[t-tau]
+            market_price = market_prices[t-tau]
             if sign != np.sign(fundamental_price - market_price):
                 break
             else:
@@ -694,8 +694,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         reward -= liquidity_penalty
         self.reward_dic["liquidity_penalty"].append(-liquidity_penalty)
         fundamental_price: float = market.get_fundamental_price()
-        fundamental_diff: float = self._get_integrated_fundamental_diff(market)
-        fundamental_penalty: float = self.fundamental_penalty * fundamental_diff
+        fundamental_penalty: float = min(
+            self.fundamental_penalty * self._get_integrated_fundamental_diff(market),
+            1
+        )
         #min(
         #    2, self._get_remaining_fundamental_diff(market)
         #)
@@ -752,7 +754,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             volume=order_volume,
             is_buy=is_buy,
             kind=LIMIT_ORDER,
-            ttl=self.num_agents//2
+            ttl=self.num_agents
         )
         self.action_dic["order_price"].append(order_price)
         self.action_dic["order_volume"].append(order_volume)
