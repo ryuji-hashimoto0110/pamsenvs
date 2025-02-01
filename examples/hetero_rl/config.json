@@ -62,7 +62,7 @@
 		"to": 199,
 		"markets": ["Market"],
 		"assetVolume": {"expon": [20]},
-        "cashAmount": {"expon": [6000]},
+        "cashAmount": {"expon": [10000]},
 		"averageCashAmount": 6000,
         "skillBoundedness": {"normal": [0.01, 0.003]},
 		"riskAversionTerm": {"normal": [0.30, 0.01]},

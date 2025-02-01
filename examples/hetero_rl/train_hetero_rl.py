@@ -178,7 +178,7 @@ def main(args) -> None:
         config_dic["Agent"]["skillBoundedness"] = {"normal": [0.02, sigma]} if sigma != 0.0 else 0.02
         for alpha in alphas:
             alpha_str: str = f"{alpha:.2f}".replace(".", "")
-            config_dic["Agent"]["riskAversionTerm"] = {"normal": [3.0, alpha]} if alpha != 0.0 else 3.0
+            config_dic["Agent"]["riskAversionTerm"] = {"normal": [2.0, alpha]} if alpha != 0.0 else 2.0
             for gamma in gammas:
                 gamma_str: str = f"{gamma:.2f}".replace(".", "")
                 config_dic["Agent"]["discountFactor"] = {"uniform": [gamma, 0.999]}
