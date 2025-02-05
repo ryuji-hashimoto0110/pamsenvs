@@ -10,7 +10,7 @@ seed=42
 actor_save_path="../../datas/checkpoints"
 actor_best_save_name="best"
 actor_last_save_name="last"
-num_train_steps=10000000
+num_train_steps=20000000
 eval_interval=105500
 num_eval_episodes=5
 agent_name="Agent"
@@ -31,9 +31,9 @@ liquidity_penalty_decay=1
 initial_fundamental_penalty=0.03
 fundamental_penalty_decay=1
 agent_trait_memory=0.00
-sigmas="0.006"
-alphas="0.00 0.40 0.80"
-gammas="0.80 0.90 0.999"
+sigmas="0.012"
+alphas="0.00 0.40 0.80 1.20"
+gammas="0.85 0.90 0.95 0.999"
 device="cuda:1"
 python train_hetero_rl.py \
 --rollout_length $rollout_length \
