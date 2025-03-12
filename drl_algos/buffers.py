@@ -86,6 +86,7 @@ class ReplayBuffer4MARL:
         action_tensor: Tensor,
         reward: float,
         done: bool,
+        log_prob: float = 0.00
     ) -> None:
         """append experience to buffer.
 
@@ -122,35 +123,35 @@ class ReplayBuffer4MARL:
         Returns:
             experiences (tuple[Tensor]): sampled experiences.
         """
-        total_experience_num: int = sum(self.experience_num_dic.values())
+        total_experience_num: int = sum(self.experience_num_dic.values()) - len(self.experience_num_dic)
         obses: Tensor = torch.cat(
             [self.obses[agent_idx, :self.experience_num_dic[agent_idx]-1] for agent_idx in range(self.num_agents)],
-            dim=1
+            dim=0
         ) # (num_agents, buffer_size, obs_shape) -> (total_experience_num, obs_shape)
         assert obses.shape == (total_experience_num, *self.obs_shape)
         actions: Tensor = torch.cat(
             [self.actions[agent_idx, :self.experience_num_dic[agent_idx]-1] for agent_idx in range(self.num_agents)],
-            dim=1
+            dim=0
         )
         rewards: Tensor = torch.cat(
             [self.rewards[agent_idx, :self.experience_num_dic[agent_idx]-1] for agent_idx in range(self.num_agents)],
-            dim=1
+            dim=0
         )
         dones: Tensor = torch.cat(
             [self.dones[agent_idx, :self.experience_num_dic[agent_idx]-1] for agent_idx in range(self.num_agents)],
-            dim=1
+            dim=0
         )
         next_obses: Tensor = torch.cat(
             [self.next_obses[agent_idx, :self.experience_num_dic[agent_idx]-1] for agent_idx in range(self.num_agents)],
-            dim=1
+            dim=0
         )
         indices: ndarray = np.random.randint(0, total_experience_num, batch_size)
         experiences: tuple[Tensor] = (
-            obses[:, indices],
-            actions[:, indices],
-            rewards[:, indices],
-            dones[:, indices],
-            next_obses[:, indices]
+            obses[indices],
+            actions[indices],
+            rewards[indices],
+            dones[indices],
+            next_obses[indices]
         )
         return experiences
 

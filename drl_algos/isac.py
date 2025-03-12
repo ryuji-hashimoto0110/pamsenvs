@@ -202,6 +202,9 @@ class ISAC(Algorithm):
         self.alpha: float = alpha
         self.start_steps: int = start_steps
 
+    def _initialize_buffer(self):
+        pass
+
     def is_ready_to_update(self, current_total_steps):
         return current_total_steps >= max(self.start_steps, self.batch_size)
     
