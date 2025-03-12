@@ -11,7 +11,6 @@ def initialize_module_orthogonal(module: Module) -> None:
             if "weight" in name:
                 tmp = torch.empty_like(param, device="cpu")
                 nn.init.orthogonal_(tmp)
-                param.data.copy_(tmp.to(device))
             elif "bias" in name:
                 nn.init.zeros_(param)
 
