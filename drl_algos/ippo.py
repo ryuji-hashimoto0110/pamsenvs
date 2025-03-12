@@ -73,11 +73,11 @@ class IPPOActor(Module):
         """Sample action and calculate log probability."""
         obses = self._resize_obses(obses)
         means: Tensor = self.actlayer(obses)
-        actions, log_prob = reparametrize(
+        actions, log_probs = reparametrize(
             means, self.log_stds.clamp(-20, 1)
         )
         actions = actions.clamp(-0.999, 0.999)
-        return actions, log_prob
+        return actions, log_probs
     
     def calc_log_prob(
         self,
@@ -185,7 +185,13 @@ class IPPO(Algorithm):
             max_grad_norm (float): Threshold to clip the norm of the gradient.
                 Gradient clipping is used to avoid exploding gradients. Defaults to 0.5.
         """
-        super(IPPO, self).__init__(device=device)
+        super(IPPO, self).__init__(
+            device=device,
+            gamma=gamma,
+            gamma_idx=gamma_idx,
+            gamma_min=gamma_min,
+            gamma_max=gamma_max,
+        )
         np.random.seed(seed)
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
@@ -214,14 +220,9 @@ class IPPO(Algorithm):
         self.rollout_length: int = rollout_length
         self.num_updates_per_rollout: int = num_updates_per_rollout
         self.batch_size: int = batch_size
-        self.gamma: float = gamma
-        self.gamma_idx: Optional[int] = gamma_idx
-        self.gamma_min: float = gamma_min
-        self.gamma_max: float = gamma_max
         self.clip_eps: float = clip_eps
         self.lmd: float = lmd
         self.max_grad_norm: float = max_grad_norm
-        self.agent_id2agent_idx_dic: dict[AgentID, int] = {}
         if display_process:
             print("[bold green]IPPO[/bold green]")
             print(f"device: {self.device} obs: {obs_shape} action: {action_shape}")
@@ -230,11 +231,6 @@ class IPPO(Algorithm):
             print(f"gamma: {gamma} gamma idx: {gamma_idx} lr actor: {lr_actor} lr critic: {lr_critic}")
             print(f"clip epsilon: {clip_eps} lambda: {lmd} max grad norm: {max_grad_norm}")
             print()
-
-    def assign_agent_id2agent_idx(self, agent_ids: list[AgentID]) -> None:
-        """Assign agent_id to agent_idx. Usually called by Trainer."""
-        for idx, id in enumerate(sorted(agent_ids)):
-            self.agent_id2agent_idx_dic[id] = idx
 
     def is_ready_to_update(self, current_total_steps):
         return self.buffer.is_filled()
@@ -258,17 +254,6 @@ class IPPO(Algorithm):
             action_tensor=action_tensor, reward=reward,
             done=done, log_prob=log_prob
         )
-
-    def _re_preprocess_gamma(self, gamma_tensor: Tensor) -> Tensor:
-        """
-        gamma is preprocessed as:
-            gamma = 2 * (gamma - gamma_min) / (gamma_max - gamma_min) - 1
-        This method reverse this process.
-        """
-        gamma_tensor = (gamma_tensor + 1) * (
-            self.gamma_max - self.gamma_min
-        ) / 2 + self.gamma_min
-        return gamma_tensor
 
     def update(self):
         """update actor and critic.

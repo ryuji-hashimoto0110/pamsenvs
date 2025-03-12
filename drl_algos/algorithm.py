@@ -4,6 +4,7 @@ from pettingzoo import AECEnv
 import torch
 from torch import Tensor
 from torch.nn import Module
+from typing import Optional
 from typing import TypeVar
 
 ActionType = TypeVar("ActionType")
@@ -22,9 +23,32 @@ class Algorithm(ABC):
         self.critic (Module)
             .critic.forward(obs_tensor: Tensor, action_tensor: Tensor) -> value_tensor: Tensor
     """
-    def __init__(self, device: str) -> None:
+    def __init__(
+        self,
+        device: str,
+        gamma: float = 0.99,
+        gamma_idx: Optional[int] = None,
+        gamma_min: float = 0.90,
+        gamma_max: float = 0.999,
+    ) -> None:
         self.actor: Module
         self.device: torch.device = torch.device(device)
+        self.agent_id2agent_idx_dic: dict[AgentID, int] = {}
+        self.gamma: float = gamma
+        self.gamma_idx: Optional[int] = gamma_idx
+        self.gamma_min: float = gamma_min
+        self.gamma_max: float = gamma_max
+
+    def _re_preprocess_gamma(self, gamma_tensor: Tensor) -> Tensor:
+        """
+        gamma is preprocessed as:
+            gamma = 2 * (gamma - gamma_min) / (gamma_max - gamma_min) - 1
+        This method reverse this process.
+        """
+        gamma_tensor = (gamma_tensor + 1) * (
+            self.gamma_max - self.gamma_min
+        ) / 2 + self.gamma_min
+        return gamma_tensor
 
     @torch.no_grad()
     def explore(
@@ -93,6 +117,11 @@ class Algorithm(ABC):
             action (ActionType): Action.
         """
         return action_tensor.detach().cpu().numpy()[0]
+    
+    def assign_agent_id2agent_idx(self, agent_ids: list[AgentID]) -> None:
+        """Assign agent_id to agent_idx. Usually called by Trainer."""
+        for idx, id in enumerate(sorted(agent_ids)):
+            self.agent_id2agent_idx_dic[id] = idx
     
     @abstractmethod
     def is_ready_to_update(self, current_total_steps: int) -> bool:
