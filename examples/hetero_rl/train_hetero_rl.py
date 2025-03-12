@@ -10,6 +10,7 @@ import sys
 sys.path.append(str(root_path))
 from drl_algos import Algorithm
 from drl_algos import IPPO
+from drl_algos import ISAC
 from drl_algos import Trainer
 from envs.environments import AECEnv4HeteroRL
 from pams.simulator import Simulator
@@ -21,10 +22,14 @@ from typing import Optional
 def get_config() -> ArgumentParser:
     parser: ArgumentParser = argparse.ArgumentParser()
     parser.add_argument(
-        "--algo_name", type=str, default="ippo", choices=["ippo"]
+        "--algo_name", type=str, default="ippo", choices=["ippo", "isac"]
     )
     parser.add_argument("--rollout_length", type=int, default=64)
     parser.add_argument("--num_updates_per_rollout", type=int, default=1)
+    parser.add_argument("--start_steps", type=int, default=10000)
+    parser.add_argument("--buffer_size", type=int, default=int(1e+06))
+    parser.add_argument("--tau", type=float, default=5e-03)
+    parser.add_argument("--alpha", type=float, default=0.20)
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--lr_actor", type=float, default=5e-05)
     parser.add_argument("--lr_critic", type=float, default=1e-04)
@@ -150,20 +155,32 @@ def create_env(all_args, config_dic: dict[str, Any]) -> tuple[AECEnv4HeteroRL, i
     )
     return env, num_agents
 
-def create_ippo(all_args, num_agents, gamma_min, gamma_max) -> IPPO:
-    ippo: IPPO = IPPO(
-        device=all_args.device,
-        obs_shape=(len(all_args.obs_names),),
-        action_shape=(len(all_args.action_names),), num_agents=num_agents,
-        seed=all_args.seed, rollout_length=all_args.rollout_length,
-        num_updates_per_rollout=all_args.num_updates_per_rollout,
-        batch_size=all_args.batch_size, gamma_idx=-1,
-        gamma_min=gamma_min, gamma_max=gamma_max,
-        lr_actor=all_args.lr_actor, lr_critic=all_args.lr_critic,
-        clip_eps=all_args.clip_eps, lmd=all_args.lmd,
-        max_grad_norm=all_args.max_grad_norm
-    )
-    return ippo
+def create_algo(all_args, num_agents, gamma_min, gamma_max) -> Algorithm:
+    if all_args.algo_name == "ippo":
+        algo: Algorithm = IPPO(
+            device=all_args.device,
+            obs_shape=(len(all_args.obs_names),),
+            action_shape=(len(all_args.action_names),), num_agents=num_agents,
+            seed=all_args.seed, rollout_length=all_args.rollout_length,
+            num_updates_per_rollout=all_args.num_updates_per_rollout,
+            batch_size=all_args.batch_size, gamma_idx=-1,
+            gamma_min=gamma_min, gamma_max=gamma_max,
+            lr_actor=all_args.lr_actor, lr_critic=all_args.lr_critic,
+            clip_eps=all_args.clip_eps, lmd=all_args.lmd,
+            max_grad_norm=all_args.max_grad_norm
+        )
+    elif all_args.algo_name == "isac":
+        algo: Algorithm = ISAC(
+            device=all_args.device,
+            obs_shape=(len(all_args.obs_names),),
+            action_shape=(len(all_args.action_names),),
+            num_agents=num_agents, seed=all_args.seed,
+            gamma=gamma_min, gamma_idx=-1, gamma_min=gamma_min, gamma_max=gamma_max,
+            lr_actor=all_args.lr_actor, lr_critic=all_args.lr_critic,
+            batch_size=all_args.batch_size, buffer_size=all_args.buffer_size,
+            start_steps=all_args.start_steps, tau=all_args.tau, alpha=all_args.alpha,
+        )
+    return algo
 
 def main(args) -> None:
     parser = get_config()
@@ -175,7 +192,7 @@ def main(args) -> None:
     config_dic: dict[str, Any] = json.load(fp=open(str(config_path), mode="r"))
     for sigma in sigmas:
         sigma_str: str = f"{sigma:.3f}".replace(".", "")
-        config_dic["Agent"]["skillBoundedness"] = {"normal": [0.02, sigma]} if sigma != 0.0 else 0.02
+        config_dic["Agent"]["skillBoundedness"] = {"normal": [0.03, sigma]} if sigma != 0.0 else 0.03
         for alpha in alphas:
             alpha_str: str = f"{alpha:.2f}".replace(".", "")
             config_dic["Agent"]["riskAversionTerm"] = {"normal": [2.0, alpha]} if alpha != 0.0 else 2.0
@@ -191,9 +208,9 @@ def main(args) -> None:
                 train_env, num_agents = create_env(all_args, config_dic)
                 test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
                 test_env.agent_trait_memory = 0.0
-                ippo: IPPO = create_ippo(all_args, num_agents, gamma, 0.999)
+                algo: Algorithm = create_algo(all_args, num_agents, gamma, 0.999)
                 trainer: Trainer = Trainer(
-                    train_env=train_env, test_env=test_env, algo=ippo,
+                    train_env=train_env, test_env=test_env, algo=algo,
                     seed=all_args.seed,
                     actor_best_save_path=actor_best_save_path,
                     actor_last_save_path=actor_last_save_path,
