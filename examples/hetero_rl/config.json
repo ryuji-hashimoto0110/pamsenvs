@@ -46,7 +46,7 @@
 	"provide_dividend": {
 		"class": "DividendProviderwEverySteps",
 		"dividendRate": 0.00000,
-		"dividendInterval": 1
+		"dividendInterval": 2110
 	},
     "Market": {
         "class": "TotalTimeAwareMarket",
@@ -61,8 +61,8 @@
 		"from": 0,
 		"to": 199,
 		"markets": ["Market"],
-		"assetVolume": {"expon": [10]},
-        "cashAmount": {"expon": [20000]},
+		"assetVolume": {"expon": [20]},
+        "cashAmount": {"expon": [15000]},
 		"averageCashAmount": 6000,
         "skillBoundedness": {"normal": [0.01, 0.003]},
 		"riskAversionTerm": {"normal": [0.30, 0.01]},
