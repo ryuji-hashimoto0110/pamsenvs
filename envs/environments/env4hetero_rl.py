@@ -377,11 +377,11 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "log_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
         elif obs_name == "volatility":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.01)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.03)
         elif obs_name == "asset_volume_buy_orders_ratio":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 10)
         elif obs_name == "asset_volume_sell_orders_ratio":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 2)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 10)
         elif obs_name == "blurred_fundamental_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
         elif obs_name == "skill_boundedness":
@@ -548,7 +548,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 existing_orders_volume += volume * weight
         asset_volume: int = np.abs(agent.asset_volumes[market.market_id])
         asset_volume_existing_orders_ratio: float = min(
-            asset_volume / (existing_orders_volume + 1e-06), 2
+            asset_volume / (existing_orders_volume + 1e-06), 10
         )
         return asset_volume_existing_orders_ratio
     
