@@ -184,7 +184,6 @@ class Trainer:
         if "reward_dics" in self.results_dic:
             self.results_dic["reward_dics"] = reward_dics
         print(f"step: {current_total_steps}, total reward: {average_total_reward:.2f}, total execution volume: {average_total_execution_volume:.2f}, price range: {average_price_range:.2f}")
-        print(self.algo.actor.log_stds)
         self._save_actor(average_total_reward)
 
     def _get_price_range(self, env: AECEnv) -> float:
