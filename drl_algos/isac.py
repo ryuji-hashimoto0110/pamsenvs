@@ -49,11 +49,11 @@ class SACActor(Module):
         super().__init__()
         self.obs_shape: ndarray = obs_shape
         self.actlayer: Module = nn.Sequential(
-            nn.Linear(np.prod(obs_shape), 256),
+            nn.Linear(np.prod(obs_shape), 512),
             nn.ReLU(inplace=True),
-            nn.Linear(256, 256),
+            nn.Linear(512, 512),
             nn.ReLU(inplace=True),
-            nn.Linear(256, 2*np.prod(action_shape)),
+            nn.Linear(512, 2*np.prod(action_shape)),
         )
         initialize_module_orthogonal(self.actlayer)
     
@@ -118,18 +118,18 @@ class SACCritic(Module):
         """
         super().__init__()
         self.net1: Module = nn.Sequential(
-            nn.Linear(obs_shape[0] + action_shape[0], 256),
+            nn.Linear(obs_shape[0] + action_shape[0], 512),
             nn.ReLU(inplace=True),
-            nn.Linear(256, 256),
+            nn.Linear(512, 512),
             nn.ReLU(inplace=True),
-            nn.Linear(256, 1),
+            nn.Linear(512, 1),
         )
         self.net2: nn.Module = nn.Sequential(
-            nn.Linear(obs_shape[0] + action_shape[0], 256),
+            nn.Linear(obs_shape[0] + action_shape[0], 512),
             nn.ReLU(inplace=True),
-            nn.Linear(256, 256),
+            nn.Linear(512, 512),
             nn.ReLU(inplace=True),
-            nn.Linear(256, 1),
+            nn.Linear(512, 1),
         )
 
     def forward(
@@ -197,7 +197,15 @@ class ISAC(Algorithm):
         for param in self.target_critic.parameters():
             param.requires_grad = False
         self.optim_actor: Optimizer = optim.Adam(self.actor.parameters(), lr=lr_actor)
+        self.scheduler_actor = optim.lr_scheduler.LambdaLR(
+            self.optim_actor,
+            lr_lambda=lambda epoch: max(1e-07 / lr_actor, 0.995**(epoch//50))
+        )
         self.optim_critic: Optimizer = optim.Adam(self.critic.parameters(), lr=lr_critic)
+        self.scheduler_critic = optim.lr_scheduler.LambdaLR(
+            self.optim_critic,
+            lr_lambda=lambda epoch: max(1e-07 / lr_critic, 0.995**(epoch//50))
+        )
         self.tau: float = tau
         self.alpha: float = alpha
         self.start_steps: int = start_steps
@@ -232,6 +240,8 @@ class ISAC(Algorithm):
         self.update_critic(obses, actions, rewards, dones, next_obses)
         self.update_actor(obses)
         self.update_target_critic()
+        self.scheduler_actor.step()
+        self.scheduler_critic.step()
 
     def update_critic(
         self,
