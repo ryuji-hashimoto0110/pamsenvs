@@ -137,6 +137,8 @@ class ReplayBuffer4MARL:
             [self.rewards[agent_idx, :self.experience_num_dic[agent_idx]-1] for agent_idx in range(self.num_agents)],
             dim=0
         )
+        normed_rewards: Tensor = rewards / (rewards.std() + 1e-06)
+        normed_rewards = normed_rewards.clamp(-5, 5)
         dones: Tensor = torch.cat(
             [self.dones[agent_idx, :self.experience_num_dic[agent_idx]-1] for agent_idx in range(self.num_agents)],
             dim=0
@@ -149,7 +151,7 @@ class ReplayBuffer4MARL:
         experiences: tuple[Tensor] = (
             obses[indices],
             actions[indices],
-            rewards[indices],
+            normed_rewards[indices],
             dones[indices],
             next_obses[indices]
         )
