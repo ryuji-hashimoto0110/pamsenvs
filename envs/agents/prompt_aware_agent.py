@@ -9,6 +9,12 @@ from pams.order import Cancel
 from pams.order import LIMIT_ORDER
 from pams.order import MARKET_ORDER
 from pams.order import Order
+import torch
+from torch import Tensor
+from transformers import AutoModelForCausalLM
+from transformers import AutoTokenizer
+from transformers import PreTrainedModel
+from transformers import PreTrainedTokenizer
 from typing import Any
 from typing import Literal
 from typing import Optional
@@ -21,19 +27,22 @@ MarketID = TypeVar("MarketID")
 
 def fetch_llm_output(
     prompt: str,
-    llm_name: Literal["gpt-4o-mini", "gpt-4o", "llama", "llama3.1", "finllama"]
+    llm_name: Literal[
+        "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    ],
+    device: torch.device
 ) -> str:
-    commands: list[str] = [
-        'curl', '-X', 'POST', '-H',
-        'Content-Type: application/json', '-d', 
-        prompt,
-        f'http://hpc15.socsim.t.u-tokyo.ac.jp:8000/{llm_name}'
-    ]
-    raw_llm_output: str = subprocess.run(
-        commands, capture_output=True, text=True
-    ).stdout
-    llm_output_dic: dict[str, str] = json.loads(raw_llm_output)
-    llm_output: str = llm_output_dic["response"]
+    tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(llm_name)
+    model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
+        llm_name, torch_dtype=torch.float16, #pad_token_id=tokenizer.eos_token_id
+    ).to(device)
+    message_dic: dict[str, str] = {"role": "system", "message": prompt}
+    prompt = tokenizer.apply_chat_template(message_dic, tokenize=False, add_generation_prompt=True)
+    inputs: dict[str, Any] = tokenizer(prompt, return_tensors="pt").to(device)
+    outputs: dict[str, Any] = model.generate(**inputs, do_sample=False,)
+    input_ids_tensor: Tensor = inputs["input_ids"]
+    input_length: int = input_ids_tensor.shape[1]
+    llm_output: str = tokenizer.decode(outputs[0], skip_special_tokens=True)[input_length:]
     return llm_output
 
 class PromptAwareAgent(Agent):
@@ -82,7 +91,8 @@ class PromptAwareAgent(Agent):
         pass
 
     def submit_orders(
-        self, markets: list[Market]
+        self,
+        markets: list[Market],
     ) -> list[Order | Cancel]:
         """submit orders.
         """
@@ -93,11 +103,32 @@ class PromptAwareAgent(Agent):
         )
         if llm_output[:7] == "```json" and llm_output[-3:] == "```":
             llm_output = llm_output[7:-3]
+        exo_order_price_dic: Optional[dict[MarketID, float]]
+        exo_order_volume_dic: Optional[dict[MarketID, int]]
+        exo_order_price_dic, exo_order_volume_dic = self.get_exo_order_prices_volumes(
+            markets=markets
+        )
         orders: list[Order | Cancel] = self.convert_llm_output2orders(
-            llm_output=llm_output, markets=markets
+            llm_output=llm_output, markets=markets,
+            exo_order_prices=exo_order_price_dic,
+            exo_order_volumes=exo_order_volume_dic
         )
         return orders
     
     def executed_order(self, log: ExecutionLog) -> None:
         market_id: MarketID = log.market_id
         self.executed_orders_dic[market_id].append(log)
+
+    def get_exo_order_prices_volumes(
+        self,
+        markets: list[Market]
+    ) -> tuple[Optional[list[float]], Optional[list[int]]]:
+        """get exogenous order prices and volumes.
+        
+        Args:
+            markets (list[Market]): list of markets.
+        
+        Returns:
+            tuple[list[float], list[int]]: exogenous order prices and volumes.
+        """
+        return None, None
