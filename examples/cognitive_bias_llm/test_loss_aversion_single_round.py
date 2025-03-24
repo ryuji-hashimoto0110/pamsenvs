@@ -115,7 +115,7 @@ def main(args):
             info: str = create_info(
                 cash_amount, bought_price, bought_volume, current_price, all_time_high, all_time_low
             )
-            prompt: str = premise + f"\\n\\nHere's the information." + instruction + info + answer_format
+            prompt: str = premise + instruction + f"\\n\\nHere's the information."+ info + answer_format
             #prompt = json.dumps(
             #    {"text": prompt, "temperature": temp},
             #    ensure_ascii=False
