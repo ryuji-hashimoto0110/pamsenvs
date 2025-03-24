@@ -23,6 +23,7 @@ def get_config():
     parser.add_argument("--is_peak", action="store_true")
     parser.add_argument("--llm_name", type=str, default="gpt-4o")
     parser.add_argument("--temp", type=float, default=0.7)
+    parser.add_argument("--device", type=str, default="cuda:0")
     return parser
 
 premise: str = "You are a participant of the simulation of stock markets. " + \
@@ -81,6 +82,7 @@ def main(args):
     is_peak: bool = all_args.is_peak
     temp: float = all_args.temp
     llm_name: str = all_args.llm_name
+    device: str = all_args.device
     columns = [
         "cash_amount", "bought_price", "bought_volume", "current_price", "all_time_high", "all_time_low",
         "order_price", "order_volume", "reason"
@@ -91,7 +93,7 @@ def main(args):
         for i in range(num_simulations):
             seed = initial_seed + i
             prng = random.Random(seed)
-            log_return: float = prng.uniform(a=0, b=0.5)
+            log_return: float = prng.uniform(a=0, b=0.2)
             if not is_uptrend:
                 log_return = -log_return
             current_price: float = bought_price * np.exp(log_return)
@@ -113,11 +115,11 @@ def main(args):
                 cash_amount, bought_price, bought_volume, current_price, all_time_high, all_time_low
             )
             prompt: str = premise + f"\\n\\nHere's the information." + instruction + info + answer_format
-            prompt = json.dumps(
-                {"text": prompt, "temperature": temp},
-                ensure_ascii=False
-            )
-            llm_output: str = fetch_llm_output(prompt, llm_name)
+            #prompt = json.dumps(
+            #    {"text": prompt, "temperature": temp},
+            #    ensure_ascii=False
+            #)
+            llm_output: str = fetch_llm_output(prompt, llm_name, device=device)
             if llm_output[:7] == "```json" and llm_output[-3:] == "```":
                 llm_output = llm_output[7:-3]
             try:
