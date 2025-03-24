@@ -34,12 +34,6 @@ def prepare_tokenizer(tokenizer: PreTrainedTokenizer) -> PreTrainedTokenizer:
         tokenizer.eos_token_id = tokenizer.convert_tokens_to_ids("<eos>")
     return tokenizer
 
-def get_length_without_special_tokens(text, tokenizer):
-    inputs = tokenizer(text, return_tensors="pt")
-    input_ids = inputs.input_ids[0]
-    decoded_text = tokenizer.decode(input_ids, skip_special_tokens=True)
-    return len(decoded_text)
-
 def fetch_llm_output(
     prompt: str,
     llm_name: Literal[
@@ -58,8 +52,9 @@ def fetch_llm_output(
     )
     inputs: dict[str, Any] = tokenizer(formatted_prompt, return_tensors="pt").to(device)
     outputs: dict[str, Any] = model.generate(**inputs, max_length=1024, do_sample=False, temperature=1.0)
-    input_length = get_length_without_special_tokens(prompt, tokenizer)
-    llm_output: str = tokenizer.decode(outputs[0], skip_special_tokens=True)[input_length:]
+    llm_output: str = tokenizer.decode(
+        outputs[0], skip_special_tokens=True
+    ).split("assistant")[1].strip()
     return llm_output
 
 class PromptAwareAgent(Agent):
