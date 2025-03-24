@@ -25,6 +25,15 @@ from rich import print
 AgentID = TypeVar("AgentID")
 MarketID = TypeVar("MarketID")
 
+def prepare_tokenizer(tokenizer: PreTrainedTokenizer) -> PreTrainedTokenizer:
+    special_tokens: list[str] = ["<eos>", "<unk>", "<sep>", "<pad>", "<cls>", "<mask>"]
+    for token in special_tokens:
+        if tokenizer.convert_tokens_to_ids(token) is None:
+            tokenizer.add_tokens([token])
+    if tokenizer.eos_token_id is None:
+        tokenizer.eos_token_id = tokenizer.convert_tokens_to_ids("<eos>")
+    return tokenizer
+
 def fetch_llm_output(
     prompt: str,
     llm_name: Literal[
@@ -33,6 +42,7 @@ def fetch_llm_output(
     device: torch.device
 ) -> str:
     tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(llm_name)
+    tokenizer = prepare_tokenizer(tokenizer)
     model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
         llm_name, torch_dtype=torch.float16, #pad_token_id=tokenizer.eos_token_id
     ).to(device)
