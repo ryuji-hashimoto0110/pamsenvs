@@ -51,7 +51,7 @@ answer_format: str = "\\n\\nDecide your investment in the following JSON format.
     "Order price means the limit price at which you want to buy or sell the stock. By adjusting " + \
     "order price, you can trade at a more favorable price or adjust the time it takes to execute a trade. " + \
     "Here are the answer format." + \
-    '\\n{<market id>: {order_price: <order price>, order_volume: <order volume>, reason: <reason>} ...}'
+    '\\n{"<market id>": {"order_price": "<order price>", "order_volume": "<order volume>", "reason": "<reason>"} ...}'
 
 def create_info(
     cash_amount: float,
