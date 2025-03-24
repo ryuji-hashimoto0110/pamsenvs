@@ -61,7 +61,7 @@ def fetch_llm_output(
     llm_output: str = tokenizer.decode(
         outputs[0], skip_special_tokens=True
     ).split("assistant")[1].strip()
-    return llm_output
+    return llm_output, model
 
 class PromptAwareAgent(Agent):
     def setup(
