@@ -45,13 +45,13 @@ answer_format: str = "\\n\\nDecide your investment in the following JSON format.
     "and do not add any additional words to your response outside of the format. " + \
     "Make sure to enclose each property in double quotes. " + \
     "Order volume means the number of units you want to buy or sell the stock. " + \
-    "Negative order volume means that you want to sell the stock. " + \
-    "Order volume ranges from -10 to 10. " + \
+    "is_buy means whether you want to buy or sell the stock. is_buy must be True or False." + \
     "Short selling is not allowed. Try to keep your order volume as non-zero and not-extreme as possible. " + \
     "Order price means the limit price at which you want to buy or sell the stock. By adjusting " + \
     "order price, you can trade at a more favorable price or adjust the time it takes to execute a trade. " + \
     "Here are the answer format." + \
-    '\\n{"<market id>": {"order_price": "<order price>", "order_volume": "<order volume>", "reason": "<reason>"} ...}'
+    '\\n{"<market id>": {"order_price": "<order price>", "is_buy": "<True or False>", "order_volume": "<order volume>", "reason": "<reason>"} ...}' + \
+    "\\n\\nNow, devide your order. Please explain the reason in as much detail as possible."
 
 def create_info(
     cash_amount: float,
