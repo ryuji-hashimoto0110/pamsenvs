@@ -36,8 +36,8 @@ def fetch_llm_output(
     model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
         llm_name, torch_dtype=torch.float16, #pad_token_id=tokenizer.eos_token_id
     ).to(device)
-    message_dic: dict[str, str] = {"role": "system", "message": prompt}
-    prompt = tokenizer.apply_chat_template(message_dic, tokenize=False, add_generation_prompt=True)
+    messages: list[dict[str, str]] = [{"role": "system", "message": prompt}]
+    prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     inputs: dict[str, Any] = tokenizer(prompt, return_tensors="pt").to(device)
     outputs: dict[str, Any] = model.generate(**inputs, do_sample=False,)
     input_ids_tensor: Tensor = inputs["input_ids"]
