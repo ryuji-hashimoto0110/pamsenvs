@@ -58,14 +58,14 @@ def create_info(
     bought_price: float,
     bought_volume: int,
     current_price: float,
-    all_time_higth: float,
+    all_time_high: float,
     all_time_low: float
 ) -> str:
     unrealized_gain: float = bought_volume * (current_price - bought_price)
-    portfolio_info: str = f"\\n[Your portfolio]cash: {cash_amount}\\n" + \
-        f"[Your portfolio]market id: 0, volume: {bought_volume}, unrealized gain: {unrealized_gain}"
-    market_info: str = f"\\n[Market condition]market id: 0, current market price: {current_price}, " + \
-        f"all time high price: {all_time_higth}, all time low price: {all_time_low}"
+    portfolio_info: str = f"\\n[Your portfolio]cash: {cash_amount:.1f}\\n" + \
+        f"[Your portfolio]market id: 0, volume: {bought_volume}, unrealized gain: {unrealized_gain:.1f}"
+    market_info: str = f"\\n[Market condition]market id: 0, current market price: {current_price:.1f}, " + \
+        f"all time high price: {all_time_high:.1f}, all time low price: {all_time_low:.1f}"
     trading_history: str = f"\\n[Your trading history]market id: 0, price: {bought_price} volume: {bought_volume}"
     return portfolio_info + market_info + trading_history
 
