@@ -1,10 +1,12 @@
 import json
+import math
 from pams.logs import ExecutionLog
 from pams.market import Market
 from pams.order import Cancel
 from pams.order import LIMIT_ORDER
 from pams.order import MARKET_ORDER
 from pams.order import Order
+from pams.utils import JsonRandom
 from .prompt_aware_agent import PromptAwareAgent
 from typing import Any
 from typing import Optional
@@ -35,6 +37,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 base_prompt (str): the base prompt for the agent.
             accessible_markets_ids (list[MarketID]): list of accessible market ids.
         """
+        json_random: JsonRandom = JsonRandom(prng=self.prng)
         super().setup(
             settings=settings, accessible_markets_ids=accessible_markets_ids
         )
@@ -74,6 +77,12 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             raise ValueError("onlyMarketOrders must be included in settings.")
         else:
             self.only_market_orders: bool = settings["onlyMarketOrders"]
+        if "orderMargin" in settings:
+            self.order_margin: float = json_random.random(
+                json_value=settings["orderMargin"]
+            )
+        else:
+            self.order_margin: float = 0.0
         self.last_reason_dic: dict[MarketID, str] = {}
         self.average_cost_dic: dict[MarketID, float] = {}
         for market_id in accessible_markets_ids:
@@ -176,7 +185,9 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
     def convert_llm_output2orders(
         self,
         llm_output: str,
-        markets: list[Market]
+        markets: list[Market],
+        exo_order_price_dic: Optional[dict[MarketID, float]] = None,
+        exo_order_volume_dic: Optional[dict[MarketID, int]] = None
     ) -> list[Order | Cancel]:
         """convert the LLM output to orders."""
         success: bool = False
@@ -220,6 +231,13 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 order_volume = - order_volume
             else:
                 is_buy: bool = True
+            if exo_order_price_dic is not None:
+                order_kind = LIMIT_ORDER
+                order_price: float = exo_order_price_dic[market_id]
+                prder_price = order_price * (1.0 - self.order_margin) if is_buy else \
+                    order_price * (1.0 + self.order_margin)
+            if exo_order_volume_dic is not None:
+                order_volume: int = exo_order_volume_dic[market_id]
             order = Order(
                 agent_id=self.agent_id,
                 market_id=market_id,
@@ -230,4 +248,64 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             )
             orders.append(order)
         return orders      
-            
+
+
+class HistoryAwareFCLAgent(HistoryAwareLLMAgent):
+    def setup(
+        self,
+        settings: dict[str, Any],
+        accessible_markets_ids: list[MarketID],
+        *args: Any,
+        **kwargs: Any
+    ) -> None:
+        super().setup(
+            settings=settings, accessible_markets_ids=accessible_markets_ids
+        )
+        json_random: JsonRandom = JsonRandom(prng=self.prng)
+        self.w_f: float = json_random.random(json_value=settings["fundamentalWeight"])
+        self.w_c: float = json_random.random(json_value=settings["chartWeight"])
+        self.w_n: float = json_random.random(json_value=settings["noiseWeight"])
+        self.noise_scale: float = json_random.random(json_value=settings["noiseScale"])
+        self.time_window_size = int(
+            json_random.random(json_value=settings["timeWindowSize"])
+        )
+        self.mean_reversion_time: int = int(
+            json_random.random(json_value=settings["meanReversionTime"])
+        )
+
+    def get_exo_order_prices_volumes(self, markets):
+        exo_order_price_dic: dict[MarketID, float] = {}
+        exo_order_volume_dic: dict[MarketID, int] = {}
+        for market in markets:
+            market_id: MarketID = market.market_id
+            expected_future_price: float = self._get_expected_future_price(
+                market=market
+            )
+            exo_order_price_dic[market_id] = expected_future_price
+            exo_order_volume_dic[market_id] = 1
+        return exo_order_price_dic, exo_order_volume_dic
+    
+    def _get_expected_future_price(self, market: Market) -> float:
+        time: int = market.get_time()
+        market_price: float = market.get_market_price()
+        fundamental_price: float = market.get_fundamental_price()
+        fundamental_scale: float = 1.0 / max(self.mean_reversion_time, 1)
+        fundamental_log_return: float = fundamental_scale * math.log(
+            fundamental_price / market_price
+        )
+        chart_scale: float = 1.0 / max(self.time_window_size, 1)
+        time_window_size: int = min(time, self.time_window_size)
+        chart_log_return: float = chart_scale * math.log(
+            market_price / market.get_market_price(time - time_window_size)
+        )
+        noise_log_return: float = self.noise_scale * self.prng.gauss(mu=0.0, sigma=1.0)
+        expected_log_return: float = (
+            1.0 / (self.w_f + self.w_c + self.w_n)
+        ) * (
+            self.w_f * fundamental_log_return
+            + self.w_c * chart_log_return + self.w_n * noise_log_return
+        )
+        expected_future_price: float = market_price * math.exp(
+            expected_log_return * time_window_size
+        )
+        return expected_future_price
