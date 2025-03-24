@@ -87,6 +87,7 @@ def main(args):
         "cash_amount", "bought_price", "bought_volume", "current_price", "all_time_high", "all_time_low",
         "order_price", "order_volume", "reason"
     ]
+    model = None
     with open(csv_path, mode="w") as f:
         writer = csv.writer(f)
         writer.writerow(columns)
@@ -119,7 +120,10 @@ def main(args):
             #    {"text": prompt, "temperature": temp},
             #    ensure_ascii=False
             #)
-            llm_output: str = fetch_llm_output(prompt, llm_name, device=device)
+            if model is not None:
+                llm_output, model = fetch_llm_output(prompt, llm_name, device=device, model=model)
+            else:
+                llm_output, model = fetch_llm_output(prompt, llm_name, device=device)
             if llm_output[:7] == "```json" and llm_output[-3:] == "```":
                 llm_output = llm_output[7:-3]
             try:
