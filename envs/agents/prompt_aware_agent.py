@@ -39,13 +39,16 @@ def fetch_llm_output(
     llm_name: Literal[
         "meta-llama/Meta-Llama-3.1-8B-Instruct"
     ],
-    device: torch.device
-) -> str:
+    device: torch.device,
+    model: Optional[PreTrainedModel] = None,
+) -> tuple[str, PreTrainedModel]:
     tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(llm_name)
     tokenizer = prepare_tokenizer(tokenizer)
-    model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
-        llm_name, torch_dtype=torch.float16, #pad_token_id=tokenizer.eos_token_id
-    ).to(device)
+    if model is None:
+        model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
+            llm_name, torch_dtype=torch.float16, #pad_token_id=tokenizer.eos_token_id
+        )
+    model.to(device)
     messages: list[dict[str, str]] = [{"role": "user", "content": prompt}]
     formatted_prompt = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
