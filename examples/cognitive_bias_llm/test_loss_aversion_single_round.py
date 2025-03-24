@@ -85,7 +85,7 @@ def main(args):
     device: str = all_args.device
     columns = [
         "cash_amount", "bought_price", "bought_volume", "current_price", "all_time_high", "all_time_low",
-        "order_price", "order_volume", "reason"
+        "is_buy", "order_price", "order_volume", "reason"
     ]
     model = None
     with open(csv_path, mode="w") as f:
@@ -131,6 +131,10 @@ def main(args):
             except Exception as e:
                 print(e)
                 continue
+            if not "is_buy" in order_dic:
+                raise ValueError("is_buy not found.")
+            else:
+                is_buy: bool = order_dic["is_buy"]
             if not "order_price" in order_dic:
                 raise ValueError("order_price not found.")
             else:
@@ -145,7 +149,7 @@ def main(args):
                 reason: str = order_dic["reason"]
             writer.writerow(
                 [cash_amount, bought_price, bought_volume, current_price,
-                all_time_high, all_time_low, order_price, order_volume, reason]
+                all_time_high, all_time_low, is_buy, order_price, order_volume, reason]
             )
         
 if __name__ == "__main__":
