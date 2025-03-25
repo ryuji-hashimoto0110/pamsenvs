@@ -58,7 +58,7 @@ def fetch_llm_output(
     inputs: dict[str, Any] = tokenizer(formatted_prompt, return_tensors="pt").to(device)
     outputs: dict[str, Any] = model.generate(
         **inputs, pad_token_id=tokenizer.eos_token_id,
-        max_length=1024, do_sample=True, temperature=0.7
+        max_length=32768, do_sample=True, temperature=0.7
     )
     llm_output: str = tokenizer.decode(
         outputs[0], skip_special_tokens=True
