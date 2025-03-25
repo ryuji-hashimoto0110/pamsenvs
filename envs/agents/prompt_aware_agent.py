@@ -141,8 +141,8 @@ class PromptAwareAgent(Agent):
         )
         orders: list[Order | Cancel] = self.convert_llm_output2orders(
             llm_output=llm_output, markets=markets,
-            exo_order_prices=exo_order_price_dic,
-            exo_order_volumes=exo_order_volume_dic
+            exo_order_price_dic=exo_order_price_dic,
+            exo_order_volume_dic=exo_order_volume_dic
         )
         return orders
     
