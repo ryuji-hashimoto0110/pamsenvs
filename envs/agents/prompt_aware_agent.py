@@ -91,7 +91,7 @@ class PromptAwareAgent(Agent):
             self.base_prompt: Optional[str] = settings["basePrompt"]
         else:
             self.base_prompt: Optional[str] = None
-        if "device" not in settings:
+        if "device" in settings:
             self.device: torch.device = torch.device(settings["device"])
         else:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
