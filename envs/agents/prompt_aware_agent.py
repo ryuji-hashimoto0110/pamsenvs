@@ -110,7 +110,9 @@ class PromptAwareAgent(Agent):
     def convert_llm_output2orders(
         self,
         llm_output: str,
-        markets: list[Market]
+        markets: list[Market],
+        args: Any,
+        **kwargs: Any
     ) -> list[Order | Cancel]:
         """convert the LLM output to orders."""
         pass
