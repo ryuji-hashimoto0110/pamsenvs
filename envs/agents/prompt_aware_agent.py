@@ -37,7 +37,8 @@ def prepare_tokenizer(tokenizer: PreTrainedTokenizer) -> PreTrainedTokenizer:
 def fetch_llm_output(
     prompt: str,
     llm_name: Literal[
-        "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "Qwen/QwQ-32B"
     ],
     device: torch.device,
     model: Optional[PreTrainedModel] = None,
