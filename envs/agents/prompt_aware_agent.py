@@ -124,31 +124,34 @@ class PromptAwareAgent(Agent):
         """submit orders.
         """
         prompt: str = self.create_prompt(markets=markets)
-        llm_output: str
-        model: Optional[PreTrainedModel]
-        llm_output, model = fetch_llm_output(
-            prompt=prompt, llm_name=self.llm_name, device=self.device, model=self.model
-        )
-        if self.model is None:
-            self.model = model
-        if llm_output[:7] == "```json" and llm_output[-3:] == "```":
-            llm_output = llm_output[7:-3]
-        llm_output = llm_output.replace("\\", "")
         exo_order_price_dic: Optional[dict[MarketID, float]]
         exo_order_volume_dic: Optional[dict[MarketID, int]]
         exo_order_price_dic, exo_order_volume_dic = self.get_exo_order_prices_volumes(
             markets=markets
         )
         orders: list[Order | Cancel] = []
+        success: bool = False
         for _ in range(10):
+            if success:
+                break
             try:
+                llm_output: str
+                model: Optional[PreTrainedModel]
+                llm_output, model = fetch_llm_output(
+                    prompt=prompt, llm_name=self.llm_name,
+                    device=self.device, model=self.model
+                )
+                if self.model is None:
+                    self.model = model
+                if llm_output[:7] == "```json" and llm_output[-3:] == "```":
+                    llm_output = llm_output[7:-3]
+                llm_output = llm_output.replace("\\", "")
                 orders: list[Order | Cancel] = self.convert_llm_output2orders(
                     llm_output=llm_output, markets=markets,
                     exo_order_price_dic=exo_order_price_dic,
                     exo_order_volume_dic=exo_order_volume_dic
                 )
                 success = True
-                break
             except Exception as e:
                 print(e)
         return orders
