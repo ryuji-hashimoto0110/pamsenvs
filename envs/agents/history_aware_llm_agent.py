@@ -204,7 +204,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             except ValueError:
                 raise ValueError(f"Failed to convert market_id to an integer {market_id}.")
             try:
-                order_volume = abs(order_volume)
+                order_volume = abs(int(order_volume))
             except ValueError:
                 raise ValueError(f"Failed to convert order_volume to an integer: {order_volume}.")
             if not "reason" in order_dic:
