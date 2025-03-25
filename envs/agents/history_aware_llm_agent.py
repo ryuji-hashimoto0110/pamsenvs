@@ -65,6 +65,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "and do not add any additional words to your response outside of the format. " + \
                 "Make sure to enclose each property in double quotes. " + \
                 "Order volume means the number of units you want to buy or sell the stock. " + \
+                "Possible order volume is up to 10. " + \
                 "is_buy means whether you want to buy or sell the stock. is_buy must be True or False." + \
                 "Short selling is not allowed. Try to keep your order volume as non-zero and not-extreme as possible. " + \
                 "Order price means the limit price at which you want to buy or sell the stock. By adjusting " + \
@@ -197,13 +198,13 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             if not "order_volume" in order_dic:
                 raise ValueError("order_volume must be included in order_dic.")
             else:
-                order_volume: Any = order_dic["order_volume"]
+                order_volume: str = order_dic["order_volume"]
             try:
                 market_id = int(market_id)
             except ValueError:
                 raise ValueError(f"Failed to convert market_id to an integer {market_id}.")
             try:
-                order_volume = abs(int(order_volume))
+                order_volume = abs(int(float(order_volume)))
             except ValueError:
                 raise ValueError(f"Failed to convert order_volume to an integer: {order_volume}.")
             if not "reason" in order_dic:
