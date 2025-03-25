@@ -124,7 +124,6 @@ class PromptAwareAgent(Agent):
         """submit orders.
         """
         prompt: str = self.create_prompt(markets=markets)
-        success: bool = False
         llm_output: str
         model: Optional[PreTrainedModel]
         llm_output, model = fetch_llm_output(
@@ -140,11 +139,18 @@ class PromptAwareAgent(Agent):
         exo_order_price_dic, exo_order_volume_dic = self.get_exo_order_prices_volumes(
             markets=markets
         )
-        orders: list[Order | Cancel] = self.convert_llm_output2orders(
-            llm_output=llm_output, markets=markets,
-            exo_order_price_dic=exo_order_price_dic,
-            exo_order_volume_dic=exo_order_volume_dic
-        )
+        orders: list[Order | Cancel] = []
+        for _ in range(10):
+            try:
+                orders: list[Order | Cancel] = self.convert_llm_output2orders(
+                    llm_output=llm_output, markets=markets,
+                    exo_order_price_dic=exo_order_price_dic,
+                    exo_order_volume_dic=exo_order_volume_dic
+                )
+                success = True
+                break
+            except Exception as e:
+                print(e)
         return orders
     
     def executed_order(self, log: ExecutionLog) -> None:
