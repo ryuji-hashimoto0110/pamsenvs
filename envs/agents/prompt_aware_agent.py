@@ -38,7 +38,8 @@ def fetch_llm_output(
     prompt: str,
     llm_name: Literal[
         "meta-llama/Meta-Llama-3.1-8B-Instruct",
-        "Qwen/QwQ-32B"
+        "Qwen/Qwen2.5-7B-Instruct",
+        "mistralai/Mistral-7B-Instruct-v0.3",
     ],
     device: torch.device,
     model: Optional[PreTrainedModel] = None,
@@ -61,7 +62,7 @@ def fetch_llm_output(
     )
     llm_output: str = tokenizer.decode(
         outputs[0], skip_special_tokens=True
-    ).split("assistant")[1].strip()
+    ).split("assistant")[-1].strip()
     return llm_output, model
 
 class PromptAwareAgent(Agent):
