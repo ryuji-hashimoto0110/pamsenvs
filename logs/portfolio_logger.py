@@ -97,7 +97,7 @@ class PortfolioSaver(Logger):
         else:
             average_cost: float = None
         agent_infos: list[Optional[str | float | int | bool]] = [
-            t, agent_id, market_price, order_price, is_buy, order_volume, average_cost,
+            t, agent_id, market_price, is_buy, order_price, order_volume, average_cost,
             agent_cash_amount, agent_asset_volume, reason
         ]
         if self.record_signal_description:
