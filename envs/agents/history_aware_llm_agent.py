@@ -204,7 +204,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             except ValueError:
                 raise ValueError(f"Failed to convert market_id to an integer {market_id}.")
             try:
-                order_volume = int(order_volume)
+                order_volume = abs(order_volume)
             except ValueError:
                 raise ValueError(f"Failed to convert order_volume to an integer: {order_volume}.")
             if not "reason" in order_dic:
@@ -227,11 +227,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                         order_price = float(order_price)
                     except ValueError:
                         raise ValueError(f"Failed to convert order_price to a float: {order_price}.")
-            if order_volume < 0:
-                is_buy: bool = False
-                order_volume = - order_volume
-            else:
-                is_buy: bool = True
+            is_buy: bool = bool(order_dic["is_buy"])
             if exo_order_price_dic is not None:
                 order_kind = LIMIT_ORDER
                 order_price: float = exo_order_price_dic[market_id]
