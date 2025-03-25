@@ -134,6 +134,7 @@ class PromptAwareAgent(Agent):
             self.model = model
         if llm_output[:7] == "```json" and llm_output[-3:] == "```":
             llm_output = llm_output[7:-3]
+        llm_output = llm_output.replace("\\", "")
         exo_order_price_dic: Optional[dict[MarketID, float]]
         exo_order_volume_dic: Optional[dict[MarketID, int]]
         exo_order_price_dic, exo_order_volume_dic = self.get_exo_order_prices_volumes(
