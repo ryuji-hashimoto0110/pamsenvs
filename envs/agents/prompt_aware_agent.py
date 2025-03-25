@@ -91,7 +91,12 @@ class PromptAwareAgent(Agent):
             self.base_prompt: Optional[str] = settings["basePrompt"]
         else:
             self.base_prompt: Optional[str] = None
+        if "device" not in settings:
+            self.device: torch.device = torch.device(settings["device"])
+        else:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.llm_name: str = settings["llmName"]
+        self.model: Optional[PreTrainedModel] = None
         self.executed_orders_dic: dict[MarketID, list[ExecutionLog]] = {}
         for market_id in accessible_markets_ids:
             self.executed_orders_dic[market_id] = []
@@ -118,9 +123,13 @@ class PromptAwareAgent(Agent):
         """
         prompt: str = self.create_prompt(markets=markets)
         success: bool = False
-        llm_output: str = fetch_llm_output(
-            prompt=prompt, llm_name=self.llm_name
+        llm_output: str
+        model: Optional[PreTrainedModel]
+        llm_output, model = fetch_llm_output(
+            prompt=prompt, llm_name=self.llm_name, device=self.device, model=self.model
         )
+        if self.model is None:
+            self.model = model
         if llm_output[:7] == "```json" and llm_output[-3:] == "```":
             llm_output = llm_output[7:-3]
         exo_order_price_dic: Optional[dict[MarketID, float]]
