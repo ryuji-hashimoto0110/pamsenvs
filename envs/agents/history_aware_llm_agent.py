@@ -227,7 +227,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                         order_price = float(order_price)
                     except ValueError:
                         raise ValueError(f"Failed to convert order_price to a float: {order_price}.")
-            is_buy: bool = bool(order_dic["is_buy"])
+            is_buy: bool = True if order_dic["is_buy"].lower() == "true" else False
             if exo_order_price_dic is not None:
                 order_kind = LIMIT_ORDER
                 order_price: float = exo_order_price_dic[market_id]
