@@ -74,7 +74,7 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
         self.instruction += "\\n\\nIn addition to the above information, " + \
             "private signal is provided. Private signal is a description about the fundamental value of the stock. " + \
             "If the private signal seems to be overweighted, the fundamental value tends to be high. " + \
-            "Leaderboard is provided as a following format.\\n [Private signal]market id: {}, private signal: {}, ..."
+            "Private signal is provided as a following format.\\n [Private signal]market id: {}, private signal: {}, ..."
         self.base_prompt: str = self.premise + self.instruction
         self.market_id2ofi: dict[MarketID, Optional[float]] = {}
         self.market_id2lb: dict[MarketID, list[Optional[int | str | float]]] = {}
