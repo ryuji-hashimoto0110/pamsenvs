@@ -141,6 +141,7 @@ class PromptAwareAgent(Agent):
                     prompt=prompt, llm_name=self.llm_name,
                     device=self.device, model=self.model
                 )
+                model.to("cpu")
                 if self.model is None:
                     self.model = model
                 if llm_output[:7] == "```json" and llm_output[-3:] == "```":
