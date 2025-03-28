@@ -47,6 +47,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             self.premise: str = "You are a participant of the simulation of stock markets. " + \
                 "Behave as an investor. Answer your order decision after analysing the given information. "
             self.instruction: str = "\\n\\nYour current portfolio is provided as a following format. " + \
+                "Cash denotes safe asset. You consume cash to buy stocks, while you gain cash when you sell stocks. " + \
                 "Unrealized gain refers to the increase in value of the investment that has not yet been sold. " + \
                 "It represents the potential profit on your stock position. Negative unrealized gain means that " + \
                 "the investment has decreased in value. " + \
