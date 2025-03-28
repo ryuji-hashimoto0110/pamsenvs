@@ -66,10 +66,10 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
     
     def _collect_signal_paths(self, overweight: bool = True) -> list[Path]:
         if overweight:
-            private_signal_paths: list[Path] = list(self.signals_path.rglob("*overweight_analysis.txt"))
+            private_signal_paths: list[Path] = list(self.signals_path.rglob("*summary_overweight.txt"))
             private_signal_paths = self._prng.sample(private_signal_paths, len(private_signal_paths))
         else:
-            private_signal_paths: list[Path] = list(self.signals_path.rglob("*underweight_analysis.txt"))
+            private_signal_paths: list[Path] = list(self.signals_path.rglob("*summary_underweight.txt"))
             private_signal_paths = self._prng.sample(private_signal_paths, len(private_signal_paths))
         return private_signal_paths
         
@@ -174,7 +174,7 @@ class LeaderAwareMarket(TotalTimeAwareMarket):
         else:
             ofi: float = (
                 self.num_buy_orders - self.num_sell_orders
-            )
+            ) / (self.num_buy_orders + self.num_sell_orders)
         return f"\\n[Order flow imbalance]market id: {self.market_id}, " + \
             f"order flow imbalance: {ofi}", ofi
     

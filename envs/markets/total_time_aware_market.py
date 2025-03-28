@@ -1,5 +1,6 @@
 from pams import Market
 from pams.logs import Logger
+from pams.order_book import OrderBook
 import random
 from .range_regulated_market import RangeRegulatedMarket
 from typing import Optional
@@ -33,4 +34,16 @@ class TotalTimeAwareMarket(RangeRegulatedMarket):
                     [session.iteration_steps for session in self.simulator.sessions]
                 )
         return self.total_iteration_steps - self.get_time()
+    
+    def get_ofi(self) -> float:
+        num_buy_orders: int = self.calc_num_orders(self.buy_order_book)
+        num_sell_orders: int = self.calc_num_orders(self.sell_order_book)
+        if num_buy_orders + num_sell_orders == 0:
+            ofi: float = 0.0
+        else:
+            ofi: float = (num_buy_orders - num_sell_orders) / (num_buy_orders + num_sell_orders)
+        return f"\\n[Order flow imbalance]market id: {self.market_id}, " + \
+            f"order flow imbalance: {ofi}", ofi
         
+    def calc_num_orders(self, order_book: OrderBook) -> int:
+        return len(order_book.priority_queue)
