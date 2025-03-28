@@ -65,24 +65,11 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             "If the private signal seems to be overweighted, the fundamental value tends to be high. " + \
             "Private signal is provided as a following format.\\n [Private signal]market id: {}, private signal: {}, ..."
         self.base_prompt: str = self.premise + self.instruction
-        self.market_id2ofi: dict[MarketID, Optional[float]] = {}
         self.market_id2lb: dict[MarketID, list[Optional[int | str | float]]] = {}
         self.market_id2signal_descriptions: dict[MarketID, list[Optional[str]]] = {}
         for market_id in accessible_markets_ids:
-            self.market_id2ofi[market_id] = None
             self.market_id2lb[market_id] = [None for _ in range(9)]
             self.market_id2signal_descriptions[market_id] = [None, None]
-
-    def create_ofi_info(self, markets: list[Market]) -> str:
-        """create order flow imbalance information."""
-        ofi_info: str = ""
-        for market in markets:
-            market_id: MarketID = market.market_id
-            if hasattr(market, "get_ofi"):
-                ofi_str, ofi = market.get_ofi()
-                self.market_id2ofi[market_id] = ofi
-                ofi_info += ofi_str
-        return ofi_info
     
     def create_lb_info(self, markets: list[Market]) -> str:
         """create leader board information."""

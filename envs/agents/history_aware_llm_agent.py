@@ -99,9 +99,11 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             )
         else:
             self.order_margin: float = 0.0
+        self.market_id2ofi: dict[MarketID, Optional[float]] = {}
         self.last_reason_dic: dict[MarketID, str] = {}
         self.average_cost_dic: dict[MarketID, float] = {}
         for market_id in accessible_markets_ids:
+            self.market_id2ofi[market_id] = None
             self.average_cost_dic[market_id] = 0.0
             self.last_reason_dic[market_id] = ""
     
