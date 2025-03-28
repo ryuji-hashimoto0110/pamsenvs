@@ -60,7 +60,20 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 "\\n\\nYour trading history is provided as a following format. " + \
                 "Negative volume means that you sold the stock." + \
                 "\\n[Your trading history]market id: {}, price: {} volume: {}, ..."
-            
+            if not "getOFI" in settings:
+                raise ValueError("getOFI must be included in settings.")
+            else:
+                self.get_ofi: bool = settings["getOFI"]
+            if self.get_ofi:
+                self.instruction += "\\n\\n Order flow imbalance is provided as a following format. " + \
+                    "Order flow imbalance means the difference between the number of buy and sell orders submitted to the stock market. " + \
+                    "Order flow imbalance is calculated as the difference between the number of buy and sell orders. " + \
+                    "Order flow imbalance can range from -1 to 1. " + \
+                    "Negative order flow imbalance indicates that the number of sell orders exceed that of buy orders. " + \
+                    "If the order flow is positive (negative), the fundamental value tends to be high (low)." + \
+                    "Higher absolute value of order flow imbalance indicates that orders are imbalance to one side, " + \
+                    "and suggests stronger evidence about the fundamentals value of the stock." + \
+                    "\\n[Order flow imbalance]market id: {}, order flow imbalance: {}, ..."
             self.answer_format: str = "\\n\\nDecide your investment in the following JSON format with its keys are market ids and values are dictionaries " + \
                 "Do not deviate from the format, " + \
                 "and do not add any additional words to your response outside of the format. " + \
@@ -91,6 +104,17 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         for market_id in accessible_markets_ids:
             self.average_cost_dic[market_id] = 0.0
             self.last_reason_dic[market_id] = ""
+    
+    def create_ofi_info(self, markets: list[Market]) -> str:
+        """create order flow imbalance information."""
+        ofi_info: str = ""
+        for market in markets:
+            market_id: MarketID = market.market_id
+            if hasattr(market, "get_ofi"):
+                ofi_str, ofi = market.get_ofi()
+                self.market_id2ofi[market_id] = ofi
+                ofi_info += ofi_str
+        return ofi_info
     
     def _create_portfolio_info(self, markets: list[Market]) -> str:
         """create a portfolio information."""
@@ -181,7 +205,11 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         market_condition_info: str = self._create_market_condition_info(markets=markets)
         trading_history_info: str = self._create_trading_history_info()
         prompt: str = self.base_prompt + "\\n Here are the information." + portfolio_info + \
-            market_condition_info + trading_history_info + self.answer_format
+            market_condition_info + trading_history_info
+        ofi_info: str = self.create_ofi_info(markets=markets)
+        if self.get_ofi:
+            prompt += ofi_info
+        prompt += self.answer_format
         prompt = json.dumps({"text": prompt}, ensure_ascii=False)
         return prompt
         

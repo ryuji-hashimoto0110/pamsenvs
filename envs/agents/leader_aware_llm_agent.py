@@ -44,10 +44,6 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             raise ValueError("dividendPrice must be included in settings.")
         else:
             dividend_price: float = settings["dividendPrice"]
-        if not "getOFI" in settings:
-            raise ValueError("getOFI must be included in settings.")
-        else:
-            self.get_ofi: bool = settings["getOFI"]
         if not "getLeaderBoard" in settings:
             raise ValueError("getLeaderBoard must be included in settings.")
         else:
@@ -59,15 +55,6 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
             "Your goal is to achieve high wealth. Your wealth is calculated as: " + \
             "your cash amount + sum(asset volume * (average stock value * remaining time steps)). " + \
             "Note that stocks will become less valuable as the time goes by." 
-        if self.get_ofi:
-            self.instruction += "\\n\\n Order flow imbalance is provided as a following format. " + \
-                "Order flow imbalance means the difference between the number of buy and sell orders submitted to the stock market. " + \
-                "Order flow imbalance is calculated as the number of buy orders minus the number of sell orders. " + \
-                "Negative order flow imbalance indicates that the number of sell orders exceed that of buy orders. " + \
-                "If the order flow is positive (negative), the fundamental value tends to be high (low)." + \
-                "Higher absolute value of order flow imbalance indicates that orders are imbalance to one side, " + \
-                "and suggests stronger evidence about the fundamentals value of the stock." + \
-                "\\n[Order flow imbalance]market id: {}, order flow imbalance: {}, ..."
         if self.get_lb:
             self.instruction += "\\n\\n Leader board is provided as a following format." + \
                 "Leader board represents top-ranked profitable investors\' wealth and last order direction in each market. " + \
