@@ -10,6 +10,7 @@ root_path: Path = curr_path.parents[1]
 import sys
 sys.path.append(str(root_path))
 from envs.agents import HistoryAwareFCLAgent
+from envs.markets import TotalTimeAwareMarket
 from logs import PortfolioSaver
 from typing import Any
 from typing import Optional
@@ -59,6 +60,7 @@ def main(args):
             logger=saver
         )
         runner.class_register(HistoryAwareFCLAgent)
+        runner.class_register(TotalTimeAwareMarket)
         runner.main()
 
 if __name__ == "__main__":
