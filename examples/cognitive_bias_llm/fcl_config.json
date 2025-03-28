@@ -73,6 +73,7 @@
 		"noiseScale": 0.0001,
 		"timeWindowSize": [100, 200],
 		"orderMargin": [0.0, 0.01],
+		"getOFI": true,
         "device": "cuda:0",
         "llmName": "meta-llama/Meta-Llama-3.1-8B-Instruct",
         "comment": "meta-llama/Meta-Llama-3.1-8B-Instruct or Qwen/Qwen2.5-7B-Instruct or mistralai/Mistral-7B-Instruct-v0.3",
