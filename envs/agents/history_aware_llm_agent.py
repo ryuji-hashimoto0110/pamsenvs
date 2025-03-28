@@ -214,7 +214,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 reason: str = order_dic["reason"]
             self.last_reason_dic[market_id] = reason
             if order_volume == 0:
-                continue
+                order_volume += 1
             if self.only_market_orders:
                 order_kind = MARKET_ORDER
                 order_price = None
