@@ -39,7 +39,7 @@ def fetch_llm_output(
     llm_name: Literal[
         "meta-llama/Meta-Llama-3.1-8B-Instruct",
         "Qwen/Qwen2.5-7B-Instruct",
-        "mistralai/Mistral-7B-Instruct-v0.3",
+        "microsoft/Phi-4-mini-instruct",
     ],
     device: torch.device,
     model: Optional[PreTrainedModel] = None,
