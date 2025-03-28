@@ -234,6 +234,15 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 order_price: float = exo_order_price_dic[market_id]
                 prder_price = order_price * (1.0 - self.order_margin) if is_buy else \
                     order_price * (1.0 + self.order_margin)
+                market: Market = markets[market_id]
+                if is_buy:
+                    best_ask: float = market.get_best_sell_price()
+                    if best_ask is not None:
+                        order_price = min(order_price, best_ask)
+                else:
+                    best_bid: float = market.get_best_buy_price()
+                    if best_bid is not None:
+                        order_price = max(order_price, best_bid)
             if exo_order_volume_dic is not None:
                 order_volume: int = exo_order_volume_dic[market_id]
             order = Order(
@@ -271,7 +280,10 @@ class HistoryAwareFCLAgent(HistoryAwareLLMAgent):
             json_random.random(json_value=settings["meanReversionTime"])
         )
 
-    def get_exo_order_prices_volumes(self, markets):
+    def get_exo_order_prices_volumes(
+        self,
+        markets: list[Market]
+    ) -> tuple[dict[MarketID, float], dict[MarketID, int]]:
         exo_order_price_dic: dict[MarketID, float] = {}
         exo_order_volume_dic: dict[MarketID, int] = {}
         for market in markets:
