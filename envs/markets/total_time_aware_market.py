@@ -43,7 +43,7 @@ class TotalTimeAwareMarket(RangeRegulatedMarket):
         else:
             ofi: float = (num_buy_orders - num_sell_orders) / (num_buy_orders + num_sell_orders)
         return f"\\n[Order flow imbalance]market id: {self.market_id}, " + \
-            f"order flow imbalance: {ofi}", ofi
+            f"order flow imbalance: {ofi:.2f}", ofi
         
     def calc_num_orders(self, order_book: OrderBook) -> int:
         return len(order_book.priority_queue)
