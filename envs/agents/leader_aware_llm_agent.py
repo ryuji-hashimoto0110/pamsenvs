@@ -70,6 +70,8 @@ class LeaderAwareLLMAgent(HistoryAwareLLMAgent):
                 "\\n[Order flow imbalance]market id: {}, order flow imbalance: {}, ..."
         if self.get_lb:
             self.instruction += "\\n\\n Leader board is provided as a following format." + \
+                "Leader board represents top-ranked profitable investors\' wealth and last order direction in each market. " + \
+                "Leader board may teach you the stances of other successful traders. " + \
                 "\\n[Leaderboard]market id: {}, rank: {}, wealth: {}, order direction: {}, ..."
         self.instruction += "\\n\\nIn addition to the above information, " + \
             "private signal is provided. Private signal is a description about the fundamental value of the stock. " + \
