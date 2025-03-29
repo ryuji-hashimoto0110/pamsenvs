@@ -36,7 +36,7 @@ class PortfolioSaver(Logger):
 
     def _create_columns(self) -> list[str]:
         column_names: list[str] = [
-            "time", "agent_id", "market_price",
+            "time", "agent_id", "market_price", "fundamental_price",
             "is_buy", "order_price", "order_volume", "average_cost",
             "holding_cash_amount", "holding_asset_volume", "reason"
         ]
@@ -79,6 +79,7 @@ class PortfolioSaver(Logger):
         market: Market = self.market_id2market_dic[market_id]
         t: int = log.time
         market_price: float = market.get_market_price(t)
+        fundamental_price: float = market.get_fundamental_price(t)
         order_price: float = log.price
         order_volume: int = log.volume
         is_buy: bool = log.is_buy
@@ -97,7 +98,8 @@ class PortfolioSaver(Logger):
         else:
             average_cost: float = None
         agent_infos: list[Optional[str | float | int | bool]] = [
-            t, agent_id, market_price, is_buy, order_price, order_volume, average_cost,
+            t, agent_id, market_price, fundamental_price,
+            is_buy, order_price, order_volume, average_cost,
             agent_cash_amount, agent_asset_volume, reason
         ]
         if self.record_signal_description:
