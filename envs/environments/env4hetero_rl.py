@@ -307,8 +307,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
             self.obs_dic["log_return"].append(log_return)
         if "log_return_avg_cost" in self.obs_names:
             avg_cost: float = self._calc_avg_cost(agent, market)
-            log_return_avg_cost: float = np.log(market_prices[-1]) - np.log(avg_cost) \
-                if avg_cost != 0 else 0.0
+            if len(market_prices) == 0 or avg_cost == 0:
+                log_return_avg_cost: float = 0.0
+            else:
+                log_return_avg_cost: float = np.log(market_prices[-1]) - np.log(avg_cost)
             log_return_avg_cost = self._preprocess_obs(log_return_avg_cost, "log_return_avg_cost")
             obs_list.append(log_return_avg_cost)
             self.obs_dic["log_return_avg_cost"].append(log_return_avg_cost)
@@ -486,9 +488,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         if not hasattr(agent, "executed_orders_dic"):
             raise ValueError(f"agent {agent.agent_id} does not have executed_orders_dic.")
         market_id: MarketID = market.market_id
+        initial_market_price: float = market.get_market_price(time=0)
         execution_logs: list[ExecutionLog] = agent.executed_orders_dic[market_id]
-        total_shares: int = 0
-        total_cost: float = 0.0
+        total_shares: int = agent.initial_share_dic[market_id]
+        total_cost: float = total_shares * initial_market_price
         for log in execution_logs:
             if log.buy_agent_id == agent.agent_id:
                 total_shares += log.volume
@@ -502,7 +505,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 )
         if total_shares == 0:
             return 0.0
-        avg_cost: float = total_cost / total_shares
+        avg_cost: float = max(0, total_cost / total_shares)
         return avg_cost
         
     def _calc_asset_ratio(
@@ -641,7 +644,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             asset_fraction, market_price, avg_cost, volatility
         )
         pt_utility: float = 0.0
-        for gain_prob, gain in gain_prob_dic.items():
+        for gain, gain_prob in gain_prob_dic.items():
             if 0 < gain:
                 pt_utility += gain ** gain_sensitivity * (
                     gain_prob ** gain_prob_distortion_term
@@ -667,7 +670,9 @@ class AECEnv4HeteroRL(PamsAECEnv):
         avg_cost: float,
         volatility: float,
     ) -> dict[float, float]:
-        std: float = np.sqrt(volatility)
+        if avg_cost == 0:
+            return {0: 1.0}
+        std: float = np.sqrt(volatility + 1e-06)
         return_prob_dic: dict[float, float] = self._discretize_norm(std, n_bins=10)
         gain_prob_dic: dict[float, float] = {}
         for r, prob in return_prob_dic.items():
@@ -680,7 +685,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def _discretize_norm(
         self,
         std: float,
-        n_bins: int = 10,
+        n_bins: int = 5,
     ) -> float:
         range_min, range_max = -3 * std, 3 * std
         bin_edges: list[float] = np.linspace(range_min, range_max, n_bins + 1)
@@ -775,10 +780,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
             raise NotImplementedError(f"Unknown utility_type {self.utility_type}")
         # print(
         #     f"utility={current_utility:.3f} " + \
+        #     f"avg_cost={avg_cost:.1f} " + \
         #     f"cash={cash_amount:.1f} " + \
         #     f"asset={asset_volume:.1f} " + \
         #     f"market={market_price:.1f} " + \
-        #     f"log_return={log_return:.4f} " + \
         #     f"volatility={volatility:.4f} " + \
         #     f"risk_aversion={risk_aversion_term:.4f}"
         # )

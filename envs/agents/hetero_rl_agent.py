@@ -50,12 +50,14 @@ class HeteroRLAgent(Agent):
             )
         self.previous_utility: float = self.cash_amount
         self.executed_orders_dic: dict[MarketID, list[ExecutionLog]] = {}
+        self.initial_share_dic: dict[MarketID, int] = {}
         for market_id in accessible_markets_ids:
             market: Market = self.simulator.id2market[market_id]
             asset_volume: int = self.asset_volumes[market_id]
             self.executed_orders_dic[market_id] = []
             market_price: float = market.get_market_price()
             self.previous_utility += asset_volume * market_price
+            self.initial_share_dic[market_id] = asset_volume
 
     def submit_orders(self, markets: list[Market]) -> list[Order | Cancel]:
         return []
