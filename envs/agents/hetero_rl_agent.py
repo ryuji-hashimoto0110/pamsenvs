@@ -1,10 +1,14 @@
 from pams.agents import Agent
+from pams.logs import ExecutionLog
 from pams.logs import OrderLog
 from pams.market import Market
 from pams.order import Order
 from pams.order import Cancel
 from pams.utils import JsonRandom
 from typing import Any
+from typing import TypeVar
+
+MarketID = TypeVar("MarketID")
 
 class HeteroRLAgent(Agent):
     def setup(
@@ -45,9 +49,11 @@ class HeteroRLAgent(Agent):
                 json_value=settings["discountFactor"]
             )
         self.previous_utility: float = self.cash_amount
+        self.executed_orders_dic: dict[MarketID, list[ExecutionLog]] = {}
         for market_id in accessible_markets_ids:
             market: Market = self.simulator.id2market[market_id]
             asset_volume: int = self.asset_volumes[market_id]
+            self.executed_orders_dic[market_id] = []
             market_price: float = market.get_market_price()
             self.previous_utility += asset_volume * market_price
 
@@ -57,6 +63,8 @@ class HeteroRLAgent(Agent):
     def submitted_order(self, log: OrderLog) -> None:
         self.last_order_time = log.time
 
-    def executed_order(self, log):
+    def executed_order(self, log: ExecutionLog) -> None:
         """num_executed_orders is canceled by the environment."""
         self.num_executed_orders += log.volume
+        market_id: MarketID = log.market_id
+        self.executed_orders_dic[market_id].append(log)
