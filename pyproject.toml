@@ -21,7 +21,7 @@ tqdm = "^4.66.4"
 pettingzoo = "^1.24.3"
 seaborn = "^0.13.2"
 tslearn = "^0.6.3"
-transformers = "^4.49.0"
+transformers = "4.49.0"
 
 
 [tool.poetry.group.dev.dependencies]
