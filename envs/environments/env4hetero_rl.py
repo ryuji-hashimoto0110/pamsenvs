@@ -770,12 +770,14 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 cash_amount, asset_volume, market_price,
                 log_return, volatility, risk_aversion_term
             )
+            scaled_utility_diff = self._atan_utility_diff(0, current_utility)
         elif self.utility_type == "PT":
             avg_cost: float = self._calc_avg_cost(agent, market)
             current_utility: float = self.calc_pt_utility(
                 cash_amount, asset_volume, market_price,
                 avg_cost, volatility
             )
+            scaled_utility_diff = current_utility
         else:
             raise NotImplementedError(f"Unknown utility_type {self.utility_type}")
         # print(
@@ -789,7 +791,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         # )
         previous_utility: float = agent.previous_utility
         agent.previous_utility = current_utility
-        scaled_utility_diff = self._atan_utility_diff(0, current_utility)
+        #scaled_utility_diff = self._atan_utility_diff(0, current_utility)
         #print(f"{previous_utility=:.2f}, {current_utility=:.2f} {scaled_utility_diff=:.2f}")
         #print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume=:.1f} {market_price=:.1f} {total_wealth=:.1f} {log_return=:.4f} {volatility=:.6f} alpha={agent.risk_aversion_term:.2f}")
         reward = scaled_utility_diff
@@ -814,16 +816,15 @@ class AECEnv4HeteroRL(PamsAECEnv):
         reward -= liquidity_penalty
         self.reward_dic["liquidity_penalty"].append(-liquidity_penalty)
         fundamental_price: float = market.get_fundamental_price()
-        fundamental_penalty: float = min(
-            self.fundamental_penalty * self._get_integrated_fundamental_diff(market),
-            1
-        )
+        fundamental_penalty: float = self.fundamental_penalty * self._get_integrated_fundamental_diff(market)#,
+        #    1
+        #)
         #min(
         #    2, self._get_remaining_fundamental_diff(market)
         #)
         reward -= fundamental_penalty
         self.reward_dic["fundamental_penalty"].append(-fundamental_penalty)
-        #print(f"{reward=:.2f}")
+        # print(f"{reward=:.2f}")
         # print(
         #     f"utility diff: {scaled_utility_diff:.3f} " + \
         #     f"short selling penalty: {self.reward_dic['short_selling_penalty'][-1]:.3f} " + \
