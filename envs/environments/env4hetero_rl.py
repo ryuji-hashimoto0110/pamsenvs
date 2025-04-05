@@ -685,7 +685,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def _discretize_norm(
         self,
         std: float,
-        n_bins: int = 5,
+        n_bins: int = 10,
     ) -> float:
         range_min, range_max = -3 * std, 3 * std
         bin_edges: list[float] = np.linspace(range_min, range_max, n_bins + 1)
