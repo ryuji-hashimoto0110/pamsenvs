@@ -9,7 +9,7 @@ max_grad_norm=0.5
 seed=50
 actor_save_path="../../datas/checkpoints"
 actor_best_save_name="pt_best"
-actor_last_save_name="pr_last"
+actor_last_save_name="pt_last"
 num_train_steps=60000000
 eval_interval=105500
 num_eval_episodes=5
@@ -33,7 +33,7 @@ fundamental_penalty_decay=1
 agent_trait_memory=0.00
 sigmas="0.008"
 gammas="0.90"
-device="cpu"
+device="cuda:0"
 python train_pt_inspired_rl.py \
 --algo_name "ippo" \
 --rollout_length $rollout_length \
