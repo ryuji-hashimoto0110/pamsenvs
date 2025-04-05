@@ -816,9 +816,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         reward -= liquidity_penalty
         self.reward_dic["liquidity_penalty"].append(-liquidity_penalty)
         fundamental_price: float = market.get_fundamental_price()
-        fundamental_penalty: float = self.fundamental_penalty * self._get_integrated_fundamental_diff(market)#,
-        #    1
-        #)
+        fundamental_penalty: float = min(
+            self.fundamental_penalty * self._get_integrated_fundamental_diff(market),
+           10
+        )
         #min(
         #    2, self._get_remaining_fundamental_diff(market)
         #)
