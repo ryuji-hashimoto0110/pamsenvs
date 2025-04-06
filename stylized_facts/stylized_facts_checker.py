@@ -44,6 +44,7 @@ class StylizedFactsChecker:
     def __init__(
         self,
         seed: int = 42,
+        quote_num: int = 10,
         ohlcv_dfs_path: Optional[Path] = None,
         tick_dfs_path: Optional[Path] = None,
         resample_rule: str = "1min",
@@ -86,6 +87,7 @@ class StylizedFactsChecker:
         self.freq_ohlcv_size_dic: dict[str, int] = \
             bybit_freq_ohlcv_size_dic if is_bybit else flex_freq_ohlcv_size_dic
         self.resample_rule: str = resample_rule
+        self.quote_num: int = quote_num
         self.ohlcv_dfs: list[DataFrame] = []
         self.ohlcv_csv_names: list[str] = []
         self.tick_dfs: list[DataFrame] = []
@@ -201,6 +203,19 @@ class StylizedFactsChecker:
         resampled_df["num_events"] = df["event_volume"].resample(
             rule=self.resample_rule, closed="left", label="left"
         ).count()
+        for i in range(1, self.quote_num + 1):
+            resampled_df[f"buy{i}_price"] = df[f"buy{i}_price"].resample(
+                rule=self.resample_rule, closed="left", label="left"
+            ).last()
+            resampled_df[f"buy{i}_volume"] = df[f"buy{i}_volume"].resample(
+                rule=self.resample_rule, closed="left", label="left"
+            ).last()
+            resampled_df[f"sell{i}_price"] = df[f"sell{i}_price"].resample(
+                rule=self.resample_rule, closed="left", label="left"
+            ).last()
+            resampled_df[f"sell{i}_volume"] = df[f"sell{i}_volume"].resample(
+                rule=self.resample_rule, closed="left", label="left"
+            ).last()
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill().bfill()
         assert self.session1_end_time is not None
