@@ -203,6 +203,8 @@ class StylizedFactsChecker:
         resampled_df["num_events"] = df["event_volume"].resample(
             rule=self.resample_rule, closed="left", label="left"
         ).count()
+        num_buys_arr: ndarray = np.zeros(len(resampled_df))
+        num_sells_arr: ndarray = np.zeros(len(resampled_df))
         for i in range(1, self.quote_num + 1):
             resampled_df[f"buy{i}_price"] = df[f"buy{i}_price"].resample(
                 rule=self.resample_rule, closed="left", label="left"
@@ -210,12 +212,15 @@ class StylizedFactsChecker:
             resampled_df[f"buy{i}_volume"] = df[f"buy{i}_volume"].resample(
                 rule=self.resample_rule, closed="left", label="left"
             ).last()
+            num_buys_arr += resampled_df[f"buy{i}_volume"].values.flatten()
             resampled_df[f"sell{i}_price"] = df[f"sell{i}_price"].resample(
                 rule=self.resample_rule, closed="left", label="left"
             ).last()
             resampled_df[f"sell{i}_volume"] = df[f"sell{i}_volume"].resample(
                 rule=self.resample_rule, closed="left", label="left"
             ).last()
+            num_sells_arr += resampled_df[f"sell{i}_volume"].values.flatten()
+        resampled_df["ofi"] = (num_buys_arr - num_sells_arr) / (num_buys_arr + num_sells_arr)
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill().bfill()
         assert self.session1_end_time is not None
