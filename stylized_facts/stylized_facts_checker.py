@@ -231,7 +231,7 @@ class StylizedFactsChecker:
                 rule=self.resample_rule, closed="left", label="left"
             ).last()
             num_sells_arr += np.nan_to_num(resampled_df[f"sell{i}_volume"].values.flatten())
-        resampled_df["ofi"] = (num_buys_arr - num_sells_arr) / (num_buys_arr + num_sells_arr)
+        resampled_df["ofi"] = (num_buys_arr - num_sells_arr) / (num_buys_arr + num_sells_arr + 1e-06)
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill().bfill()
         assert self.session1_end_time is not None
