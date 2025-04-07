@@ -130,8 +130,8 @@ class StylizedFactsChecker:
                 figs_save_path.mkdir(parents=True)
         self.figs_save_path: Optional[Path] = figs_save_path
         self.return_arr: Optional[ndarray] = None
+        self.ofi_arr: Optional[ndarray] = None
         self.volume_arr: Optional[ndarray] = None
-        self.abs_hill_index: Optional[float] = None
 
     def _read_csvs(
         self,
@@ -206,6 +206,17 @@ class StylizedFactsChecker:
         num_buys_arr: ndarray = np.zeros(len(resampled_df))
         num_sells_arr: ndarray = np.zeros(len(resampled_df))
         for i in range(1, self.quote_num + 1):
+            if (
+                f"buy{i}_price" not in df.columns or
+                f"buy{i}_volume" not in df.columns or
+                f"sell{i}_price" not in df.columns or
+                f"sell{i}_volume" not in df.columns
+            ):
+                warnings.warn(
+                    f"{i}th buy/sell price/volume columns are not in columns. " +
+                    "Maybe quote_num exceeds the depth recorded in the dataframe."
+                )
+                break
             resampled_df[f"buy{i}_price"] = df[f"buy{i}_price"].resample(
                 rule=self.resample_rule, closed="left", label="left"
             ).last()
@@ -1084,6 +1095,53 @@ class StylizedFactsChecker:
         dtw_matrix: ndarray = cdist_dtw(return_arr, n_jobs=-1)
         dtw_arr: ndarray = np.mean(dtw_matrix, axis=1)[:,np.newaxis]
         return dtw_arr
+    
+    def check_ofi_return_correlation(
+        self,
+        lags: list[int],   
+    ) -> dict[int, ]:
+        """Check the correlation between order flow imbalance and return.
+        
+        Args:
+            lags (list[int]): list of lags to check correlation.
+        """
+        if (
+            self._is_stacking_possible(self.ohlcv_dfs, "close") and
+            self._is_stacking_possible(self.ohlcv_dfs, "ofi")
+        ):
+            if self.return_arr is None:
+                self.return_arr: ndarray = self._calc_return_arr_from_dfs(
+                    self.ohlcv_dfs, "close", norm=True
+                )
+            if self.ofi_arr is None:
+                self.ofi_arr: ndarray = self._stack_dfs(
+                    self.ohlcv_dfs, "ofi"
+                )[:,1:]
+            assert self.return_arr.shape == self.ofi_arr.shape # (number of data, length of time series)
+            ofi_return_corr_dic: dict[int, float] = {
+                lag: self._calc_ofi_return_correlation(
+                    self.return_arr, self.ofi_arr, lag
+                ) for lag in lags
+            }
+        else:
+            raise ValueError(
+                "all of the dataframes must have the same length to calculate OFI-return correlation."
+            )
+        return ofi_return_corr_dic
+
+    def _calc_ofi_return_correlation(
+        self,
+        return_arr: ndarray,
+        ofi_arr: ndarray,
+        lag: int
+    ) -> float:
+        return_arr: ndarray = return_arr[:, lag:]
+        ofi_arr: ndarray = ofi_arr[:, :-lag]
+        assert return_arr.shape == ofi_arr.shape
+        corr: float = np.corrcoef(
+            return_arr.flatten(), ofi_arr.flatten()
+        )[0, 1]
+        return corr
 
     def check_stylized_facts(
         self,
@@ -1113,6 +1171,9 @@ class StylizedFactsChecker:
             first_negative_lag_arr = np.repeat(
                 first_negative_lag_arr, repeats=kurtosis_arr.shape[0]
             )
+            ofi_return_corr_dic: dict[int, float] = self.check_ofi_return_correlation(
+                [lag for lag in [1,3,5,10,20,30]]
+            )
             dtw_arr: ndarray = self.check_dtw()
             data_dic: dict[str, ndarray]= {
                 "kurtosis": kurtosis_arr.flatten(),
@@ -1132,6 +1193,10 @@ class StylizedFactsChecker:
             for lag, acorr_arr in acorr_dic.items():
                 data_dic[f"acorr_{lag}"] = np.repeat(
                     acorr_arr, repeats=kurtosis_arr.shape[0]
+                ).flatten()
+            for lag, ofi_return_corr in ofi_return_corr_dic.items():
+                data_dic[f"ofi_return_corr_{lag}"] = np.repeat(
+                    ofi_return_corr, repeats=kurtosis_arr.shape[0]
                 ).flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
             if print_results:
