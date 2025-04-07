@@ -223,14 +223,14 @@ class StylizedFactsChecker:
             resampled_df[f"buy{i}_volume"] = df[f"buy{i}_volume"].resample(
                 rule=self.resample_rule, closed="left", label="left"
             ).last()
-            num_buys_arr += resampled_df[f"buy{i}_volume"].values.flatten()
+            num_buys_arr += np.nan_to_num(resampled_df[f"buy{i}_volume"].values.flatten(), 0)
             resampled_df[f"sell{i}_price"] = df[f"sell{i}_price"].resample(
                 rule=self.resample_rule, closed="left", label="left"
             ).last()
             resampled_df[f"sell{i}_volume"] = df[f"sell{i}_volume"].resample(
                 rule=self.resample_rule, closed="left", label="left"
             ).last()
-            num_sells_arr += resampled_df[f"sell{i}_volume"].values.flatten()
+            num_sells_arr += np.nan_to_num(resampled_df[f"sell{i}_volume"].values.flatten(), 0)
         resampled_df["ofi"] = (num_buys_arr - num_sells_arr) / (num_buys_arr + num_sells_arr)
         resampled_df.index = resampled_df.index.time
         resampled_df["close"] = resampled_df["close"].ffill().bfill()
