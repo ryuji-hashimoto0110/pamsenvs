@@ -1156,7 +1156,7 @@ class StylizedFactsChecker:
         ath_return_corr_dic: dict[int, float] = {}
         for lag in lags:
             returns: list[float] = []
-            aths: list[float] = []
+            ath_distances: list[float] = []
             for ohlcv_df in self.ohlcv_dfs:
                 for i in range(wait_time, len(ohlcv_df)-lag):
                     price_arr: ndarray = ohlcv_df["close"].values.flatten()[:i]
@@ -1164,15 +1164,17 @@ class StylizedFactsChecker:
                     ath: float = np.max(price_arr)
                     if ath == price_arr[-1]:
                         continue
-                    aths.append(ath)
+                    ath_distances.append(
+                        np.log(ath / price_arr[-1])
+                    )
                     returns.append(
                         np.log(price_arr_lag[-1] / price_arr[-1])
                     )
-            ath_arr: ndarray = np.array(aths)
+            ath_distance_arr: ndarray = np.array(ath_distances)
             return_arr: ndarray = np.array(returns)
-            assert ath_arr.shape == return_arr.shape
+            assert ath_distance_arr.shape == return_arr.shape
             ath_return_corr: float = np.corrcoef(
-                ath_arr.flatten(), return_arr.flatten()
+                ath_distance_arr.flatten(), return_arr.flatten()
             )[0, 1]
             ath_return_corr_dic[lag] = ath_return_corr
         return ath_return_corr_dic  
