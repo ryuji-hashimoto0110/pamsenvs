@@ -1145,18 +1145,17 @@ class StylizedFactsChecker:
             self._is_stacking_possible(self.ohlcv_dfs, "close") and
             self._is_stacking_possible(self.ohlcv_dfs, "ofi")
         ):
-            if self.return_arr is None:
-                self.return_arr: ndarray = self._calc_return_arr_from_dfs(
-                    self.ohlcv_dfs, "close", norm=True
-                )
+            return_arr: ndarray = self._calc_return_arr_from_dfs(
+                self.ohlcv_dfs, "close", norm=False
+            )
             if self.ofi_arr is None:
                 self.ofi_arr: ndarray = self._stack_dfs(
                     self.ohlcv_dfs, "ofi"
                 )[:,1:]
-            assert self.return_arr.shape == self.ofi_arr.shape # (number of data, length of time series)
+            assert return_arr.shape == self.ofi_arr.shape # (number of data, length of time series)
             ofi_return_corr_dic: dict[int, float] = {
                 lag: self._calc_ofi_return_correlation(
-                    self.return_arr, self.ofi_arr, lag
+                    return_arr, self.ofi_arr, lag
                 ) for lag in lags
             }
         else:
@@ -1173,7 +1172,9 @@ class StylizedFactsChecker:
     ) -> float:
         conv_return_arr: ndarray = np.stack(
             [
-                np.convolve(return_arr_, lag, mode="valid") for return_arr_ in return_arr
+                np.convolve(
+                    return_arr_, np.ones(lag), mode="valid"
+                ) for return_arr_ in return_arr
             ], axis=0
         )
         past_return_arr: ndarray = conv_return_arr[:, :-lag]
@@ -1184,12 +1185,16 @@ class StylizedFactsChecker:
             future_return_arr.shape == ofi_arr.shape
         )
         lr: LinearRegression = LinearRegression()
-        lr.fit(
-            np.column_stack(
-                (ofi_arr.flatten(), past_return_arr.flatten())
-            ),
-            future_return_arr
+        X: ndarray = np.column_stack(
+            (ofi_arr.flatten(), past_return_arr.flatten())
         )
+        X = (
+            X - np.mean(X, axis=1, keepdims=True)
+        ) / np.std(X, axis=1, keepdims=True)
+        future_return_arr = (
+            future_return_arr.flatten() - np.mean(future_return_arr, axis=1, keepdims=True)
+        ) / np.std(future_return_arr, axis=1, keepdims=True)
+        lr.fit(X, future_return_arr)
         ofi_return_corr: float = lr.coef_[0]
         return ofi_return_corr
     
@@ -1216,13 +1221,11 @@ class StylizedFactsChecker:
                     price_arr: ndarray = ohlcv_df["close"].values.flatten()[:i]
                     price_arr_lag: ndarray = ohlcv_df["close"].values.flatten()[i-1:i+lag]
                     ath: float = np.max(price_arr)
-                    if ath == price_arr[-1]:
-                        continue
                     ath_distances.append(
                         np.log(ath / price_arr[-1])
                     )
                     past_returns.append(
-                        np.log(price_arr[-1] / price_arr[-lag])
+                        np.log(price_arr[-1] / price_arr[-1-lag])
                     )
                     future_returns.append(
                         np.log(price_arr_lag[-1] / price_arr_lag[0])
@@ -1231,12 +1234,16 @@ class StylizedFactsChecker:
             future_return_arr: ndarray = np.array(future_returns)
             past_return_arr: ndarray = np.array(past_returns)
             lr: LinearRegression = LinearRegression()
-            lr.fit(
-                np.column_stack(
-                    (ath_distance_arr, past_return_arr)
-                ),
-                future_return_arr
+            X: ndarray = np.column_stack(
+                (ath_distance_arr, past_return_arr)
             )
+            X = (
+                X - np.mean(X, axis=1, keepdims=True)
+            ) / np.std(X, axis=1, keepdims=True)
+            future_return_arr = (
+                future_return_arr - np.mean(future_return_arr, axis=1, keepdims=True)
+            ) / np.std(future_return_arr, axis=1, keepdims=True)
+            lr.fit(X, future_return_arr)
             ath_return_corr_dic[lag] = lr.coef_[0]
         return ath_return_corr_dic
 
