@@ -1176,9 +1176,9 @@ class StylizedFactsChecker:
                 np.convolve(return_arr_, lag, mode="valid") for return_arr_ in return_arr
             ], axis=0
         )
-        past_return_arr: ndarray = conv_return_arr[:, :-1]
-        future_return_arr: ndarray = conv_return_arr[:, 1:]
-        ofi_arr: ndarray = ofi_arr[:, lag:-lag]
+        past_return_arr: ndarray = conv_return_arr[:, :-lag]
+        future_return_arr: ndarray = conv_return_arr[:, lag:]
+        ofi_arr: ndarray = ofi_arr[:, lag-1:-lag]
         assert (
             past_return_arr.shape == ofi_arr.shape and
             future_return_arr.shape == ofi_arr.shape
@@ -1186,7 +1186,7 @@ class StylizedFactsChecker:
         lr: LinearRegression = LinearRegression()
         lr.fit(
             np.column_stack(
-                ofi_arr, past_return_arr.flatten()
+                (ofi_arr.flatten(), past_return_arr.flatten())
             ),
             future_return_arr
         )
@@ -1233,7 +1233,7 @@ class StylizedFactsChecker:
             lr: LinearRegression = LinearRegression()
             lr.fit(
                 np.column_stack(
-                    ath_distance_arr, past_return_arr
+                    (ath_distance_arr, past_return_arr)
                 ),
                 future_return_arr
             )
