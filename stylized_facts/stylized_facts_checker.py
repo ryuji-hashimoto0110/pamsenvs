@@ -307,9 +307,17 @@ class StylizedFactsChecker:
         moods: list[float] = []
         wc_rates: list[float] = []
         time_window_sizes: list[int] = []
+        num_buys_arr: ndarray = np.zeros(len(df))
+        num_sells_arr: ndarray = np.zeros(len(df))
+        orderbook_dic: dict[str, list[float]] = {}
+        for i in range(1, self.quote_num + 1):  
+            orderbook_dic[f"buy{i}_price"] = []
+            orderbook_dic[f"buy{i}_volume"] = []
+            orderbook_dic[f"sell{i}_price"] = []
+            orderbook_dic[f"sell{i}_volume"] = []
         num_pre_transactions: int = 0
         price_column: str = "mid_price" if resample_mid else "market_price"
-        for num_cur_transactions in cumsum_transactions:
+        for j, num_cur_transactions in enumerate(cumsum_transactions):
             cur_df: DataFrame = df.iloc[num_pre_transactions:num_cur_transactions,:]
             if 0 < len(cur_df):
                 opens.append(cur_df[price_column].iloc[0])
@@ -318,6 +326,19 @@ class StylizedFactsChecker:
                 closes.append(cur_df[price_column].iloc[-1])
                 volumes.append(cur_df["event_volume"].sum())
                 num_events.append(len(cur_df))
+                for i in range(1, self.quote_num + 1):
+                    orderbook_dic[f"buy{i}_price"].append(
+                        cur_df[f"buy{i}_price"].iloc[-1]
+                    )
+                    orderbook_dic[f"buy{i}_volume"].append(
+                        cur_df[f"buy{i}_volume"].iloc[-1]
+                    )
+                    orderbook_dic[f"sell{i}_price"].append(
+                        cur_df[f"sell{i}_price"].iloc[-1]
+                    )
+                    orderbook_dic[f"sell{i}_volume"].append(
+                        cur_df[f"sell{i}_volume"].iloc[-1]
+                    )
                 if "mood" in cur_df.columns:
                     moods.append(cur_df["mood"].mean())
                 if "wc_rate" in cur_df.columns:
@@ -330,12 +351,20 @@ class StylizedFactsChecker:
                 closes.append(None)
                 volumes.append(0)
                 num_events.append(0)
+                for i in range(1, self.quote_num + 1):
+                    orderbook_dic[f"buy{i}_price"].append(None)
+                    orderbook_dic[f"buy{i}_volume"].append(0)
+                    orderbook_dic[f"sell{i}_price"].append(None)
+                    orderbook_dic[f"sell{i}_volume"].append(0)
                 if "mood" in cur_df.columns:
                     moods.append(None)
                 if "wc_rate" in cur_df.columns:
                     wc_rates.append(None)
                     time_window_sizes.append(None)
             num_pre_transactions = num_cur_transactions
+            for i in range(1, self.quote_num + 1):
+                num_buys_arr[j] += np.nan_to_num(orderbook_dic[f"buy{i}_volume"][-1])
+                num_sells_arr[j] += np.nan_to_num(orderbook_dic[f"sell{i}_volume"][-1])
         session_resampled_df: DataFrame = pd.DataFrame(
             data={
                 "open": opens, "high": highes, "low": lowes, "close": closes,
@@ -343,6 +372,12 @@ class StylizedFactsChecker:
             },
             index=indexes
         )
+        for i in range(1, self.quote_num + 1):
+            session_resampled_df[f"buy{i}_price"] = orderbook_dic[f"buy{i}_price"]
+            session_resampled_df[f"buy{i}_volume"] = orderbook_dic[f"buy{i}_volume"]
+            session_resampled_df[f"sell{i}_price"] = orderbook_dic[f"sell{i}_price"]
+            session_resampled_df[f"sell{i}_volume"] = orderbook_dic[f"sell{i}_volume"]
+        session_resampled_df["ofi"] = (num_buys_arr - num_sells_arr) / (num_buys_arr + num_sells_arr + 1e-06)
         session_resampled_df["close"] = session_resampled_df["close"].ffill().bfill()
         if len(session_resampled_df) == len(moods):
             session_resampled_df["mood"] = moods
