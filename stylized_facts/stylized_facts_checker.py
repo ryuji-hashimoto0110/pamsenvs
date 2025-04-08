@@ -1135,7 +1135,7 @@ class StylizedFactsChecker:
         ofi_arr: ndarray,
         lag: int
     ) -> float:
-        return_arr: ndarray = return_arr[:, lag:]
+        return_arr: ndarray = return_arr[:, lag:] - return_arr[:, :-lag]
         ofi_arr: ndarray = ofi_arr[:, :-lag]
         assert return_arr.shape == ofi_arr.shape
         corr: float = np.corrcoef(
