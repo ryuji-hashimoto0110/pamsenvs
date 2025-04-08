@@ -9,6 +9,7 @@ from datetime import date
 from datetime import timedelta
 from envs.agents import aFCNAgent
 from envs.agents import CARAFCNAgent
+from envs.agents import HistoryAwareFCLAgent
 from envs.agents import MoodAwareCARAFCNAgent
 from envs.markets import FCWeightsAwareMarket
 from envs.markets import MoodAwareMarket
@@ -210,6 +211,8 @@ class SimulationEvaluater:
             if MoodAwareCARAFCNAgent not in runner.registered_classes else ...
         runner.class_register(FCWeightsAwareMarket) \
             if FCWeightsAwareMarket not in runner.registered_classes else ...
+        runner.class_register(HistoryAwareFCLAgent) \
+            if HistoryAwareFCLAgent not in runner.registered_classes else ...
         runner.class_register(MoodAwareMarket) if MoodAwareMarket not in runner.registered_classes else ...
         runner.class_register(RangeRegulatedMarket) \
             if RangeRegulatedMarket not in runner.registered_classes else ...
