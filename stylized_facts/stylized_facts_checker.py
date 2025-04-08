@@ -1099,7 +1099,7 @@ class StylizedFactsChecker:
     def check_ofi_return_correlation(
         self,
         lags: list[int],   
-    ) -> dict[int, ]:
+    ) -> dict[int, float]:
         """Check the correlation between order flow imbalance and return.
         
         Args:
@@ -1142,6 +1142,40 @@ class StylizedFactsChecker:
             return_arr.flatten(), ofi_arr.flatten()
         )[0, 1]
         return corr
+    
+    def check_ath_return_correlation(
+        self,
+        lags: list[int],
+        wait_time: int = 60,
+    ) -> dict[int, float]:
+        """Check the correlation between intraday all-time high and return.
+        
+        Args:
+            lags (list[int]): list of lags to check correlation.
+        """
+        ath_return_corr_dic: dict[int, float] = {}
+        for lag in lags:
+            returns: list[float] = []
+            aths: list[float] = []
+            for ohlcv_df in self.ohlcv_dfs:
+                for i in range(wait_time, len(ohlcv_df)-lag):
+                    price_arr: ndarray = ohlcv_df["close"].values.flatten()[:i]
+                    price_arr_lag: ndarray = ohlcv_df["close"].values.flatten()[i:i+lag]
+                    ath: float = np.max(price_arr)
+                    if ath == price_arr[-1]:
+                        continue
+                    aths.append(ath)
+                    returns.append(
+                        np.log(price_arr_lag[-1] / price_arr[-1])
+                    )
+            ath_arr: ndarray = np.array(aths)
+            return_arr: ndarray = np.array(returns)
+            assert ath_arr.shape == return_arr.shape
+            ath_return_corr: float = np.corrcoef(
+                ath_arr.flatten(), return_arr.flatten()
+            )[0, 1]
+            ath_return_corr_dic[lag] = ath_return_corr
+        return ath_return_corr_dic  
 
     def check_stylized_facts(
         self,
@@ -1172,7 +1206,10 @@ class StylizedFactsChecker:
                 first_negative_lag_arr, repeats=kurtosis_arr.shape[0]
             )
             ofi_return_corr_dic: dict[int, float] = self.check_ofi_return_correlation(
-                [lag for lag in [1,3,5,10,20,30]]
+                [lag for lag in [1,3,5,10,20,30,50]]
+            )
+            ath_return_corr_dic: dict[int, float] = self.check_ath_return_correlation(
+                [lag for lag in [1,3,5,10,20,30,50]]
             )
             dtw_arr: ndarray = self.check_dtw()
             data_dic: dict[str, ndarray]= {
@@ -1197,6 +1234,10 @@ class StylizedFactsChecker:
             for lag, ofi_return_corr in ofi_return_corr_dic.items():
                 data_dic[f"ofi_return_corr_{lag}"] = np.repeat(
                     ofi_return_corr, repeats=kurtosis_arr.shape[0]
+                ).flatten()
+            for lag, ath_return_corr in ath_return_corr_dic.items():
+                data_dic[f"ath_return_corr_{lag}"] = np.repeat(
+                    ath_return_corr, repeats=kurtosis_arr.shape[0]
                 ).flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
             if print_results:
