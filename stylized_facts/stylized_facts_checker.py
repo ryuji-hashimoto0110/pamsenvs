@@ -15,6 +15,7 @@ from rich.table import Table
 from scipy.stats import linregress
 from scipy.stats import kurtosis
 from scipy.stats import kurtosistest
+from sklearn.linear_model import LinearRegression
 from tslearn.metrics import cdist_dtw
 from tqdm import tqdm
 from typing import Optional
@@ -1170,13 +1171,27 @@ class StylizedFactsChecker:
         ofi_arr: ndarray,
         lag: int
     ) -> float:
-        return_arr: ndarray = return_arr[:, lag:] - return_arr[:, :-lag]
-        ofi_arr: ndarray = ofi_arr[:, :-lag]
-        assert return_arr.shape == ofi_arr.shape
-        corr: float = np.corrcoef(
-            return_arr.flatten(), ofi_arr.flatten()
-        )[0, 1]
-        return corr
+        conv_return_arr: ndarray = np.stack(
+            [
+                np.convolve(return_arr_, lag, mode="valid") for return_arr_ in return_arr
+            ], axis=0
+        )
+        past_return_arr: ndarray = conv_return_arr[:, :-1]
+        future_return_arr: ndarray = conv_return_arr[:, 1:]
+        ofi_arr: ndarray = ofi_arr[:, lag:-lag]
+        assert (
+            past_return_arr.shape == ofi_arr.shape and
+            future_return_arr.shape == ofi_arr.shape
+        )
+        lr: LinearRegression = LinearRegression()
+        lr.fit(
+            np.column_stack(
+                ofi_arr, past_return_arr.flatten()
+            ),
+            future_return_arr
+        )
+        ofi_return_corr: float = lr.coef_[0]
+        return ofi_return_corr
     
     def check_ath_return_correlation(
         self,
@@ -1193,29 +1208,37 @@ class StylizedFactsChecker:
             wait_time_ = wait_time
             if wait_time_ < lag:
                 wait_time_ = lag
-            returns: list[float] = []
+            past_returns: list[float] = []
+            future_returns: list[float] = []
             ath_distances: list[float] = []
             for ohlcv_df in self.ohlcv_dfs:
                 for i in range(wait_time_, len(ohlcv_df)-lag):
                     price_arr: ndarray = ohlcv_df["close"].values.flatten()[:i]
-                    price_arr_lag: ndarray = ohlcv_df["close"].values.flatten()[i:i+lag]
+                    price_arr_lag: ndarray = ohlcv_df["close"].values.flatten()[i-1:i+lag]
                     ath: float = np.max(price_arr)
                     if ath == price_arr[-1]:
                         continue
                     ath_distances.append(
                         np.log(ath / price_arr[-1])
                     )
-                    returns.append(
-                        np.log(price_arr_lag[-1] / price_arr[-1]) - np.log(price_arr[-1] / price_arr[-lag])
+                    past_returns.append(
+                        np.log(price_arr[-1] / price_arr[-lag])
+                    )
+                    future_returns.append(
+                        np.log(price_arr_lag[-1] / price_arr_lag[0])
                     )
             ath_distance_arr: ndarray = np.array(ath_distances)
-            return_arr: ndarray = np.array(returns)
-            assert ath_distance_arr.shape == return_arr.shape
-            ath_return_corr: float = np.corrcoef(
-                ath_distance_arr.flatten(), return_arr.flatten()
-            )[0, 1]
-            ath_return_corr_dic[lag] = ath_return_corr
-        return ath_return_corr_dic  
+            future_return_arr: ndarray = np.array(future_returns)
+            past_return_arr: ndarray = np.array(past_returns)
+            lr: LinearRegression = LinearRegression()
+            lr.fit(
+                np.column_stack(
+                    ath_distance_arr, past_return_arr
+                ),
+                future_return_arr
+            )
+            ath_return_corr_dic[lag] = lr.coef_[0]
+        return ath_return_corr_dic
 
     def check_stylized_facts(
         self,
