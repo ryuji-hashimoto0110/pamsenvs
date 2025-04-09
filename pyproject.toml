@@ -22,6 +22,7 @@ pettingzoo = "^1.24.3"
 seaborn = "^0.13.2"
 tslearn = "^0.6.3"
 transformers = "4.49.0"
+statsmodels = "^0.14.4"
 
 
 [tool.poetry.group.dev.dependencies]
