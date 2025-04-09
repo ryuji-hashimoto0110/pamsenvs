@@ -24,8 +24,8 @@ class YesterdayAwareMarket(TotalTimeAwareMarket):
             logger=logger
         )
         self._yesterday_market_prices: list[Optional[float]] = []
-        self.all_time_high: float = self.get_market_price()
-        self.all_time_low: float = self.get_market_price()
+        self.all_time_high: float = 0
+        self.all_time_low: float = 0
 
     def get_market_price(
         self,
