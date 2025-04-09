@@ -1176,16 +1176,19 @@ class StylizedFactsChecker:
                 ) for return_arr_ in return_arr
             ], axis=0
         )
-        past_return_arr: ndarray = conv_return_arr[:, :-lag]
-        future_return_arr: ndarray = conv_return_arr[:, lag:]
-        ofi_arr: ndarray = ofi_arr[:, lag-1:-lag]
-        assert (
-            past_return_arr.shape == ofi_arr.shape and
-            future_return_arr.shape == ofi_arr.shape
+        future_return_arr: ndarray = conv_return_arr[:, lag:].flatten()
+        ofi_arr: ndarray = ofi_arr[:, lag-1:-lag].flatten()
+        ofi_arr = (
+            ofi_arr - np.mean(ofi_arr)
+        ) / (
+            np.std(ofi_arr) + 1e-10
         )
-        X: ndarray = ofi_arr.flatten()[:np.newaxis]
+        X: ndarray = ofi_arr.reshape(-1, 1)
         X_const = sm.add_constant(X)
-        lr: OLSResults = sm.OLS(future_return_arr.flatten(), X_const).fit()
+        future_return_arr = (
+            future_return_arr - np.mean(future_return_arr)
+        ) / np.std(future_return_arr + 1e-10)
+        lr: OLSResults = sm.OLS(future_return_arr, X_const).fit()
         print(f"OFI-return OLS (lag={lag}):")
         print(lr.summary())
         print()
