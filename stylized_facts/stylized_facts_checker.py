@@ -1183,18 +1183,9 @@ class StylizedFactsChecker:
             past_return_arr.shape == ofi_arr.shape and
             future_return_arr.shape == ofi_arr.shape
         )
-        X: ndarray = np.column_stack(
-            (ofi_arr.flatten(), past_return_arr.flatten())
-        )
-        X = (
-            X - np.mean(X, axis=1, keepdims=True)
-        ) / np.std(X, axis=1, keepdims=True)
+        X: ndarray = np.column_stack((ofi_arr.flatten()))
         X_const = sm.add_constant(X)
-        future_return_arr = future_return_arr.flatten()
-        future_return_arr = (
-            future_return_arr - np.mean(future_return_arr)
-        ) / np.std(future_return_arr)
-        lr: OLSResults = sm.OLS(future_return_arr, X_const).fit()
+        lr: OLSResults = sm.OLS(future_return_arr.flatten(), X_const).fit()
         print(f"OFI-return OLS (lag={lag}):")
         print(lr.summary())
         print()
@@ -1227,9 +1218,7 @@ class StylizedFactsChecker:
             first_negative_lag_arr = np.repeat(
                 first_negative_lag_arr, repeats=kurtosis_arr.shape[0]
             )
-            self.check_ofi_return_correlation(
-                [lag for lag in [1,3,5,10,20,30,50]]
-            )
+            self.check_ofi_return_correlation([1])
             dtw_arr: ndarray = self.check_dtw()
             data_dic: dict[str, ndarray]= {
                 "kurtosis": kurtosis_arr.flatten(),
