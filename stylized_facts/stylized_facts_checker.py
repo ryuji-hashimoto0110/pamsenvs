@@ -1183,7 +1183,7 @@ class StylizedFactsChecker:
             past_return_arr.shape == ofi_arr.shape and
             future_return_arr.shape == ofi_arr.shape
         )
-        X: ndarray = np.column_stack((ofi_arr.flatten()))
+        X: ndarray = ofi_arr.flatten()[np.newaxis,:]
         X_const = sm.add_constant(X)
         lr: OLSResults = sm.OLS(future_return_arr.flatten(), X_const).fit()
         print(f"OFI-return OLS (lag={lag}):")
