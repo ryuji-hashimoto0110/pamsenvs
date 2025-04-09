@@ -13,10 +13,10 @@ import random
 from rich.console import Console
 from rich.table import Table
 from scipy.stats import linregress
-from scipy.stats import norm
 from scipy.stats import kurtosis
 from scipy.stats import kurtosistest
-from sklearn.linear_model import LinearRegression
+import statsmodels.api as sm
+from statsmodels.regression.linear_model import OLSResults
 from tslearn.metrics import cdist_dtw
 from tqdm import tqdm
 from typing import Optional
@@ -1136,7 +1136,7 @@ class StylizedFactsChecker:
     def check_ofi_return_correlation(
         self,
         lags: list[int],   
-    ) -> dict[int, float]:
+    ) -> None:
         """Check the correlation between order flow imbalance and return.
         
         Args:
@@ -1154,23 +1154,21 @@ class StylizedFactsChecker:
                     self.ohlcv_dfs, "ofi"
                 )[:,1:]
             assert return_arr.shape == self.ofi_arr.shape # (number of data, length of time series)
-            ofi_return_corr_dic: dict[int, float] = {
-                lag: self._calc_ofi_return_correlation(
+            for lag in lags:
+                self._calc_ofi_return_correlation(
                     return_arr, self.ofi_arr, lag
-                ) for lag in lags
-            }
+                )
         else:
             raise ValueError(
                 "all of the dataframes must have the same length to calculate OFI-return correlation."
             )
-        return ofi_return_corr_dic
 
     def _calc_ofi_return_correlation(
         self,
         return_arr: ndarray,
         ofi_arr: ndarray,
         lag: int
-    ) -> float:
+    ) -> None:
         conv_return_arr: ndarray = np.stack(
             [
                 np.convolve(
@@ -1185,26 +1183,21 @@ class StylizedFactsChecker:
             past_return_arr.shape == ofi_arr.shape and
             future_return_arr.shape == ofi_arr.shape
         )
-        lr: LinearRegression = LinearRegression()
         X: ndarray = np.column_stack(
             (ofi_arr.flatten(), past_return_arr.flatten())
         )
         X = (
             X - np.mean(X, axis=1, keepdims=True)
         ) / np.std(X, axis=1, keepdims=True)
+        X_const = sm.add_constant(X)
         future_return_arr = future_return_arr.flatten()
         future_return_arr = (
             future_return_arr - np.mean(future_return_arr)
         ) / np.std(future_return_arr)
-        lr.fit(X, future_return_arr)
-        print("calculate OLS coefficients of OFI-return correlation. summary: ")
-        print(f"coef (OFI): {lr.coef_[0]} p-value: {2*(1-norm.cdf(np.abs(lr.coef_[0])))}")
-        print(f"coef (past return): {lr.coef_[1]}")
-        print(f"intercept: {lr.intercept_}")
-        print(f"r2: {lr.score(X, future_return_arr)}")
-        print(f"stderr: {lr._residues}")
-        ofi_return_corr: float = lr.coef_[0]
-        return ofi_return_corr
+        lr: OLSResults = sm.OLS(future_return_arr, X_const).fit()
+        print(f"OFI-return OLS (lag={lag}):")
+        print(lr.summary())
+        print()
     
     def check_stylized_facts(
         self,
@@ -1234,10 +1227,7 @@ class StylizedFactsChecker:
             first_negative_lag_arr = np.repeat(
                 first_negative_lag_arr, repeats=kurtosis_arr.shape[0]
             )
-            ofi_return_corr_dic: dict[int, float] = self.check_ofi_return_correlation(
-                [lag for lag in [1,3,5,10,20,30,50]]
-            )
-            ath_return_corr_dic: dict[int, float] = self.check_ath_return_correlation(
+            self.check_ofi_return_correlation(
                 [lag for lag in [1,3,5,10,20,30,50]]
             )
             dtw_arr: ndarray = self.check_dtw()
@@ -1259,14 +1249,6 @@ class StylizedFactsChecker:
             for lag, acorr_arr in acorr_dic.items():
                 data_dic[f"acorr_{lag}"] = np.repeat(
                     acorr_arr, repeats=kurtosis_arr.shape[0]
-                ).flatten()
-            for lag, ofi_return_corr in ofi_return_corr_dic.items():
-                data_dic[f"ofi_return_corr_{lag}"] = np.repeat(
-                    ofi_return_corr, repeats=kurtosis_arr.shape[0]
-                ).flatten()
-            for lag, ath_return_corr in ath_return_corr_dic.items():
-                data_dic[f"ath_return_corr_{lag}"] = np.repeat(
-                    ath_return_corr, repeats=kurtosis_arr.shape[0]
                 ).flatten()
             stylized_facts_df: DataFrame = pd.DataFrame(data_dic)
             if print_results:
