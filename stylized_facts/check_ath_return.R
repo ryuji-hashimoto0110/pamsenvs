@@ -1,3 +1,6 @@
+install.packages("data.table")
+install.packages("Dict")
+install.packages("dplyr")
 library(data.table)
 library(Dict)
 library(dplyr)
