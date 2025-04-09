@@ -169,8 +169,12 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             market_id: int = market.market_id
             current_market_price: float = market.get_market_price()
             market_prices: list[float] = market.get_market_prices()
-            all_time_high_price: float = max(market_prices)
-            all_time_low_price: float = min(market_prices)
+            if hasattr(market, "all_time_high"):
+                all_time_high_price: float = market.all_time_high
+                all_time_low_price: float = market.all_time_low
+            else:
+                all_time_high_price: float = max(market_prices)
+                all_time_low_price: float = min(market_prices)
             if hasattr(market, "get_remaining_time"):
                 remaining_time: int = market.get_remaining_time()
                 current_time: int = market.get_time()
