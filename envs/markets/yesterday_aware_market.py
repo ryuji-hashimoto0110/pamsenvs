@@ -24,6 +24,8 @@ class YesterdayAwareMarket(TotalTimeAwareMarket):
             logger=logger
         )
         self._yesterday_market_prices: list[Optional[float]] = []
+        self.all_time_high: float = self.get_market_price()
+        self.all_time_low: float = self.get_market_price()
 
     def get_market_price(
         self,
@@ -43,6 +45,13 @@ class YesterdayAwareMarket(TotalTimeAwareMarket):
         self,
         times: Optional[Iterable[int]] = None
     ) -> list[float]:
+        raw_market_prices: list[float] = super().get_market_prices(None)
+        daily_high: float = max(raw_market_prices)
+        daily_low: float = min(raw_market_prices)
+        if daily_high > self.all_time_high:
+            self.all_time_high = daily_high
+        if daily_low < self.all_time_low:
+            self.all_time_low = daily_low
         if times is None:
             return super().get_market_prices(times)
         times_list: list[int] = list(times)
