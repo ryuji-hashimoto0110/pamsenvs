@@ -343,6 +343,8 @@ class SimulationEvaluater:
         check_stylized_facts: bool = True,
         check_asymmetry: bool = False,
         check_asymmetry_path: str = "check_asymmetry.R",
+        check_ath_return: bool = False,
+        check_ath_return_path: str = "check_ath_return.R",
         start_date: Optional[date] = None,
         end_date: Optional[date] = None
     ) -> None:
@@ -398,21 +400,30 @@ class SimulationEvaluater:
             if self.show_process:
                 print(f"results-> {str(self.results_save_path)}")
             checker.check_stylized_facts(save_path=self.results_save_path)
+        start_date_str: str = start_date.strftime(format='%Y%m%d')
+        end_date_str: str = end_date.strftime(format='%Y%m%d')
+        all_time_ohlcv_df_path: Path = (
+            self.all_time_ohlcv_dfs_path
+            / f"{self.specific_name}_{start_date_str}_{end_date_str}.csv"
+        )
         if check_asymmetry:
             if start_date is None:
                 raise ValueError("specify start_date.")
             if end_date is None:
                 raise ValueError("specify end_date.")
             self.concat_ohlcv(start_date=start_date, end_date=end_date)
-            start_date_str: str = start_date.strftime(format='%Y%m%d')
-            end_date_str: str = end_date.strftime(format='%Y%m%d')
-            all_time_ohlcv_df_path: Path = (
-                self.all_time_ohlcv_dfs_path
-                / f"{self.specific_name}_{start_date_str}_{end_date_str}.csv"
-            )
             check_asymmetry_command: str = f"Rscript {check_asymmetry_path} " + \
             f"{str(all_time_ohlcv_df_path)} {self.resample_rule} close"
             _ = subprocess.run(check_asymmetry_command, shell=True)
+        if check_ath_return:
+            if start_date is None:
+                raise ValueError("specify start_date.")
+            if end_date is None:
+                raise ValueError("specify end_date.")
+            self.concat_ohlcv(start_date=start_date, end_date=end_date)
+            check_ath_return_command: str = f"Rscript {check_ath_return_path} " + \
+            f"{str(all_time_ohlcv_df_path)} {self.resample_rule} close"
+            _ = subprocess.run(check_ath_return_command, shell=True)
         if self.show_process:
             print("[green]==stylized facts checking process ended==[green]")
             print()
