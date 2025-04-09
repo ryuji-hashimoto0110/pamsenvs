@@ -1194,7 +1194,7 @@ class StylizedFactsChecker:
         future_return_arr = (
             future_return_arr.flatten() - np.mean(future_return_arr, axis=1, keepdims=True)
         ) / np.std(future_return_arr, axis=1, keepdims=True)
-        lr.fit(X, future_return_arr)
+        lr.fit(X, future_return_arr.flatten())
         ofi_return_corr: float = lr.coef_[0]
         return ofi_return_corr
     
