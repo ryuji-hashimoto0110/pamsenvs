@@ -37,6 +37,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                 base_prompt (str): the base prompt for the agent.
             accessible_markets_ids (list[MarketID]): list of accessible market ids.
         """
+        self.settings: dict[str, Any] = settings
         json_random: JsonRandom = JsonRandom(prng=self.prng)
         super().setup(
             settings=settings, accessible_markets_ids=accessible_markets_ids
