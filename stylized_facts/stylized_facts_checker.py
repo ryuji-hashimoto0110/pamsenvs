@@ -308,8 +308,8 @@ class StylizedFactsChecker:
         moods: list[float] = []
         wc_rates: list[float] = []
         time_window_sizes: list[int] = []
-        num_buys_arr: ndarray = np.zeros(len(df))
-        num_sells_arr: ndarray = np.zeros(len(df))
+        num_buys_arr: ndarray = np.zeros(len(cumsum_transactions))
+        num_sells_arr: ndarray = np.zeros(len(cumsum_transactions))
         orderbook_dic: dict[str, list[float]] = {}
         for i in range(1, self.quote_num + 1):  
             orderbook_dic[f"buy{i}_price"] = []
