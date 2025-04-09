@@ -1178,7 +1178,7 @@ class StylizedFactsChecker:
             ], axis=0
         )
         past_return_arr: ndarray = conv_return_arr[:, :-lag]
-        future_return_arr: ndarray = conv_return_arr[:, lag:]
+        future_return_arr: ndarray = conv_return_arr[:, lag:].flatten()
         ofi_arr: ndarray = ofi_arr[:, lag-1:-lag]
         assert (
             past_return_arr.shape == ofi_arr.shape and
@@ -1192,9 +1192,9 @@ class StylizedFactsChecker:
             X - np.mean(X, axis=1, keepdims=True)
         ) / np.std(X, axis=1, keepdims=True)
         future_return_arr = (
-            future_return_arr.flatten() - np.mean(future_return_arr, axis=1, keepdims=True)
-        ) / np.std(future_return_arr, axis=1, keepdims=True)
-        lr.fit(X, future_return_arr.flatten())
+            future_return_arr - np.mean(future_return_arr)
+        ) / np.std(future_return_arr)
+        lr.fit(X, future_return_arr)
         ofi_return_corr: float = lr.coef_[0]
         return ofi_return_corr
     
