@@ -13,6 +13,7 @@ import random
 from rich.console import Console
 from rich.table import Table
 from scipy.stats import linregress
+from scipy.stats import norm
 from scipy.stats import kurtosis
 from scipy.stats import kurtosistest
 from sklearn.linear_model import LinearRegression
@@ -1197,7 +1198,8 @@ class StylizedFactsChecker:
         ) / np.std(future_return_arr)
         lr.fit(X, future_return_arr)
         print("calculate OLS coefficients of OFI-return correlation. summary: ")
-        print(f"coef: {lr.coef_[0]}")
+        print(f"coef (OFI): {lr.coef_[0]} p-value: {2*(1-norm.cdf(np.abs(lr.coef_[0])))}")
+        print(f"coef (past return): {lr.coef_[1]}")
         print(f"intercept: {lr.intercept_}")
         print(f"r2: {lr.score(X, future_return_arr)}")
         print(f"stderr: {lr._residues}")
