@@ -1198,55 +1198,6 @@ class StylizedFactsChecker:
         ofi_return_corr: float = lr.coef_[0]
         return ofi_return_corr
     
-    def check_ath_return_correlation(
-        self,
-        lags: list[int],
-        wait_time: int = 60,
-    ) -> dict[int, float]:
-        """Check the correlation between intraday all-time high and return.
-        
-        Args:
-            lags (list[int]): list of lags to check correlation.
-        """
-        ath_return_corr_dic: dict[int, float] = {}
-        for lag in lags:
-            wait_time_ = wait_time
-            if wait_time_ < lag:
-                wait_time_ = lag
-            past_returns: list[float] = []
-            future_returns: list[float] = []
-            ath_distances: list[float] = []
-            for ohlcv_df in self.ohlcv_dfs:
-                for i in range(wait_time_, len(ohlcv_df)-lag):
-                    price_arr: ndarray = ohlcv_df["close"].values.flatten()[:i]
-                    price_arr_lag: ndarray = ohlcv_df["close"].values.flatten()[i-1:i+lag]
-                    ath: float = np.max(price_arr)
-                    ath_distances.append(
-                        np.log(ath / price_arr[-1])
-                    )
-                    past_returns.append(
-                        np.log(price_arr[-1] / price_arr[-1-lag])
-                    )
-                    future_returns.append(
-                        np.log(price_arr_lag[-1] / price_arr_lag[0])
-                    )
-            ath_distance_arr: ndarray = np.array(ath_distances)
-            future_return_arr: ndarray = np.array(future_returns)
-            past_return_arr: ndarray = np.array(past_returns)
-            lr: LinearRegression = LinearRegression()
-            X: ndarray = np.column_stack(
-                (ath_distance_arr, past_return_arr)
-            )
-            X = (
-                X - np.mean(X, axis=1, keepdims=True)
-            ) / np.std(X, axis=1, keepdims=True)
-            future_return_arr = (
-                future_return_arr - np.mean(future_return_arr, axis=1, keepdims=True)
-            ) / np.std(future_return_arr, axis=1, keepdims=True)
-            lr.fit(X, future_return_arr)
-            ath_return_corr_dic[lag] = lr.coef_[0]
-        return ath_return_corr_dic
-
     def check_stylized_facts(
         self,
         save_path: Path,
