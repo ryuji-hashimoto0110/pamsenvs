@@ -38,6 +38,8 @@ def get_config():
     parser.add_argument("--results_save_path", type=str, default=None)
     parser.add_argument("--check_asymmetry", action="store_true")
     parser.add_argument("--check_asymmetry_path", type=str, default="check_asymmetry.R")
+    parser.add_argument("--check_ath_return", action="store_true")
+    parser.add_argument("--check_ath_return_path", type=str, default="check_ath_return.R")
     # DDEvaluater
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--ohlcv_folder_path", type=str, default=None)
@@ -77,6 +79,8 @@ def main(args):
     results_save_path: Optional[str] = all_args.results_save_path
     check_asymmetry: bool = all_args.check_asymmetry
     check_asymmetry_path: str = all_args.check_asymmetry_path
+    check_ath_return: bool = all_args.check_ath_return
+    check_ath_return_path: str = all_args.check_ath_return_path
     evaluater = SimulationEvaluater(
         initial_seed=initial_seed, significant_figures=significant_figures,
         config_path=config_path, specific_name=specific_name,
@@ -112,13 +116,18 @@ def main(args):
         session2_transactions_file_name is not None
     ):
         if (
-            check_asymmetry and
+            (
+                check_asymmetry or
+                check_ath_return
+            ) and
             start_date is not None and
             end_date is not None
         ):
             evaluater.check_stylized_facts(
                 check_asymmetry=check_asymmetry,
                 check_asymmetry_path=check_asymmetry_path,
+                check_ath_return=check_ath_return,
+                check_ath_return_path=check_ath_return_path,
                 start_date=start_date, end_date=end_date
             )
         else:
