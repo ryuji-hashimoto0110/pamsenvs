@@ -1,3 +1,5 @@
+dir.create("~/R/libs", recursive = TRUE, showWarnings = FALSE)
+.libPaths(c("~/R/libs", .libPaths()))
 install.packages("data.table")
 install.packages("Dict")
 install.packages("dplyr")
