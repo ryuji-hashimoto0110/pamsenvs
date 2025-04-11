@@ -1,88 +1,85 @@
 {
     "simulation": {
-		"markets": ["Market"],
-		"agents": ["FCNAgents", "HistoryAwareFCLAgents"],
-		"sessions": [
-			{	
-				"sessionName": "0",
-				"iterationSteps": 100,
-				"withOrderPlacement": true,
-				"withOrderExecution": false,
-				"withPrint": true,
-				"maxNormalOrders": 1,
-				"maxHighFrequencyOrders": 0
-			},
-			{	
-				"sessionName": "1",
-				"iterationSteps": 1000,
-				"withOrderPlacement": true,
-				"withOrderExecution": true,
-				"withPrint": true,
-				"maxHighFrequencyOrders": 0
-			},
-            {	
-				"sessionName": "00",
-				"iterationSteps": 10,
-				"withOrderPlacement": true,
-				"withOrderExecution": false,
-				"withPrint": true,
-				"maxNormalOrders": 1,
-				"maxHighFrequencyOrders": 0
-			},
-            {	
-				"sessionName": "2",
-				"iterationSteps": 1000,
-				"withOrderPlacement": true,
-				"withOrderExecution": true,
-				"withPrint": true,
-				"maxHighFrequencyOrders": 0
-			}
-		]
-	},
+                "markets": ["Market"],
+                "agents": ["FCNAgents", "HistoryAwareFCLAgents"],
+                "sessions": [
+                        {
+                                "sessionName": "0",
+                                "iterationSteps": 100,
+                                "withOrderPlacement": true,
+                                "withOrderExecution": false,
+                                "withPrint": true,
+                                "maxNormalOrders": 1,
+                                "maxHighFrequencyOrders": 0
+                        },
+                        {
+                                "sessionName": "1",
+                                "iterationSteps": 1000,
+                                "withOrderPlacement": true,
+                                "withOrderExecution": true,
+                                "withPrint": true,
+                                "maxHighFrequencyOrders": 0
+                        },
+            {
+                                "sessionName": "00",
+                                "iterationSteps": 10,
+                                "withOrderPlacement": true,
+                                "withOrderExecution": false,
+                                "withPrint": true,
+                                "maxNormalOrders": 1,
+                                "maxHighFrequencyOrders": 0
+                        },
+            {
+                                "sessionName": "2",
+                                "iterationSteps": 1000,
+                                "withOrderPlacement": true,
+                                "withOrderExecution": true,
+                                "withPrint": true,
+                                "maxHighFrequencyOrders": 0
+                        }
+                ]
+        },
     "Market": {
-		"class": "YesterdayAwareMarket",
-		"tickSize": 0.00001,
-		"marketPrice": 300.0,
+                "class": "YesterdayAwareMarket",
+                "tickSize": 0.00001,
+                "marketPrice": 300.0,
         "fundamentalDrift": 0.0,
-        "fundamentalVolatility": 0.0005
-	},
+        "fundamentalVolatility": 0.0001
+        },
     "FCNAgents": {
         "class": "CARAFCNAgent",
-		"isCARA": true,
+                "isCARA": false,
         "yesterdayAware": true,
-        "numAgents": 2000,
-		"markets": ["Market"],
-		"assetVolume": {"uniform": [0,100]},
-		"cashAmount": {"uniform": [10000,30000]},
-		"averageCashAmount": 20000,
-		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.25]},
-		"noiseWeight": {"expon": [1.0]},
-        "riskAversionTerm": 0.10,
-		"noiseScale": 0.0001,
-		"timeWindowSize": 100,
-		"heterogeneousTimeWindowSize": true,
-		"tauDiff": 20,
-		"heterogeneousRiskAversionTerm": true,
-		"alphaDiff": 1,
-		"isAdaptive": false,
-		"meanReversionTime": 200,
-		"chartFollowRate": 1
+        "numAgents": 200,
+                "markets": ["Market"],
+                "assetVolume": {"uniform": [0,100]},
+                "cashAmount": {"uniform": [10000,30000]},
+                "averageCashAmount": 20000,
+                "fundamentalWeight": {"expon": [10.0]},
+                "chartWeight": {"expon": [1.25]},
+                "noiseWeight": {"expon": [1.0]},
+                "noiseScale": 0.001,
+                "timeWindowSize": 100,
+                "heterogeneousTimeWindowSize": true,
+                "tauDiff": 20,
+                "orderMargin": [0.0, 0.01],
+                "meanReversionTime": 200,
+                "chartFollowRate": 1.0
     },
     "HistoryAwareFCLAgents": {
         "class": "HistoryAwareFCLAgent",
-        "numAgents": 1,
+        "numAgents": 0,
         "markets": ["Market"],
-        "assetVolume": 20,
-		"cashAmount": 10000,
-		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.2]},
-		"noiseWeight": {"expon": [1.0]},
-		"meanReversionTime":{"uniform":[50,100]},
-		"noiseScale": 0.0001,
-		"timeWindowSize": [100, 200],
-		"orderMargin": [0.0, 0.01],
-		"getOFI": true,
+        "assetVolume": 50,
+                "cashAmount": 20000,
+                "fundamentalWeight": {"expon": [10.0]},
+                "chartWeight": {"expon": [1.25]},
+                "noiseWeight": {"expon": [1.0]},
+                "meanReversionTime":{"uniform":[50,100]},
+                "noiseScale": 0.001,
+                "timeWindowSize": [100, 200],
+                "orderMargin": [0.0, 0.01],
+                "getOFI": true,
         "device": "cuda:0",
         "llmName": "meta-llama/Meta-Llama-3.1-8B-Instruct",
         "comment": "meta-llama/Meta-Llama-3.1-8B-Instruct or Qwen/Qwen2.5-7B-Instruct or mistralai/Mistral-7B-Instruct-v0.3",
