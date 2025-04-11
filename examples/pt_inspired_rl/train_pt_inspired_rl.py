@@ -40,6 +40,7 @@ def get_config() -> ArgumentParser:
     parser.add_argument("--actor_save_path", type=str)
     parser.add_argument("--actor_best_save_name", type=str)
     parser.add_argument("--actor_last_save_name", type=str)
+    parser.add_argument("--proceding_figures_path", type=str, default=None)
     parser.add_argument("--num_train_steps", type=int, default=int(1e+08))
     parser.add_argument("--eval_interval", type=int, default=int(1e+05))
     parser.add_argument("--num_eval_episodes", type=int, default=10)
@@ -203,6 +204,9 @@ def main(args) -> None:
             test_env: AECEnv4HeteroRL = copy.deepcopy(train_env)
             test_env.agent_trait_memory = 0.0
             algo: Algorithm = create_algo(all_args, num_agents, gamma, 0.999)
+            proceding_figures_path: Path = convert_str2path(
+                all_args.proceding_figures_path, mkdir=True
+            )
             trainer: Trainer = Trainer(
                 train_env=train_env, test_env=test_env, algo=algo,
                 seed=all_args.seed,
@@ -214,7 +218,8 @@ def main(args) -> None:
                 ],
                 num_train_steps=all_args.num_train_steps,
                 num_eval_episodes=all_args.num_eval_episodes,
-                eval_interval=all_args.eval_interval
+                eval_interval=all_args.eval_interval,
+                proceding_figures_path=proceding_figures_path,
             )
             trainer.train()
 

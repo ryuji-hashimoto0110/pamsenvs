@@ -11,7 +11,7 @@ actor_save_path="../../datas/checkpoints"
 actor_best_save_name="pt_best"
 actor_last_save_name="pt_last"
 num_train_steps=60000000
-eval_interval=105500
+eval_interval=1
 num_eval_episodes=5
 agent_name="Agent"
 config_path="config.json"
@@ -33,7 +33,8 @@ fundamental_penalty_decay=1
 agent_trait_memory=0.00
 sigmas="0.008"
 gammas="0.90"
-device="cuda:0"
+device="cpu"
+proceding_figures_path="imgs/scale10"
 python train_pt_inspired_rl.py \
 --algo_name "ippo" \
 --rollout_length $rollout_length \
@@ -65,6 +66,7 @@ python train_pt_inspired_rl.py \
 --actor_save_path $actor_save_path \
 --actor_best_save_name $actor_best_save_name \
 --actor_last_save_name $actor_last_save_name \
+--proceding_figures_path $proceding_figures_path \
 --agent_name $agent_name \
 --device $device \
 --sigmas $sigmas \
