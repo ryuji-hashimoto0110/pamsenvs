@@ -36,7 +36,8 @@ class Trainer:
         num_train_steps: int = 1e+07,
         eval_interval: int = 1e+05,
         num_eval_episodes: int = 10,
-        display_process: bool = True
+        display_process: bool = True,
+        proceding_figures_path: Optional[Path] = None,
     ) -> None:
         """initialization.
         
@@ -66,6 +67,8 @@ class Trainer:
         self.num_eval_episodes: int = int(num_eval_episodes)
         self.best_reward: float = -1e+10
         self.display_process: bool = display_process
+        self.proceding_figures_path: Optional[Path] = proceding_figures_path
+        self.fig_counter: int = 0
         if self.display_process:
             print("[bold green]Trainer[/bold green]")
             print(f"env: {train_env}")
@@ -195,6 +198,9 @@ class Trainer:
         return price_range
 
     def _save_actor(self, average_total_reward: float) -> None:
+        if self.proceding_figures_path is not None:
+            self._save_figures()
+            self.fig_counter += 1
         if average_total_reward < self.best_reward:
             if self.actor_last_save_path is None:
                 return
@@ -213,3 +219,21 @@ class Trainer:
         )
         print(f"model saved to >> {str(save_path)}")
         print()
+
+    def _save_figures(self) -> None:
+        obs_save_path: Path = self.proceding_figures_path / "obs" / f"{self.fig_counter}.jpg"
+        action_save_path: Path = self.proceding_figures_path / "action" / f"{self.fig_counter}.jpg"
+        reward_save_path: Path = self.proceding_figures_path / "reward" / f"{self.fig_counter}.jpg"
+        prices_save_path: Path = self.proceding_figures_path / "prices" / f"{self.fig_counter}.jpg"
+        if not hasattr(self.test_env, "draw_obs"):
+            raise ValueError("test_env does not have draw_obs method.")
+        self.test_env.draw_obs(obs_save_path)
+        if not hasattr(self.test_env, "draw_action"):
+            raise ValueError("test_env does not have draw_action method.")
+        self.test_env.draw_action(action_save_path)
+        if not hasattr(self.test_env, "draw_reward"):
+            raise ValueError("test_env does not have draw_reward method.")
+        self.test_env.draw_reward(reward_save_path)
+        if not hasattr(self.test_env, "draw_prices"):
+            raise ValueError("test_env does not have draw_prices method.")
+        self.test_env.draw_prices(prices_save_path)
