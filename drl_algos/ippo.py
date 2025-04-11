@@ -55,7 +55,7 @@ class IPPOActor(Module):
             nn.Tanh(),
             nn.Linear(512, np.prod(action_shape)),
         ).to(device)
-        initialize_module_orthogonal(self.actlayer)
+        initialize_module_orthogonal(self.actlayer, last_layer_scale=30)
         self.log_stds: Tensor = -2*torch.ones(1, action_shape[0], device=device)
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
