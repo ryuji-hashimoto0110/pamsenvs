@@ -21,6 +21,7 @@ from pams.order import Order
 from pams.runners import Runner
 from pams.session import Session
 from pams.simulator import Simulator
+from pathlib import Path
 from pettingzoo import AECEnv
 import random
 from random import Random
@@ -454,3 +455,17 @@ class PamsAECEnv(AECEnv, ABC):
     @abstractmethod
     def is_ready_to_store_experience(self) -> bool:
         pass
+
+    @abstractmethod
+    def draw_obs(self, fig_save_path: Path) -> None:
+        pass
+
+    @abstractmethod
+    def draw_action(self, fig_save_path: Path) -> None:
+        pass
+
+    @abstractmethod
+    def draw_reward(self, fig_save_path: Path) -> None:
+        pass
+
+

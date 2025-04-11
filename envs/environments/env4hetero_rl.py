@@ -6,6 +6,15 @@ from gymnasium import spaces
 from gymnasium import Space
 from ..markets import TotalTimeAwareMarket
 import math
+import matplotlib.pyplot as plt
+plt.rcParams["font.size"] = 20
+plt.rcParams['font.family'] = 'Times New Roman'
+plt.rcParams['mathtext.fontset'] = 'stix'
+plt.rcParams['mathtext.rm'] = 'Times New Roman'
+plt.rcParams['mathtext.it'] = 'Times New Roman:italic'
+plt.rcParams['mathtext.bf'] = 'Times New Roman:bold'
+from matplotlib.pyplot import Axes
+from matplotlib.pyplot import Figure
 import numpy as np
 from numpy import ndarray
 from pams.agents import Agent
@@ -18,6 +27,7 @@ from pams.order import Order
 from pams.runners import Runner
 from pams.runners import SequentialRunner
 from pams.simulator import Simulator
+from pathlib import Path
 import scipy.stats as stats
 from typing import Literal
 from typing import Optional
@@ -389,7 +399,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "log_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
         elif obs_name == "log_return_avg_cost":
-            obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
+            obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
         elif obs_name == "volatility":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 0.03)
         elif obs_name == "asset_volume_buy_orders_ratio":
@@ -818,7 +828,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         fundamental_price: float = market.get_fundamental_price()
         fundamental_penalty: float = min(
             self.fundamental_penalty * self._get_integrated_fundamental_diff(market),
-           10
+            1
         )
         #min(
         #    2, self._get_remaining_fundamental_diff(market)
@@ -892,4 +902,127 @@ class AECEnv4HeteroRL(PamsAECEnv):
         description += f"obs: {self.obs_names}\n"
         description += f"action: {self.action_names}"
         return description
+    
+    def draw_obs(self, fig_save_path: Path):
+        self._make_parent_dir(fig_save_path)
+        num_subplots: int = len(self.obs_names)
+        n_rows: int
+        n_cols: int
+        figsize: tuple[int, int]
+        n_rows, n_cols, figsize = self.auto_subplot_layout(num_subplots=num_subplots,)
+        fig: Figure
+        axes: Axes | list[Axes] | ndarray
+        fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=figsize)
+        for i in range(num_subplots):
+            obs_name: str = self.obs_names[i]
+            ax: Axes = axes.flat[i]
+            ax.hist(
+                self.obs_dic[obs_name], bins=50,
+                alpha=0.5, color="blue"
+            )
+            ax.set_xlabel(obs_name)
+            ax.set_xlim(-1, 1)
+        for i in range(num_subplots, len(axes.flat)):
+            axes.flat[i].axis("off")
+        plt.tight_layout()
+        self._save_fig(fig, fig_save_path)
+        plt.close(fig)
+    
+    def draw_reward(self, fig_save_path):
+        self._make_parent_dir(fig_save_path)
+        reward_names: list[str] = [
+            reward_name for reward_name in self.reward_dic.keys()
+            if reward_name not in ["step", "agent_id"]
+        ]
+        num_subplots: int = reward_names
+        n_rows: int
+        n_cols: int
+        figsize: tuple[int, int]
+        n_rows, n_cols, figsize = self.auto_subplot_layout(num_subplots=num_subplots,)
+        fig: Figure
+        axes: Axes | list[Axes] | ndarray
+        fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=figsize)
+        for i in range(num_subplots):
+            reward_name: str = reward_names[i]
+            ax: Axes = axes.flat[i]
+            ax.hist(
+                self.reward_dic[reward_name], bins=50,
+                alpha=0.5, color="blue"
+            )
+            ax.set_xlabel(reward_name)
+            if reward_name == "scaled_utility_diff":
+                ax.set_xlim(-1, 1)
+            elif reward_name == "short_selling_penalty":
+                ax.set_xlim(-self.short_selling_penalty, 0)
+            elif reward_name == "cash_shortage_penalty":
+                ax.set_xlim(-self.cash_shortage_penalty, 0)
+            elif "penalty" in reward_name:
+                ax.set_xlim(-1, 0)
+            else:
+                ax.set_xlim(-3, 1)
+        for i in range(num_subplots, len(axes.flat)):
+            axes.flat[i].axis("off")
+        plt.tight_layout()
+        self._save_fig(fig, fig_save_path)
+        plt.close(fig)
+    
+    def draw_action(self, fig_save_path):
+        self._make_parent_dir(fig_save_path)
+        order_volume_scales: list[float] = self.action_dic["order_volume_scale"]
+        order_price_scales: list[float] = self.action_dic["order_price_scale"]
+        fig: Figure = plt.figure(figsize=(15, 13))
+        ax: Axes = fig.add_subplot(111)
+        ax.scatter(
+            order_price_scales, order_volume_scales,
+            alpha=0.5, color="blue"
+        )
+        ax.set_xlabel(
+            r"signed scaled order margin $-\mathrm{sign}(\tilde{v}_t^j)\cdot\tilde{r}_t^j$",
+            fontsize=40
+        )
+        ax.set_ylabel(r"scaled order volume $\tilde{v}_t^j$", fontsize=40)
+        ax.set_xlim(-1, 1)
+        ax.set_ylim(-1, 1)
+        plt.tight_layout()
+        self._save_fig(fig, fig_save_path)
+        plt.close(fig)
+
+    def draw_prices(self, fig_save_path):
+        self._make_parent_dir(fig_save_path)
+        steps: list[int] = self.obs_dic["step"]
+        market_prices: list[float] = self.obs_dic["market_price"]
+        fundamental_prices: list[float] = self.obs_dic["fundamental_price"]
+        fig: Figure = plt.figure(figsize=(12, 5))
+        ax: Axes = fig.add_subplot(111)
+        ax.plot(steps[101:], market_prices[101:], label="market price", color="black")
+        ax.plot(steps[101:], fundamental_prices[101:], label="fundamental price", color="red")
+        ax.legend(loc="upper left")
+        ax.set_xlabel("time step")
+        ax.set_ylabel("price")
+        plt.tight_layout()
+        self._save_fig(fig, fig_save_path)
+        plt.close(fig)
         
+    def auto_subplot_layout(
+        self,
+        num_subplots: int,
+        subplot_width: int = 4,
+        subplot_height: int = 3
+    ) -> tuple[int, int, tuple[int, int]]:
+        n_cols: int = math.ceil(math.sqrt(num_subplots))
+        n_rows: int = math.ceil(num_subplots / n_cols)
+        fig_width: int = n_cols * subplot_width
+        fig_height: int = n_rows * subplot_height
+        figsize: tuple[int, int] = (fig_width, fig_height)
+        return n_rows, n_cols, figsize
+
+    def _make_parent_dir(self, path: Path) -> None:
+        parent_path: Path = path.parent
+        if not parent_path.exists():
+            parent_path.mkdir(parents=True)
+
+    def _save_fig(self, fig: Figure, fig_save_path: Path) -> None:
+        fig.savefig(fig_save_path, bbox_inches="tight", dpi=300)
+        if fig_save_path.suffix != "pdf":
+            fig_save_path = fig_save_path.with_suffix(".pdf")
+            fig.savefig(fig_save_path, bbox_inches="tight", dpi=300)
