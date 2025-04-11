@@ -934,7 +934,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
             reward_name for reward_name in self.reward_dic.keys()
             if reward_name not in ["step", "agent_id"]
         ]
-        num_subplots: int = reward_names
+        num_subplots: int = len(reward_names)
         n_rows: int
         n_cols: int
         figsize: tuple[int, int]
