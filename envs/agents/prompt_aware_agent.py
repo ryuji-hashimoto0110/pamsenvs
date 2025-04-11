@@ -97,7 +97,8 @@ class PromptAwareAgent(Agent):
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.llm_name: str = settings["llmName"]
         self.model: Optional[PreTrainedModel] = None
-        self.executed_orders_dic: dict[MarketID, list[ExecutionLog]] = {}
+        if 0 < len(accessible_markets_ids):
+            self.executed_orders_dic: dict[MarketID, list[ExecutionLog]] = {}
         for market_id in accessible_markets_ids:
             self.executed_orders_dic[market_id] = []
 

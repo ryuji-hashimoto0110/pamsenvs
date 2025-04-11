@@ -100,9 +100,10 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
             )
         else:
             self.order_margin: float = 0.0
-        self.market_id2ofi: dict[MarketID, Optional[float]] = {}
-        self.last_reason_dic: dict[MarketID, str] = {}
-        self.average_cost_dic: dict[MarketID, float] = {}
+        if 0 < len(accessible_markets_ids):
+            self.market_id2ofi: dict[MarketID, Optional[float]] = {}
+            self.last_reason_dic: dict[MarketID, str] = {}
+            self.average_cost_dic: dict[MarketID, float] = {}
         for market_id in accessible_markets_ids:
             self.market_id2ofi[market_id] = None
             self.average_cost_dic[market_id] = 0.0
@@ -193,7 +194,10 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
         trading_history_info: str = ""
         for market_id in self.executed_orders_dic.keys():
             execution_logs: list[ExecutionLog] = self.executed_orders_dic[market_id]
-            for execution_log in execution_logs:
+            count = 0
+            for execution_log in reversed(execution_logs):
+                if count >= 5:
+                    break
                 price: float = execution_log.price
                 volume: float = execution_log.volume
                 if execution_log.buy_agent_id == self.agent_id:
@@ -204,6 +208,7 @@ class HistoryAwareLLMAgent(PromptAwareAgent):
                     raise ValueError("The agent id does not match the buy agent id or the sell agent id.")
                 trading_history_info += f"\n[Your trading history]market id: {market_id}, " + \
                     f"price: {price:.1f}, volume: {volume:.1f}"
+                count += 1
         return trading_history_info
     
     def create_prompt(self, markets: list[Market]) -> str:
