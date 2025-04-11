@@ -8,11 +8,6 @@ from ..markets import TotalTimeAwareMarket
 import math
 import matplotlib.pyplot as plt
 plt.rcParams["font.size"] = 20
-plt.rcParams['font.family'] = 'Times New Roman'
-plt.rcParams['mathtext.fontset'] = 'stix'
-plt.rcParams['mathtext.rm'] = 'Times New Roman'
-plt.rcParams['mathtext.it'] = 'Times New Roman:italic'
-plt.rcParams['mathtext.bf'] = 'Times New Roman:bold'
 from matplotlib.pyplot import Axes
 from matplotlib.pyplot import Figure
 import numpy as np
@@ -399,7 +394,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "log_return":
             obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
         elif obs_name == "log_return_avg_cost":
-            obs_comp = self._minmax_rescaling(obs_comp, -0.1, 0.1)
+            obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
         elif obs_name == "volatility":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 0.03)
         elif obs_name == "asset_volume_buy_orders_ratio":
@@ -968,12 +963,14 @@ class AECEnv4HeteroRL(PamsAECEnv):
     
     def draw_action(self, fig_save_path):
         self._make_parent_dir(fig_save_path)
-        order_volume_scales: list[float] = self.action_dic["order_volume_scale"]
-        order_price_scales: list[float] = self.action_dic["order_price_scale"]
+        order_volume_scale_arr: ndarray = np.array(self.action_dic["order_volume_scale"])
+        order_price_scale_arr: ndarray = np.array(self.action_dic["order_price_scale"])
+        order_price_scale_arr = - np.sign(order_volume_scale_arr) * order_price_scale_arr
         fig: Figure = plt.figure(figsize=(15, 13))
         ax: Axes = fig.add_subplot(111)
+        ax.grid()
         ax.scatter(
-            order_price_scales, order_volume_scales,
+            order_price_scale_arr, order_volume_scale_arr,
             alpha=0.5, color="blue"
         )
         ax.set_xlabel(
