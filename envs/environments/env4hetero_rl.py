@@ -707,9 +707,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         self,
         previous_utility: float,
         current_utility: float,
+        scaling_factor: float = 1e-04
     ) -> float:
-        previous_utility = self._calc_scaled_atan(previous_utility)
-        current_utility = self._calc_scaled_atan(current_utility)
+        previous_utility = self._calc_scaled_atan(previous_utility, scaling_factor)
+        current_utility = self._calc_scaled_atan(current_utility, scaling_factor)
         utility_diff = current_utility - previous_utility
         return utility_diff
     
@@ -782,7 +783,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 cash_amount, asset_volume, market_price,
                 avg_cost, volatility
             )
-            scaled_utility_diff = current_utility
+            scaled_utility_diff = self._atan_utility_diff(0, current_utility, scaling_factor=10)
         else:
             raise NotImplementedError(f"Unknown utility_type {self.utility_type}")
         # print(
