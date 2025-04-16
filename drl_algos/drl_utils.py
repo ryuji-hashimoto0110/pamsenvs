@@ -17,10 +17,10 @@ def initialize_module_orthogonal(module: Module, last_layer_scale: float = 1.0) 
         with torch.no_grad():
             if "weight" in name:
                 tmp = torch.empty_like(param, device="cpu")
-                nn.init.orthogonal_(tmp)
                 if name == last_weight_param_name:
                     scale *= last_layer_scale
-                param.data.copy_((tmp * scale).to(device))
+                nn.init.orthogonal_(tmp, gain=1.41*scale)
+                param.data.copy_(tmp.to(device))
             elif "bias" in name:
                 nn.init.zeros_(param)
 
