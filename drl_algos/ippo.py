@@ -159,6 +159,7 @@ class IPPO(Algorithm):
         clip_eps: float = 0.2,
         lmd: float = 0.95,
         max_grad_norm: float = 0.5,
+        kl_penalty: float = 1e-04,
         display_process: bool = True
     ) -> None:
         """initialization.
@@ -222,6 +223,7 @@ class IPPO(Algorithm):
         self.batch_size: int = batch_size
         self.clip_eps: float = clip_eps
         self.lmd: float = lmd
+        self.kl_penalty: float = kl_penalty
         self.max_grad_norm: float = max_grad_norm
         if display_process:
             print("[bold green]IPPO[/bold green]")
@@ -360,6 +362,14 @@ class IPPO(Algorithm):
             1.0 + self.clip_eps
         ) * advantages
         loss_actor: Tensor = torch.max(loss_actor1, loss_actor2).mean()
+        mean_tensor: Tensor = self.actor.actlayer(obses)
+        mean_mean_tensor: Tensor = mean_tensor.mean()
+        mean_std_tensor: Tensor = mean_tensor.std()
+        kl_penalty: Tensor = self.kl_penalty * (
+            (1 + mean_mean_tensor.pow(2)) / mean_std_tensor.pow(2) * 1/2
+            + torch.log(mean_std_tensor+1e-06) - 1/2
+        )
+        loss_actor = loss_actor + kl_penalty
         self.optim_actor.zero_grad()
         loss_actor.backward()
         nn.utils.clip_grad_norm_(self.actor.parameters(), self.max_grad_norm)
