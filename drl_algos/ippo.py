@@ -49,11 +49,11 @@ class IPPOActor(Module):
         super(IPPOActor, self).__init__()
         self.obs_shape: ndarray = obs_shape
         self.actlayer: Module = nn.Sequential(
-            nn.Linear(np.prod(obs_shape), 512),
+            nn.Linear(np.prod(obs_shape), 128),
             nn.Tanh(),
-            nn.Linear(512, 512),
+            nn.Linear(128, 128),
             nn.Tanh(),
-            nn.Linear(512, np.prod(action_shape)),
+            nn.Linear(128, np.prod(action_shape)),
         ).to(device)
         initialize_module_orthogonal(self.actlayer, last_layer_scale=0.01)
         self.log_stds: Tensor = -2*torch.ones(1, action_shape[0], device=device)
@@ -363,11 +363,12 @@ class IPPO(Algorithm):
         ) * advantages
         loss_actor: Tensor = torch.max(loss_actor1, loss_actor2).mean()
         mean_tensor: Tensor = self.actor.actlayer(obses)
-        mean_mean_tensor: Tensor = mean_tensor.mean()
-        mean_std_tensor: Tensor = mean_tensor.std()
-        kl_penalty: Tensor = self.kl_penalty * (
-            (1 + mean_mean_tensor.pow(2)) / mean_std_tensor.pow(2) * 1/2
-            + torch.log(mean_std_tensor+1e-06) - 1/2
+        mean_mean_tensor: Tensor = mean_tensor.mean(axis=0)
+        mean_std_tensor: Tensor = mean_tensor.std(axis=0)
+        kl_penalty: Tensor = self.kl_penalty * 0.5 * (
+            torch.log(mean_std_tensor.sum()) - len(mean_mean_tensor)
+            + (1 / mean_std_tensor).sum()
+            + (mean_mean_tensor.pow(2) / mean_std_tensor).sum()
         )
         loss_actor = loss_actor + kl_penalty
         self.optim_actor.zero_grad()
