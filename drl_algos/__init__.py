@@ -5,6 +5,8 @@ from .drl_utils import initialize_module_orthogonal
 from .drl_utils import calc_log_prob
 from .drl_utils import reparametrize
 from .evaluater import Evaluater
+from .intrinsic_motivation_modules import RNDNetwork
+from .intrinsic_motivation_modules import RNDRewardGenerator
 from .ippo import IPPO
 from .isac import ISAC
 from .trainer import Trainer

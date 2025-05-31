@@ -11,6 +11,7 @@ parent_path: pathlib.Path = curr_path.parents[0]
 sys.path.append(str(parent_path))
 from algorithm import Algorithm
 from buffers import RolloutBuffer4IPPO
+from intrinsic_motivation_modules import RNDRewardGenerator
 from drl_utils import initialize_module_orthogonal
 from drl_utils import calc_log_prob
 from drl_utils import reparametrize
@@ -137,7 +138,6 @@ class IPPOCritic(Module):
         obses = self._resize_obses(obses)
         return self.valuelayer(obses)
 
-
 class IPPO(Algorithm):
     """IPPO algorithm class."""
     def __init__(
@@ -216,7 +216,10 @@ class IPPO(Algorithm):
         self.optim_critic: Optimizer = optim.Adam(self.critic.parameters(), lr=lr_critic)
         self.scheduler_critic = optim.lr_scheduler.LambdaLR(
             self.optim_critic,
-            lr_lambda=lambda epoch: max(2e-06 / lr_critic, 0.995**(epoch//50))
+            lr_lambda=lambda epoch: max(1e-06 / lr_critic, 0.995**(epoch//50))
+        )
+        self.rnd_generator: RNDRewardGenerator = RNDRewardGenerator(
+            obs_shape=obs_shape, device=self.device
         )
         self.rollout_length: int = rollout_length
         self.num_updates_per_rollout: int = num_updates_per_rollout
@@ -274,6 +277,9 @@ class IPPO(Algorithm):
             obses_all, actions_all, rewards_all, dones_all, log_probs_old_all, next_obses_all
         ):
             assert buffer_size == len(obses)
+            intrinsic_reward: Tensor = self.rnd_generator.generate_intrinsic_reward(obses)
+            print(rewards[0], intrinsic_reward[0])
+            rewards = rewards + intrinsic_reward.detach()
             with torch.no_grad():
                 values: Tensor = self.critic(obses)
                 next_values: Tensor = self.critic(next_obses)
