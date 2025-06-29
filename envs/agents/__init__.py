@@ -9,3 +9,4 @@ from .liquidity_provider_agent import LiquidityProviderAgent
 from .mood_aware_cara_fcnagent import MoodAwareCARAFCNAgent
 from .prompt_aware_agent import fetch_llm_output
 from .prompt_aware_agent import PromptAwareAgent
+from .world_agent import WorldAgent
