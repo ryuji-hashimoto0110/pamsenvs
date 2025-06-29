@@ -164,10 +164,10 @@ class WorldAgent(Agent):
         accessible_markets_ids: list[int]
     ) -> None:
         super().setup(settings, accessible_markets_ids)
-        self.condition_len: int = settings["condition_len"] \
-            if "condition_len" in settings else 50
-        self.noise_dim: int = settings["noise_dim"] \
-            if "noise_dim" in settings else 50
+        self.condition_len: int = settings["lenCondition"] \
+            if "lenCondition" in settings else 50
+        self.noise_dim: int = settings["dimNoise"] \
+            if "dimNoise" in settings else 50
         self.device: torch.device = torch.device(settings["device"]) \
             if "device" in settings else torch.device("cpu")
         self.generator = ConditionalTimeSeriesGenerator(
@@ -176,20 +176,20 @@ class WorldAgent(Agent):
             next_feat_dim=len(self.order_columns),
             noise_dim=self.noise_dim
         ).to(self.device)
-        if "generator_weight_path" not in settings:
+        if "generatorWeightPath" not in settings:
             warnings.warn(
-                "No 'generator_weight_path' found in settings. "
+                "No 'generatorWeightPath' found in settings. "
                 "WorldAgent might not be initialized properly."
             )
         else:
             generator_weight_path: Path = self._load_path(
-                settings, "generator_weight_path"
+                settings, "generatorWeightPath"
             )
             checkpoint = torch.load(generator_weight_path, map_location=self.device)
             self.generator.load_state_dict(checkpoint['model'])
             self.generator.eval()
         boxcox_lambdas_path: Path = self._load_path(
-            settings, "boxcox_lambdas_path"
+            settings, "boxcoxLambdasPath"
         )
         with open(boxcox_lambdas_path, 'rb') as f:
             self.boxcox_lambdas: dict[str, float] = pickle.load(f)
