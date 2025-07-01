@@ -23,6 +23,15 @@ from typing import Any
 from typing import Optional
 import warnings
 
+
+class Simlog(Module):
+    def __init__(self) -> None:
+        super(Simlog, self).__init__()
+
+    def forward(self, x: Tensor) -> Tensor:
+        return torch.sign(x) * torch.log(torch.abs(x) + 1)
+
+
 class TemporalBlock(Module):
     def __init__(
         self,
@@ -66,7 +75,7 @@ class TemporalConvNet(Module):
     def __init__(
         self,
         num_inputs: int,
-        num_channels: int,
+        num_channels: tuple[int, ...],
         kernel_size: int = 2,
         dropout: float = 0.1
     ) -> None:
@@ -90,33 +99,62 @@ class TemporalConvNet(Module):
         return out[:, :, -1]
 
 
-class ConditionalTimeSeriesGenerator(Module):
+class HistoryAwareTimeSeriesGenerator(Module):
     def __init__(
         self,
-        history_len: int,
-        hist_feat_dim: int,
-        next_feat_dim: int,
-        noise_dim: int = 100,
-        tcn_channels: tuple[int, int] = (128, 128),
-        mlp_channels: int = 256
+        len_order_history: int,
+        dim_order_history_features: int,
+        dim_noise: int = 50,
+        dim_noise_embedding: int = 64,
+        dim_condition: int = 1,
+        dim_condition_embedding: int = 64,
+        dim_order: int = 2
     ) -> None:
         super().__init__()
-        self.tcn = TemporalConvNet(
-            hist_feat_dim, tcn_channels, kernel_size=3, dropout=0.1
+        self.tcn: TemporalConvNet = TemporalConvNet(
+            len_order_history, (128, 128), kernel_size=3, dropout=0.1
         )
-        self.noise_fc = nn.Linear(noise_dim, tcn_channels[-1])
+        self.noise_fc: Module = nn.Linear(dim_noise, dim_noise_embedding)
+        self.condition_mlp: Optional[Module] = None
+        if 0 < dim_condition:
+            self.condition_mlp: Module = nn.Sequential(
+                nn.Linear(dim_condition, dim_condition_embedding),
+                nn.LeakyReLU(0.2, True),
+                nn.Linear(dim_condition_embedding, dim_condition_embedding),
+            )
+        else:
+            dim_condition_embedding = 0
         self.mlp = nn.Sequential(
-            nn.Linear(tcn_channels[-1] * 2, mlp_channels),
+            nn.Linear(128+dim_noise_embedding+dim_condition_embedding, 256),
             nn.ReLU(True),
-            nn.Linear(mlp_channels, next_feat_dim),
-            nn.Tanh()
+            nn.Linear(256, dim_order),
+            Simlog(),
         )
 
-    def forward(self, noise: Tensor, history: Tensor) -> Tensor:
-        hist_emb = self.tcn(history)
-        noise_emb = self.noise_fc(noise)
-        out = self.mlp(torch.cat([hist_emb, noise_emb], dim=1))
-        return out
+    def forward(
+        self,
+        noise_tensor: Tensor,
+        order_history_tensor: Tensor,
+        condition_tensor: Optional[Tensor] = None
+    ) -> Tensor:
+        noise_emb_tensor: Tensor = self.noise_fc(noise_tensor)
+        order_history_emb: Tensor = self.tcn(order_history_tensor)
+        if condition_tensor is not None:
+            assert self.condition_mlp is not None
+            condition_emb_tensor: Tensor = self.condition_mlp(condition_tensor)
+            order_tensor: Tensor = self.mlp(
+                torch.cat(
+                    [noise_emb_tensor, order_history_emb, condition_emb_tensor], dim=1
+                )
+            )
+        else:
+            order_tensor: Tensor = self.mlp(torch.cat([noise_emb_tensor, order_history_emb], dim=1))
+        return order_tensor
+    
+
+class DummyAgent(Agent):
+    def submit_orders(self, markets: list[Market]) -> list[Order]:
+        return []
 
 
 class WorldAgent(Agent):
@@ -132,8 +170,6 @@ class WorldAgent(Agent):
         self.generator: Optional[Module] = None
         self.scaler: Optional[MinMaxScaler] = None
         self.boxcox_lambdas: Optional[dict[str, float]] = None
-        self.condition_len: int = 0
-        self.noise_dim: int = 0
         self.device: Optional[torch.device] = None
         self.condition_columns: list[str] = [
             "price", "size", "side",
@@ -164,17 +200,24 @@ class WorldAgent(Agent):
         accessible_markets_ids: list[int]
     ) -> None:
         super().setup(settings, accessible_markets_ids)
-        self.condition_len: int = settings["lenCondition"] \
-            if "lenCondition" in settings else 50
+        if "dimOrderHistoryFeatures" not in settings:
+            raise ValueError(
+                "Specify 'dimOrderHistoryFeatures' in settings."
+            )
+        self.dim_order_history_features: int = settings["dimOrderHistoryFeatures"]
+        self.len_order_history: int = settings["lenOrderHistory"] \
+            if "lenOrderHistory" in settings else 50
         self.noise_dim: int = settings["dimNoise"] \
             if "dimNoise" in settings else 50
+        self.dim_condition: int = settings["dimCondition"] \
+            if "dimCondition" in settings else 0
         self.device: torch.device = torch.device(settings["device"]) \
             if "device" in settings else torch.device("cpu")
-        self.generator = ConditionalTimeSeriesGenerator(
-            history_len=self.condition_len,
-            hist_feat_dim=len(self.condition_columns),
-            next_feat_dim=len(self.order_columns),
-            noise_dim=self.noise_dim
+        self.generator = HistoryAwareTimeSeriesGenerator(
+            len_order_history=self.len_order_history,
+            dim_order_history_features=self.dim_order_history_features,
+            dim_noise=self.noise_dim,
+            dim_condition=self.dim_condition,
         ).to(self.device)
         if "generatorWeightPath" not in settings:
             warnings.warn(
@@ -201,15 +244,15 @@ class WorldAgent(Agent):
             raise ValueError(
                 f"Market {market.market_id} does not have 'order_history_df' attribute."
             )
-        if len(order_history_df) < self.condition_len:
+        if len(order_history_df) < self.len_order_history:
             raise ValueError(
                 f"Market {market.market_id} does not have enough history data. "
-                f"Required: {self.condition_len}, Available: {len(order_history_df)}"
+                f"Required: {self.len_order_history}, Available: {len(order_history_df)}"
             )
-        return order_history_df.tail(self.condition_len).reset_index(drop=True)
+        return order_history_df.tail(self.len_order_history).reset_index(drop=True)
 
     def _convert_df2tensor(self, df: DataFrame) -> Tensor:
-        assert len(df) == self.condition_len
+        assert len(df) == self.len_order_history
         preprocessed_df: DataFrame = df.copy()
         for col in self.box_cox_cols:
             if preprocessed_df[col].min() <= 0:
@@ -217,11 +260,8 @@ class WorldAgent(Agent):
             preprocessed_df[col] = (
                 preprocessed_df[col]**self.boxcox_lambdas[col] - 1
             ) / self.boxcox_lambdas[col]
-        input_tensor: Tensor = torch.tensor(
-            preprocessed_df[self.condition_columns].values,
-            dtype=torch.float32, device=self.device
-        ).unsqueeze(0)
-        assert input_tensor.shape == (1, self.condition_len, len(self.condition_columns))
+        input_tensor: Tensor = ... # TODO: Don't forget unsqueeze(0)
+        assert input_tensor.shape == (1, self.len_order_history, self.dim_order_history_features)
         return input_tensor
     
     def _postprocess_order_price(self, order_price: float) -> float:
@@ -267,7 +307,7 @@ class WorldAgent(Agent):
             )
         market: Market = markets[0]
         assert hasattr(market, "order_history_df")
-        if len(market.order_history_df) < self.condition_len:
+        if len(market.order_history_df) < self.len_order_history:
             return []
         history_df: DataFrame = self._get_market_history(market)
         history_tensor: Tensor = self._convert_df2tensor(history_df)
