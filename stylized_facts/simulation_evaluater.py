@@ -9,10 +9,13 @@ from datetime import date
 from datetime import timedelta
 from envs.agents import aFCNAgent
 from envs.agents import CARAFCNAgent
+from envs.agents import DummyAgent
 from envs.agents import HistoryAwareFCLAgent
 from envs.agents import MoodAwareCARAFCNAgent
+from envs.agents import WorldAgent
 from envs.markets import FCWeightsAwareMarket
 from envs.markets import MoodAwareMarket
+from envs.markets import OrdersHistoryAwareMarket
 from envs.markets import RangeRegulatedMarket
 from envs.markets import TotalTimeAwareMarket
 from envs.markets import YesterdayAwareMarket
@@ -207,6 +210,7 @@ class SimulationEvaluater:
         """register classes."""
         runner.class_register(aFCNAgent) if aFCNAgent not in runner.registered_classes else ...
         runner.class_register(CARAFCNAgent) if CARAFCNAgent not in runner.registered_classes else ...
+        runner.class_register(DummyAgent) if DummyAgent not in runner.registered_classes else ...
         runner.class_register(MoodAwareCARAFCNAgent) \
             if MoodAwareCARAFCNAgent not in runner.registered_classes else ...
         runner.class_register(FCWeightsAwareMarket) \
@@ -214,12 +218,15 @@ class SimulationEvaluater:
         runner.class_register(HistoryAwareFCLAgent) \
             if HistoryAwareFCLAgent not in runner.registered_classes else ...
         runner.class_register(MoodAwareMarket) if MoodAwareMarket not in runner.registered_classes else ...
+        runner.class_register(OrdersHistoryAwareMarket) \
+            if OrdersHistoryAwareMarket not in runner.registered_classes else ...
         runner.class_register(RangeRegulatedMarket) \
             if RangeRegulatedMarket not in runner.registered_classes else ...
         runner.class_register(TotalTimeAwareMarket) \
             if TotalTimeAwareMarket not in runner.registered_classes else ...
         runner.class_register(YesterdayAwareMarket) \
             if YesterdayAwareMarket not in runner.registered_classes else ...
+        runner.class_register(WorldAgent) if WorldAgent not in runner.registered_classes else ...
 
     def simulate_multiple_times(
         self,
