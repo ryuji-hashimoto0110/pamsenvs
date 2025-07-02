@@ -211,6 +211,10 @@ class WorldAgent(Agent):
             if "dimNoise" in settings else 50
         self.dim_condition: int = settings["dimCondition"] \
             if "dimCondition" in settings else 0
+        self.conditions: list[float] = settings["condition"] \
+            if "condition" in settings else []
+        assert isinstance(self.conditions, list)
+        assert len(self.conditions) == self.dim_condition
         self.device: torch.device = torch.device(settings["device"]) \
             if "device" in settings else torch.device("cpu")
         self.generator = HistoryAwareTimeSeriesGenerator(
@@ -314,9 +318,14 @@ class WorldAgent(Agent):
         noise_tensor: Tensor = torch.randn(
             (1, self.noise_dim), device=self.device
         )
+        condition_tensor: Optional[Tensor] = None
+        if self.dim_condition > 0:
+            condition_tensor: Tensor = torch.tensor(
+                self.conditions, dtype=torch.float32, device=self.device
+            ).unsqueeze(0)
         with torch.no_grad():
             order_tensor: Tensor = self.generator(
-                noise_tensor, history_tensor
+                noise_tensor, history_tensor, condition_tensor
             )
         orders: list[Order] = self._convert_tensor2orders(
             order_tensor, market.market_id
