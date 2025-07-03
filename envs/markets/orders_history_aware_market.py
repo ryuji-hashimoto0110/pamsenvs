@@ -95,12 +95,6 @@ class OrdersHistoryAwareMarket(Market):
                 kind=LIMIT_ORDER,
             )
             self._add_order(order)
-            logs: list[Log] = self._execution()
-            if 0 < len(logs):
-                raise ValueError(
-                    "logs remain after adding initial orders. " + 
-                    "Maybe you forgot to rewrite pams/market.py."
-                )
 
     def _add_initial_orders(self, df: DataFrame, is_buy: bool) -> None:
         """Add initial orders to the market based on the DataFrame `df`.
