@@ -54,7 +54,9 @@ class OrdersHistoryAwareMarket(Market):
             df: DataFrame = pd.read_csv(
                 settings["orderHistoryDfPath"], index_col=0
             )
+            self.time = 0
             self._pre_add_orders(df)
+            self.time = -1
 
     def _pre_add_orders(self, df: DataFrame) -> None:
         """add orders in advence before the simulation starts.
@@ -89,7 +91,6 @@ class OrdersHistoryAwareMarket(Market):
                 volume=order_volume,
                 is_buy=is_buy,
                 kind=order_type,
-                placed_at=-1
             )
             self._add_order(order)
             logs: list[Log] = self._execution()
@@ -117,7 +118,6 @@ class OrdersHistoryAwareMarket(Market):
             volume=order_volume,
             is_buy=is_buy,
             kind=LIMIT_ORDER,
-            placed_at=-1
         )
         self._add_order(order)
 
