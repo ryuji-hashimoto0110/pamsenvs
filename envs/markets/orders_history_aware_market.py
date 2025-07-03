@@ -54,9 +54,9 @@ class OrdersHistoryAwareMarket(Market):
             df: DataFrame = pd.read_csv(
                 settings["orderHistoryDfPath"], index_col=0
             )
-            self.time = 0
+            self._update_time(self.get_fundamental_price(), 0)
             self._pre_add_orders(df)
-            self.time = -1
+            self._update_time(self.get_fundamental_price(), -1)
 
     def _pre_add_orders(self, df: DataFrame) -> None:
         """add orders in advence before the simulation starts.
