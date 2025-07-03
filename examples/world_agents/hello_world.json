@@ -42,6 +42,7 @@
     "Market": {
         "class": "OrdersHistoryAwareMarket",
 		"orderHistoryDfPath": "/home/m2023rhashimoto/pamsenvs/datas/initial_orders_for_world_agent.csv",
+		"dummyAgentID": 0,
 		"tickSize": 0.0001,
 		"marketPrice": 300.0,
 		"fundamentalDrift": 0,
@@ -50,7 +51,8 @@
 	"DummyAgent": {
 		"class": "DummyAgent",
 		"markets": ["Market"],
-		"numAgents": 1,
+		"from": 0,
+		"to": 1,
 		"assetVolume": {"uniform": [0,300]},
 		"cashAmount": {"uniform": [100000,300000]}
 	},
