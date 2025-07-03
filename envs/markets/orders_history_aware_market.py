@@ -35,6 +35,7 @@ class OrdersHistoryAwareMarket(Market):
                 "best_bid_price",
                 "best_ask_volume",
                 "best_bid_volume",
+                "mid_price"
             ]
         )
 
@@ -122,8 +123,10 @@ class OrdersHistoryAwareMarket(Market):
         return result
 
     def _update_order_history(self, order: Order):
-        best_ask_price: float = self.get_best_sell_price()
-        best_bid_price: float = self.get_best_buy_price()
+        best_ask_price: Optional[float] = self.get_best_sell_price()
+        best_bid_price: Optional[float] = self.get_best_buy_price()
+        mid_price: Optional[float] = self.get_mid_price()
+        mid_price = self.get_market_price() if mid_price is None else mid_price
         sell_order_book: dict[Optional[float], int] = self.get_sell_order_book()
         best_ask_volume: int = sell_order_book.get(best_ask_price, 0)
         buy_order_book: dict[Optional[float], int] = self.get_buy_order_book()
@@ -139,6 +142,7 @@ class OrdersHistoryAwareMarket(Market):
                         "best_bid_price": [best_bid_price],
                         "best_ask_volume": [best_ask_volume],
                         "best_bid_volume": [best_bid_volume],
+                        "mid_price": [mid_price],
                     }
                 ),
             ],
