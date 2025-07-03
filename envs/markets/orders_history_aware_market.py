@@ -87,7 +87,7 @@ class OrdersHistoryAwareMarket(Market):
                 price=order_price,
                 volume=order_volume,
                 is_buy=is_buy,
-                order_type=order_type,
+                kind=order_type,
             )
             self._add_order(order)
             logs: list[Log] = self._execution()
