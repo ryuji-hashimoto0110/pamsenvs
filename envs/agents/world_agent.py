@@ -235,11 +235,22 @@ class WorldAgent(Agent):
             checkpoint = torch.load(generator_weight_path, map_location=self.device)
             self.generator.load_state_dict(checkpoint['model'])
             self.generator.eval()
-        boxcox_lambdas_path: Path = self._load_path(
-            settings, "boxcoxLambdasPath"
-        )
-        with open(boxcox_lambdas_path, 'rb') as f:
-            self.boxcox_lambdas: dict[str, float] = pickle.load(f)
+        if "boxcoxLambdasPath" not in settings:
+            warnings.warn(
+                "No 'boxcoxLambdasPath' found in settings. "
+                "WorldAgent might not be initialized properly."
+            )
+        else:
+            boxcox_lambdas_path: Path = self._load_path(
+                settings, "boxcoxLambdasPath"
+            )
+            with open(boxcox_lambdas_path, 'rb') as f:
+                self.boxcox_lambdas: dict[str, float] = pickle.load(f)
+                for col in self.box_cox_cols:
+                    if col not in self.boxcox_lambdas:
+                        raise ValueError(
+                            f"Column '{col}' not found in boxcox_lambdas."
+                        )
 
     def _get_market_history(self, market: Market) -> DataFrame:
         if hasattr(market, "order_history_df"):
