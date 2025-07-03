@@ -86,14 +86,13 @@ class OrdersHistoryAwareMarket(Market):
             order_price: float = row["price"]
             order_volume: int = row["size"]
             is_buy = (row["side"] == 1)
-            order_type = LIMIT_ORDER if row["type"] == 1 else MARKET_ORDER
             order = Order(
                 market_id=self.market_id,
                 agent_id=self.dummy_agent_id,
                 price=order_price,
                 volume=order_volume,
                 is_buy=is_buy,
-                kind=order_type,
+                kind=LIMIT_ORDER,
             )
             self._add_order(order)
             logs: list[Log] = self._execution()
