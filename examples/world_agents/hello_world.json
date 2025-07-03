@@ -47,7 +47,13 @@
 		"fundamentalDrift": 0,
         "fundamentalVolatility": 0
     },
-
+	"DummyAgent": {
+		"class": "DummyAgent",
+		"markets": ["Market"],
+		"numAgents": 1,
+		"assetVolume": {"uniform": [0,300]},
+		"cashAmount": {"uniform": [100000,300000]}
+	},
     "WorldAgent": {
         "class": "WorldAgent",
 		"markets": ["Market"],
