@@ -1,7 +1,7 @@
 {
     "simulation": {
 		"markets": ["Market"],
-		"agents": ["FCNAgent", "WorldAgent"],
+		"agents": ["DummyAgent", "WorldAgent"],
 		"sessions": [
 			{	
 				"sessionName": "0",
@@ -41,38 +41,24 @@
 	},
     "Market": {
         "class": "OrdersHistoryAwareMarket",
+		"orderHistoryDfPath": "/home/m2023rhashimoto/pamsenvs/datas/initial_orders_for_world_agent.csv",
 		"tickSize": 0.0001,
 		"marketPrice": 300.0,
 		"fundamentalDrift": 0,
         "fundamentalVolatility": 0
     },
-    "FCNAgent": {
-        "class": "CARAFCNAgent",
-		"isCARA": false,
-		"orderMargin": [0,0.01],
-        "yesterdayAware": true,
-        "numAgents": 2000,
-		"markets": ["Market"],
-		"assetVolume": {"uniform": [0,100]},
-		"cashAmount": {"uniform": [10000,30000]},
-		"averageCashAmount": 20000,
-		"fundamentalWeight": {"expon": [10.0]},
-		"chartWeight": {"expon": [1.25]},
-		"noiseWeight": {"expon": [1.0]},
-		"noiseScale": 0.0001,
-		"timeWindowSize": 100,
-		"heterogeneousTimeWindowSize": true,
-		"tauDiff": 20,
-		"heterogeneousRiskAversionTerm": false,
-		"isAdaptive": false,
-		"meanReversionTime": 200,
-		"chartFollowRate": 1
-    },
+
     "WorldAgent": {
         "class": "WorldAgent",
 		"markets": ["Market"],
 		"numAgents": 1,
-		"assetVolume": {"uniform": [0,100]},
-		"cashAmount": {"uniform": [10000,30000]}
+		"assetVolume": {"uniform": [0,300]},
+		"cashAmount": {"uniform": [100000,300000]},
+		"dimOrderHistoryFeatures": 7,
+		"lenOrderHistory": 50,
+		"dimNoise": 50,
+		"dimCondition": 0,
+		"device": "cpu",
+		"comment": "Set generatorWeightPath and boxcoxLambdasPath if you have pre-trained models."
     }
 }

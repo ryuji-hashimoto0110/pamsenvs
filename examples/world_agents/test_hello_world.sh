@@ -1,18 +1,18 @@
 initial_seed=42
 significant_figures=10
-config_path="world_fcn_config.json"
-specific_name="world_fcn"
-txts_path="../../datas/artificial_datas/flex_txt/world_fcn"
+config_path="hello_world.json"
+specific_name="hello_world"
+txts_path="../../datas/artificial_datas/flex_txt/hello_world"
 num_simulations=10
 resample_rule="1min"
-tick_dfs_path="../../datas/artificial_datas/flex_csv/asymmetric_volatility/world_fcn"
-ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/asymmetric_volatility/world_fcn"
-all_time_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/all_time/asymmetric_volatility/world_fcn"
+tick_dfs_path="../../datas/artificial_datas/flex_csv/asymmetric_volatility/hello_world"
+ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/1min/asymmetric_volatility/hello_world"
+all_time_ohlcv_dfs_path="../../datas/artificial_datas/intraday/flex_ohlcv/all_time/asymmetric_volatility/hello_world"
 transactions_path="../../datas/real_datas/intraday/flex_transactions/1min/7203"
 session1_transactions_file_name="cumsum_scaled_transactions_session1.csv"
 session2_transactions_file_name="cumsum_scaled_transactions_session2.csv"
-figs_save_path="../../imgs/asymmetric_volatility/world_fcn"
-results_save_path="../../stylized_facts/results/asymmetric_volatility/world_fcn.csv"
+figs_save_path="../../imgs/asymmetric_volatility/hello_world"
+results_save_path="../../stylized_facts/results/asymmetric_volatility/hello_world.csv"
 seed=42
 ohlcv_folder_path="../../datas/real_datas/intraday/flex_ohlcv/all_time"
 
