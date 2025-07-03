@@ -113,7 +113,7 @@ class OrdersHistoryAwareMarket(Market):
             price=order_price,
             volume=order_volume,
             is_buy=is_buy,
-            order_type=LIMIT_ORDER,
+            kind=LIMIT_ORDER,
         )
         self._add_order(order)
 
