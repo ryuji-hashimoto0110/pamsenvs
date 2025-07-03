@@ -52,7 +52,7 @@
 		"class": "DummyAgent",
 		"markets": ["Market"],
 		"from": 0,
-		"to": 1,
+		"to": 0,
 		"assetVolume": {"uniform": [0,300]},
 		"cashAmount": {"uniform": [100000,300000]}
 	},
