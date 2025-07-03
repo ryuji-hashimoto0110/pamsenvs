@@ -83,6 +83,7 @@ class OrdersHistoryAwareMarket(Market):
             is_buy = (row["side"] == 1)
             order_type = LIMIT_ORDER if row["type"] == 1 else MARKET_ORDER
             order = Order(
+                market_id=self.market_id,
                 agent_id=self.dummy_agent_id,
                 price=order_price,
                 volume=order_volume,
@@ -109,6 +110,7 @@ class OrdersHistoryAwareMarket(Market):
             order_price = df["best_ask_price"].iloc[0]
             order_volume = df["best_ask_volume"].iloc[0]
         order = Order(
+            market_id=self.market_id,
             agent_id=self.dummy_agent_id,
             price=order_price,
             volume=order_volume,
