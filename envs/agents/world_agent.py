@@ -171,14 +171,14 @@ class WorldAgent(Agent):
         self.scaler: Optional[MinMaxScaler] = None
         self.boxcox_lambdas: Optional[dict[str, float]] = None
         self.device: Optional[torch.device] = None
-        self.condition_columns: list[str] = [
-            "price", "size", "side",
+        self.order_history_columns: list[str] = [
+            "order_price", "order_size",
             "best_ask_price", "best_ask_volume",
             "best_bid_price", "best_bid_volume", "mid_price"
         ]
-        self.order_columns: list[str] = ["price", "size"]
+        self.order_columns: list[str] = ["order_price", "order_size"]
         self.box_cox_cols: list[str] = [
-            #"size", "best_ask_volume", "best_bid_volume"
+            "order_size", "best_ask_volume", "best_bid_volume"
         ]
 
     def _load_path(
@@ -248,26 +248,73 @@ class WorldAgent(Agent):
             raise ValueError(
                 f"Market {market.market_id} does not have 'order_history_df' attribute."
             )
-        if len(order_history_df) < self.len_order_history:
+        if len(order_history_df) < self.len_order_history + 1:
             raise ValueError(
                 f"Market {market.market_id} does not have enough history data. "
                 f"Required: {self.len_order_history}, Available: {len(order_history_df)}"
             )
-        return order_history_df.tail(self.len_order_history).reset_index(drop=True)
+        return order_history_df.tail(self.len_order_history+1).reset_index(drop=True)
 
     def _convert_df2tensor(self, df: DataFrame) -> Tensor:
-        assert len(df) == self.len_order_history
+        assert len(df) == self.len_order_history + 1
         preprocessed_df: DataFrame = df.copy()
-        for col in self.box_cox_cols:
-            if preprocessed_df[col].min() <= 0:
-                preprocessed_df[col] += abs(preprocessed_df[col].min()) + 1e-6
-            preprocessed_df[col] = (
-                preprocessed_df[col]**self.boxcox_lambdas[col] - 1
-            ) / self.boxcox_lambdas[col]
-        input_tensor: Tensor = ... # TODO: Don't forget unsqueeze(0)
+        preprocessed_df = self._boxcox_transform(preprocessed_df)
+        order_price_tensor: Tensor = self._get_broad_log_return_tensor(
+            preprocessed_df, "order_price"
+        )
+        order_size_tensor: Tensor = torch.tensor(
+            preprocessed_df["order_size"].values[1:], dtype=torch.float32, device=self.device
+        )
+        best_ask_price_tensor: Tensor = self._get_broad_log_return_tensor(
+            preprocessed_df, "best_ask_price"
+        )
+        best_ask_volume_tensor: Tensor = torch.tensor(
+            preprocessed_df["best_ask_volume"].values[1:], dtype=torch.float32, device=self.device
+        )
+        best_bid_price_tensor: Tensor = self._get_broad_log_return_tensor(
+            preprocessed_df, "best_bid_price"
+        )
+        best_bid_volume_tensor: Tensor = torch.tensor(
+            preprocessed_df["best_bid_volume"].values[1:], dtype=torch.float32, device=self.device
+        )
+        mid_price_tensor: Tensor = self._get_broad_log_return_tensor(
+            preprocessed_df, "mid_price"
+        )
+        input_tensor: Tensor = torch.stack(
+            [
+                order_price_tensor,
+                order_size_tensor,
+                best_ask_price_tensor,
+                best_ask_volume_tensor,
+                best_bid_price_tensor,
+                best_bid_volume_tensor,
+                mid_price_tensor
+            ],
+            dim=0
+        ).unsqueeze(0).to(self.device)
         assert input_tensor.shape == (1, self.len_order_history, self.dim_order_history_features)
         return input_tensor
     
+    def _boxcox_transform(self, df: DataFrame) -> DataFrame:
+        for col in self.box_cox_cols:
+            if df[col].min() <= 0:
+                df[col] += abs(df[col].min()) + 1e-6
+            df[col] = (
+                df[col]**self.boxcox_lambdas[col] - 1
+            ) / self.boxcox_lambdas[col]
+        return df
+    
+    def _get_broad_log_return_tensor(
+        self,
+        df: DataFrame,
+        col_name: str
+    ) -> Tensor:
+        log_return_arr: ndarray = np.log(df[col_name].values[1:] / df[col_name].values[0])
+        log_return_tensor: Tensor = torch.tensor(
+            log_return_arr, dtype=torch.float32, device=self.device
+        )
+        return log_return_tensor 
+
     def _postprocess_order_price(self, order_price: float) -> float:
         return order_price
     
@@ -311,7 +358,7 @@ class WorldAgent(Agent):
             )
         market: Market = markets[0]
         assert hasattr(market, "order_history_df")
-        if len(market.order_history_df) < self.len_order_history:
+        if len(market.order_history_df) < self.len_order_history + 1:
             return []
         history_df: DataFrame = self._get_market_history(market)
         history_tensor: Tensor = self._convert_df2tensor(history_df)
