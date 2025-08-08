@@ -392,17 +392,17 @@ class AECEnv4HeteroRL(PamsAECEnv):
         elif obs_name == "remaining_time_ratio":
             obs_comp = self._minmax_rescaling(obs_comp, 0, 1)
         elif obs_name == "log_return":
-            obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
+            obs_comp = self._minmax_rescaling(obs_comp, -0.7, 0.7)
         elif obs_name == "log_return_avg_cost":
-            obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
+            obs_comp = self._minmax_rescaling(obs_comp, -0.7, 0.7)
         elif obs_name == "volatility":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.03)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 0.05)
         elif obs_name == "asset_volume_buy_orders_ratio":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 10)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 5)
         elif obs_name == "asset_volume_sell_orders_ratio":
-            obs_comp = self._minmax_rescaling(obs_comp, 0, 10)
+            obs_comp = self._minmax_rescaling(obs_comp, 0, 5)
         elif obs_name == "blurred_fundamental_return":
-            obs_comp = self._minmax_rescaling(obs_comp, -0.3, 0.3)
+            obs_comp = self._minmax_rescaling(obs_comp, -0.7, 0.7)
         elif obs_name == "skill_boundedness":
             obs_comp = self._minmax_rescaling(
                 obs_comp,
@@ -595,7 +595,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 existing_orders_volume += volume * weight
         asset_volume: int = np.abs(agent.asset_volumes[market.market_id])
         asset_volume_existing_orders_ratio: float = min(
-            asset_volume / (existing_orders_volume + 1e-06), 10
+            asset_volume / (existing_orders_volume + 1e-06), 5
         )
         return asset_volume_existing_orders_ratio
     
@@ -690,7 +690,7 @@ class AECEnv4HeteroRL(PamsAECEnv):
     def _discretize_norm(
         self,
         std: float,
-        n_bins: int = 10,
+        n_bins: int = 5,
     ) -> float:
         range_min, range_max = -3 * std, 3 * std
         bin_edges: list[float] = np.linspace(range_min, range_max, n_bins + 1)
@@ -776,30 +776,22 @@ class AECEnv4HeteroRL(PamsAECEnv):
                 cash_amount, asset_volume, market_price,
                 log_return, volatility, risk_aversion_term
             )
-            scaled_utility_diff = self._atan_utility_diff(0, current_utility)
+            scaled_utility_diff = self._atan_utility_diff(
+                0, current_utility, scaling_factor=6e-05
+            )
         elif self.utility_type == "PT":
             avg_cost: float = self._calc_avg_cost(agent, market)
             current_utility: float = self.calc_pt_utility(
                 cash_amount, asset_volume, market_price,
                 avg_cost, volatility
             )
-            scaled_utility_diff = self._atan_utility_diff(0, current_utility, scaling_factor=10)
+            scaled_utility_diff = self._atan_utility_diff(
+                0, current_utility, scaling_factor=10
+            )
         else:
             raise NotImplementedError(f"Unknown utility_type {self.utility_type}")
-        # print(
-        #     f"utility={current_utility:.3f} " + \
-        #     f"avg_cost={avg_cost:.1f} " + \
-        #     f"cash={cash_amount:.1f} " + \
-        #     f"asset={asset_volume:.1f} " + \
-        #     f"market={market_price:.1f} " + \
-        #     f"volatility={volatility:.4f} " + \
-        #     f"risk_aversion={risk_aversion_term:.4f}"
-        # )
         previous_utility: float = agent.previous_utility
         agent.previous_utility = current_utility
-        #scaled_utility_diff = self._atan_utility_diff(0, current_utility)
-        #print(f"{previous_utility=:.2f}, {current_utility=:.2f} {scaled_utility_diff=:.2f}")
-        #print(f"{market.get_time()} {cash_amount=:.1f} {asset_volume=:.1f} {market_price=:.1f} {total_wealth=:.1f} {log_return=:.4f} {volatility=:.6f} alpha={agent.risk_aversion_term:.2f}")
         reward = scaled_utility_diff
         self.reward_dic["scaled_utility_diff"].append(scaled_utility_diff)
         if asset_volume < 0:
@@ -824,21 +816,10 @@ class AECEnv4HeteroRL(PamsAECEnv):
         fundamental_price: float = market.get_fundamental_price()
         fundamental_penalty: float = min(
             self.fundamental_penalty * self._get_integrated_fundamental_diff(market),
-            1
+            10
         )
-        #min(
-        #    2, self._get_remaining_fundamental_diff(market)
-        #)
         reward -= fundamental_penalty
         self.reward_dic["fundamental_penalty"].append(-fundamental_penalty)
-        # print(f"{reward=:.2f}")
-        # print(
-        #     f"utility diff: {scaled_utility_diff:.3f} " + \
-        #     f"short selling penalty: {self.reward_dic['short_selling_penalty'][-1]:.3f} " + \
-        #     f"cash shortage penalty: {self.reward_dic['cash_shortage_penalty'][-1]:.3f} " + \
-        #     f"fundamental penalty: {self.reward_dic['fundamental_penalty'][-1]:.3f} " + \
-        #     f"liquidity penalty: {self.reward_dic['liquidity_penalty'][-1]:.3f}"
-        # )
         self.reward_dic["total_reward"].append(reward)
         return reward
 
@@ -864,8 +845,8 @@ class AECEnv4HeteroRL(PamsAECEnv):
             order_price: float = mid_price + self.limit_order_range * mid_price * order_price_scale
             is_buy = False
         self.action_dic["is_buy"].append(int(is_buy))
-        order_volume: int = np.abs(
-            np.ceil(self.max_order_volume * order_volume_scale)
+        order_volume: int = np.ceil(
+            np.abs(self.max_order_volume * order_volume_scale)
         )
         agent_id: AgentID = self.agent_selection
         current_time: int = market.get_time()

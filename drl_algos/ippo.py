@@ -50,14 +50,14 @@ class IPPOActor(Module):
         super(IPPOActor, self).__init__()
         self.obs_shape: ndarray = obs_shape
         self.actlayer: Module = nn.Sequential(
-            nn.Linear(np.prod(obs_shape), 128),
-            nn.Tanh(),
-            nn.Linear(128, 128),
-            nn.Tanh(),
-            nn.Linear(128, np.prod(action_shape)),
+            nn.Linear(np.prod(obs_shape), 512),
+            nn.SiLU(),
+            nn.Linear(512, 512),
+            nn.SiLU(),
+            nn.Linear(512, np.prod(action_shape)),
         ).to(device)
         initialize_module_orthogonal(self.actlayer, last_layer_scale=0.01)
-        self.log_stds: Tensor = -2*torch.ones(1, action_shape[0], device=device)
+        self.log_stds: Tensor = -torch.ones(1, action_shape[0], device=device)
 
     def _resize_obses(self, obses: Tensor) -> Tensor:
         """Resize observation tensor."""
@@ -118,9 +118,9 @@ class IPPOCritic(Module):
         self.obs_shape: ndarray = obs_shape
         self.valuelayer: Module = nn.Sequential(
             nn.Linear(np.prod(obs_shape), 512),
-            nn.Tanh(),
+            nn.SiLU(),
             nn.Linear(512, 512),
-            nn.Tanh(),
+            nn.SiLU(),
             nn.Linear(512, 1),
         ).to(device)
         initialize_module_orthogonal(self.valuelayer, last_layer_scale=1.0)
@@ -278,7 +278,6 @@ class IPPO(Algorithm):
         ):
             assert buffer_size == len(obses)
             intrinsic_reward: Tensor = self.rnd_generator.generate_intrinsic_reward(obses)
-            print(rewards[0], intrinsic_reward[0])
             rewards = rewards + intrinsic_reward.detach()
             with torch.no_grad():
                 values: Tensor = self.critic(obses)
