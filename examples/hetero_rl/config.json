@@ -1,71 +1,70 @@
 {
     "simulation": {
-		"markets": ["Market"],
-		"agents": ["Agent"],
-		"sessions": [
-			{	
-				"sessionName": "0",
-				"iterationSteps": 100,
-				"withOrderPlacement": true,
-				"withOrderExecution": false,
-				"withPrint": true,
-				"maxNormalOrders": 1,
-				"maxHighFrequencyOrders": 0,
+                "markets": ["Market"],
+                "agents": ["Agent"],
+                "sessions": [
+                        {
+                                "sessionName": "0",
+                                "iterationSteps": 100,
+                                "withOrderPlacement": true,
+                                "withOrderExecution": false,
+                                "withPrint": true,
+                                "maxNormalOrders": 1,
+                                "maxHighFrequencyOrders": 0,
                 "events": ["provide_dividend"]
-			},
-			{	
-				"sessionName": "1",
-				"iterationSteps": 1000,
-				"withOrderPlacement": true,
-				"withOrderExecution": true,
-				"withPrint": true,
-				"maxHighFrequencyOrders": 0,
+                        },
+                        {
+                                "sessionName": "1",
+                                "iterationSteps": 1000,
+                                "withOrderPlacement": true,
+                                "withOrderExecution": true,
+                                "withPrint": true,
+                                "maxHighFrequencyOrders": 0,
                 "events": ["provide_dividend"]
-			},
-            {	
-				"sessionName": "00",
-				"iterationSteps": 10,
-				"withOrderPlacement": true,
-				"withOrderExecution": false,
-				"withPrint": true,
-				"maxNormalOrders": 1,
-				"maxHighFrequencyOrders": 0,
+                        },
+            {
+                                "sessionName": "00",
+                                "iterationSteps": 10,
+                                "withOrderPlacement": true,
+                                "withOrderExecution": false,
+                                "withPrint": true,
+                                "maxNormalOrders": 1,
+                                "maxHighFrequencyOrders": 0,
                 "events": ["provide_dividend"]
-			},
-            {	
-				"sessionName": "2",
-				"iterationSteps": 1000,
-				"withOrderPlacement": true,
-				"withOrderExecution": true,
-				"withPrint": true,
-				"maxHighFrequencyOrders": 0,
+                        },
+            {
+                                "sessionName": "2",
+                                "iterationSteps": 1000,
+                                "withOrderPlacement": true,
+                                "withOrderExecution": true,
+                                "withPrint": true,
+                                "maxHighFrequencyOrders": 0,
                 "events": ["provide_dividend"]
-			}
-		]
-	},
-	"provide_dividend": {
-		"class": "DividendProviderwEverySteps",
-		"dividendRate": 0.00000,
-		"dividendInterval": 2110
-	},
+                        }
+                ]
+        },
+        "provide_dividend": {
+                "class": "DividendProviderwEverySteps",
+                "dividendRate": 0.00000,
+                "dividendInterval": 2110
+        },
     "Market": {
         "class": "TotalTimeAwareMarket",
-		"tickSize": 0.0001,
-		"marketPrice": 300.0,
-		"fundamentalDrift": 0,
+                "tickSize": 0.0001,
+                "marketPrice": 300.0,
+                "fundamentalDrift": 0,
         "fundamentalVolatility": 0
     },
     "Agent": {
         "class": "HeteroRLAgent",
-		"prefix": "agent",
-		"from": 0,
-		"to": 199,
-		"markets": ["Market"],
-		"assetVolume": {"expon": [20]},
-        "cashAmount": {"expon": [10000]},
-		"averageCashAmount": 6000,
+                "prefix": "agent",
+                "from": 0,
+                "to": 199,
+                "markets": ["Market"],
+                "assetVolume": {"expon": [20]},
+        "cashAmount": {"expon": [15000]},
         "skillBoundedness": {"normal": [0.01, 0.003]},
-		"riskAversionTerm": {"normal": [0.30, 0.01]},
-		"discountFactor": {"uniform": [0.9, 0.999]}
+                "riskAversionTerm": {"normal": [0.30, 0.01]},
+                "discountFactor": {"uniform": [0.9, 0.999]}
     }
 }
